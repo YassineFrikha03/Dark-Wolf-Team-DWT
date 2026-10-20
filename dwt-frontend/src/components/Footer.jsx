@@ -1,201 +1,226 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { BrandTitle } from './WolfLogo';
-import { DiscordIcon, YoutubeIcon, TwitterIcon, InstagramIcon } from './SocialIcons';
-import { 
-  ArrowUp, 
-  Shield, 
-  Trophy, 
-  ShoppingBag, 
-  Users, 
-  Sparkles,
-  ExternalLink,
-  Flame,
-  Radio
-} from 'lucide-react';
+import { SOCIAL_LINKS } from '../config/socialLinks';
 
-const Footer = () => {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+const socials = [
+  {
+    name: 'Twitch',
+    url: SOCIAL_LINKS.twitch,
+    iconPath: 'M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z',
+  },
+  {
+    name: 'Instagram',
+    url: SOCIAL_LINKS.instagram,
+    iconPath: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z',
+  },
+  {
+    name: 'Discord',
+    url: SOCIAL_LINKS.discord,
+    iconPath: 'M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.11 18.1.138 18.116a19.902 19.902 0 0 0 5.993 3.031.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z',
+  },
+  {
+    name: 'YouTube',
+    url: SOCIAL_LINKS.youtube,
+    iconPath: 'M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z',
+  },
+  {
+    name: 'X',
+    url: SOCIAL_LINKS.x,
+    iconPath: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+  },
+  {
+    name: 'Facebook',
+    url: SOCIAL_LINKS.facebook,
+    iconPath: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
+  },
+];
+
+const Footer = ({
+  onOpenMuseum,
+  onOpenMembers,
+  onOpenAdmin,
+  onOpenPlayer,
+  onOpenAchievements,
+  onOpenPartners,
+  onOpenBrandGuidelines,
+  onOpenLegal,
+  onSelectShopCategory,
+}) => {
+  const scrollTo = (sel) => {
+    document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const currentYear = new Date().getFullYear();
-
-  const navLinks = [
-    { name: 'Accueil', path: '/' },
-    { name: 'À propos', path: '/a-propos' },
-    { name: 'Équipe Officielle', path: '/equipe' },
-    { name: 'Tournois & Matchs', path: '/tournois' },
-    { name: 'Boutique Dark Lab', path: '/boutique' },
-    { name: 'Actualités E-sport', path: '/actualites' },
-    { name: 'Contact & Recrutement', path: '/contact' }
-  ];
-
-  const ecosystemLinks = [
-    { name: 'Boutique Dark Lab', path: '/boutique', badge: 'New' },
-    { name: 'Maillots & Équipements', path: '/boutique?cat=vetements' },
-    { name: 'Périphériques & Tapis', path: '/boutique?cat=accessoires' },
-    { name: 'Espace Joueur & Roster', path: '/espace-joueur' },
-    { name: 'Postuler dans l\'Équipe', path: '/contact' },
-    { name: 'Panier d\'achat', path: '/panier' }
-  ];
-
-  const socialChannels = [
-    {
-      name: 'Discord',
-      handle: 'discord.gg/darkwolf',
-      url: 'https://discord.gg',
-      icon: <DiscordIcon size={20} />,
-      badge: 'Communauté',
-      color: '#5865F2'
-    },
-    {
-      name: 'YouTube',
-      handle: '@DarkWolfTeam',
-      url: 'https://youtube.com',
-      icon: <YoutubeIcon size={20} />,
-      badge: 'VOD & Highlights',
-      color: '#FF0000'
-    },
-    {
-      name: 'X / Twitter',
-      handle: '@DarkWolfTeam',
-      url: 'https://twitter.com',
-      icon: <TwitterIcon size={20} />,
-      badge: 'Live News',
-      color: '#1DA1F2'
-    },
-    {
-      name: 'Instagram',
-      handle: '@darkwolf_team',
-      url: 'https://instagram.com',
-      icon: <InstagramIcon size={20} />,
-      badge: 'Coulisses & Photos',
-      color: '#E4405F'
-    }
-  ];
+  const handleShopCat = (cat) => {
+    if (onSelectShopCategory) onSelectShopCategory(cat);
+    scrollTo('#shop');
+  };
 
   return (
-    <footer className="footer-section">
-      <div className="footer-glow-top"></div>
-      
-      <div className="footer-container">
-        {/* Main 4-Column Grid */}
-        <div className="footer-grid-main">
-          {/* Column 1: Brand & Identity */}
-          <div className="footer-col-brand">
-            <Link to="/" className="footer-brand-logo" onClick={scrollToTop}>
-              <BrandTitle />
-            </Link>
-
-            <div className="footer-slogan">ONE PACK. ONE VISION.</div>
-
-            <p className="footer-about-text">
-              Club e-sport compétitif fondé le <strong>23 avril 2020</strong>. 
-              Présent sur les plus grands champs de bataille virtuels pour repousser les limites de la performance et du divertissement.
-            </p>
-
-            <div className="footer-status-pill">
-              <span className="footer-status-dot"></span>
-              <span>Meute Active • Serveurs Opérationnels</span>
-            </div>
-
-            <div className="footer-brand-tags">
-              <span className="footer-tag-chip"><Shield size={12} /> Compétition</span>
-              <span className="footer-tag-chip"><Flame size={12} /> Dark Lab</span>
-              <span className="footer-tag-chip"><Trophy size={12} /> Champions</span>
+    <footer
+      id="footer"
+      style={{
+        background: 'var(--dark2)',
+        borderTop: '1px solid var(--gray1)',
+        padding: '70px 60px 36px',
+      }}
+    >
+      <div className="fgrid">
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '18px',
+            }}
+          >
+            <img
+              src="/logo-dwt.png"
+              alt="Dark Wolf Team"
+              style={{ width: '42px', height: '42px', objectFit: 'contain' }}
+            />
+            <div className="htxt">
+              <span className="tn" style={{ fontSize: '11px' }}>
+                Dark Wolf Team
+              </span>
+              <span className="bn">Dark Lab © 2026</span>
             </div>
           </div>
-
-          {/* Column 2: Navigation Rapide */}
-          <div className="footer-col-nav">
-            <h4 className="footer-col-title">Navigation</h4>
-            <ul className="footer-links-list">
-              {navLinks.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.path} onClick={scrollToTop} className="footer-nav-link">
-                    <span>{link.name}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Écosystème Dark Lab & Gaming */}
-          <div className="footer-col-ecosystem">
-            <h4 className="footer-col-title">Écosystème & Dark Lab</h4>
-            <ul className="footer-links-list">
-              {ecosystemLinks.map((item) => (
-                <li key={item.name}>
-                  <Link to={item.path} onClick={scrollToTop} className="footer-nav-link">
-                    <span>{item.name}</span>
-                    {item.badge && <span className="footer-link-badge">{item.badge}</span>}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Réseaux & Communauté */}
-          <div className="footer-col-community">
-            <div className="footer-community-header">
-              <h4 className="footer-col-title">Rejoindre la Meute</h4>
-              <span className="footer-live-badge"><Radio size={12} /> 2.5K+ Membres</span>
-            </div>
-            <p className="footer-community-sub">
-              Suis nos matchs en temps réel, participe aux scrims communautaires et sois le premier informé de chaque drop Dark Lab.
-            </p>
-
-            <div className="footer-social-cards">
-              {socialChannels.map((soc) => (
-                <a 
-                  key={soc.name} 
-                  href={soc.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="footer-social-card"
-                  title={`${soc.name} - ${soc.badge}`}
-                >
-                  <div className="footer-social-icon-box" style={{ color: soc.color }}>
-                    {soc.icon}
-                  </div>
-                  <div className="footer-social-meta">
-                    <span className="footer-social-name">{soc.name}</span>
-                    <span className="footer-social-handle">{soc.badge}</span>
-                  </div>
-                  <ExternalLink size={13} className="footer-social-arrow" />
-                </a>
-              ))}
-            </div>
+          <p className="fdesc">
+            Elite esports organization competing across multiple titles. Driven by the wolf instinct — hunt, adapt, dominate.
+          </p>
+          <div className="fsoc" id="fsoc">
+            {socials.map((s, i) => (
+              <button
+                key={i}
+                className="fsoci"
+                onClick={() => window.open(s.url, '_blank')}
+                aria-label={s.name}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d={s.iconPath} />
+                </svg>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="footer-bottom-bar">
-          <div className="footer-bottom-left">
-            <p className="footer-copyright">
-              © 2020 - {currentYear} <span className="highlight-team">DARK WOLF TEAM</span> (DWT). Fondée le <strong>23 avril 2020</strong>. Tous droits réservés.
-            </p>
-            <div className="footer-micro-links">
-              <span>Propulsé par Dark Lab</span>
-              <span>•</span>
-              <Link to="/contact" onClick={scrollToTop}>Support & Partenariats</Link>
-              <span>•</span>
-              <Link to="/a-propos" onClick={scrollToTop}>Manifeste</Link>
-            </div>
-          </div>
+        <div>
+          <div className="fctitle">Shop</div>
+          <ul className="flinks">
+            <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('Best Sellers'); }}>Best Sellers</a></li>
+            <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('Pro Kit'); }}>Pro Kit</a></li>
+            <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('New Collection'); }}>New Collection</a></li>
+            <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('Collabs'); }}>Collabs</a></li>
+            <li><a href="#museum" onClick={(e) => { e.preventDefault(); onOpenMuseum(); }}>Museum (Archive)</a></li>
+          </ul>
+        </div>
 
-          <div className="footer-bottom-right">
-            <button 
-              onClick={scrollToTop} 
-              className="footer-back-to-top"
-              title="Retourner en haut de page"
-              aria-label="Retourner en haut de page"
-            >
-              <span>Haut de page</span>
-              <ArrowUp size={16} />
-            </button>
-          </div>
+        <div>
+          <div className="fctitle">DWT Teams</div>
+          <ul className="flinks">
+            <li><a href="#teams" onClick={(e) => { e.preventDefault(); onOpenMembers('All'); }}>Our Teams</a></li>
+            <li><a href="#news" onClick={(e) => { e.preventDefault(); scrollTo('#news'); }}>Matches & Live</a></li>
+            <li>
+              <a
+                href="#achievements"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenAchievements) onOpenAchievements();
+                }}
+              >
+                Achievements 🏆
+              </a>
+            </li>
+            <li>
+              <a
+                href="#espace-joueur"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenPlayer) onOpenPlayer('Mon Profil');
+                }}
+                style={{ color: '#ff4d4d', fontWeight: '700' }}
+              >
+                🐺 Espace Joueur & Meute
+              </a>
+            </li>
+            <li><a href="#media" onClick={(e) => { e.preventDefault(); scrollTo('#media'); }}>Media</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div className="fctitle">About DWT</div>
+          <ul className="flinks">
+            <li><a href="#join" onClick={(e) => { e.preventDefault(); scrollTo('#join'); }}>Careers</a></li>
+            <li>
+              <a
+                href="#partners"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenPartners) onOpenPartners();
+                }}
+              >
+                Partners (Sponsors)
+              </a>
+            </li>
+            <li>
+              <a
+                href="#brand"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenBrandGuidelines) onOpenBrandGuidelines();
+                }}
+              >
+                Brand Guidelines
+              </a>
+            </li>
+            <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a></li>
+            <li><a href="#admin" onClick={(e) => { e.preventDefault(); onOpenAdmin(); }} style={{ color: 'var(--wolf)' }}>Administration</a></li>
+            <li>
+              <a
+                href="#privacy"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenLegal) onOpenLegal('privacy');
+                }}
+              >
+                Privacy Policy
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="fbot">
+        <div className="fcopy">
+          © 2026 Dark Wolf Team / Dark Lab. All rights reserved.
+        </div>
+        <div className="fblinks">
+          <a
+            href="#privacy"
+            onClick={(e) => {
+              e.preventDefault();
+              if (onOpenLegal) onOpenLegal('privacy');
+            }}
+          >
+            Privacy
+          </a>
+          <a
+            href="#terms"
+            onClick={(e) => {
+              e.preventDefault();
+              if (onOpenLegal) onOpenLegal('terms');
+            }}
+          >
+            Terms
+          </a>
+          <a
+            href="#cookies"
+            onClick={(e) => {
+              e.preventDefault();
+              if (onOpenLegal) onOpenLegal('cookies');
+            }}
+          >
+            Cookies
+          </a>
         </div>
       </div>
     </footer>

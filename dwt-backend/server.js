@@ -63,6 +63,13 @@ const orderRoutes = require('./routes/orderRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const gameRoutes = require('./routes/gameRoutes');
+const slideRoutes = require('./routes/slideRoutes');
+const museumRoutes = require('./routes/museumRoutes');
+const predictionRoutes = require('./routes/predictionRoutes');
+const missionRoutes = require('./routes/missionRoutes');
+const wolfpackRoutes = require('./routes/wolfpackRoutes');
+const videoRoutes = require('./routes/videoRoutes');
 
 // Montage des routes d'API
 app.use('/api/auth', authRoutes);
@@ -80,6 +87,13 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/games', gameRoutes);
+app.use('/api/slides', slideRoutes);
+app.use('/api/museum', museumRoutes);
+app.use('/api/predictions', predictionRoutes);
+app.use('/api/missions', missionRoutes);
+app.use('/api/wolfpack', wolfpackRoutes);
+app.use('/api/videos', videoRoutes);
 
 // Route d'accueil & de santé de l'API
 app.get('/', (req, res) => {

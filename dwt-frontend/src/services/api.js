@@ -7,8 +7,12 @@ const API = axios.create({
   }
 });
 
-// Intercepteur pour attacher le token JWT automatiquement (sessionStorage pour déconnexion à la fermeture)
+// Intercepteur pour attacher le token JWT automatiquement et gérer les formulaires FormData
 API.interceptors.request.use((config) => {
+  // Si le payload est un FormData (téléversement de fichier), retirer 'Content-Type' pour laisser le navigateur injecter le multipart/form-data avec le bon boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
   const token = sessionStorage.getItem('dwt_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

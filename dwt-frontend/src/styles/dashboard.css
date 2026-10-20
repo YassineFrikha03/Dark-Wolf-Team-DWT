@@ -138,6 +138,31 @@
   box-shadow: 0 0 6px var(--red-primary);
 }
 
+.dash-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--red-primary);
+  color: #fff;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(230, 0, 0, 0.85);
+  animation: notifPulse 2s infinite ease-in-out;
+}
+
+@keyframes notifPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); box-shadow: 0 0 12px rgba(230, 0, 0, 1); }
+  100% { transform: scale(1); }
+}
+
 /* Cards & Sections */
 .dash-card {
   background: #0d0f16;
@@ -922,19 +947,22 @@
   outline: none;
 }
 
-/* Notifications Dropdown */
+/* Notifications Dropdown - Cyber Esport Theme */
 .notif-popup {
   position: absolute;
   top: 50px;
   right: 0;
-  width: 380px;
+  width: 390px;
   max-width: 90vw;
-  background: #0f121a;
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+  background: linear-gradient(160deg, #0e121d 0%, #070911 100%);
+  border: 1px solid rgba(230, 0, 0, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(230, 0, 0, 0.15);
   z-index: 1050;
   overflow: hidden;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: cyberModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .notif-header {
@@ -942,8 +970,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: #090c12;
-  border-bottom: 1px solid var(--border-dark);
+  background: rgba(9, 12, 18, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .notif-list {
@@ -952,54 +980,129 @@
 }
 
 .notif-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid #141824;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  transition: background 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .notif-item.unread {
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(90deg, rgba(230, 0, 0, 0.1) 0%, rgba(15, 18, 28, 0.5) 100%);
   border-left: 3px solid var(--red-primary);
 }
 
 .notif-item:hover {
-  background: #141824;
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateX(2px);
 }
 
-/* Chat & Messaging Layout */
+/* Chat & Messaging Layout - Dark Cyber Esports Theme */
 .chat-container {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  background: #0b0d14;
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  min-height: 580px;
+  grid-template-columns: 310px 1fr;
+  background: #090c14;
+  border: 1px solid rgba(204, 34, 34, 0.28);
+  border-radius: 14px;
+  height: 620px;
+  max-height: calc(100vh - 140px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 24px rgba(204, 34, 34, 0.08);
   overflow: hidden;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .chat-container {
     grid-template-columns: 1fr;
+    height: auto;
+    max-height: none;
   }
 }
 
 .chat-user-list {
-  background: #080a10;
-  border-right: 1px solid var(--border-dark);
+  background: #07090f;
+  border-right: 1px solid #161b29;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .chat-user-header {
   padding: 16px;
-  border-bottom: 1px solid var(--border-dark);
+  border-bottom: 1px solid #161b29;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.chat-user-title {
   font-family: var(--font-heading);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0d111b;
+  border: 1px solid #1e2538;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.chat-search-input:focus {
+  border-color: var(--red-primary);
+}
+
+.chat-filter-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.chat-filter-chip {
+  background: #111522;
+  border: 1px solid #1e263a;
+  color: #94a3b8;
+  border-radius: 14px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.chat-filter-chip:hover {
+  color: #fff;
+  border-color: #3b4661;
+}
+
+.chat-filter-chip.active {
+  background: rgba(204, 34, 34, 0.2);
+  border-color: var(--red-primary);
+  color: #fff;
+}
+
+.chat-players-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .chat-user-item {
@@ -1008,74 +1111,130 @@
   gap: 12px;
   padding: 12px 16px;
   cursor: pointer;
-  border-bottom: 1px solid #10131d;
+  border-bottom: 1px solid #0d101a;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .chat-user-item:hover {
-  background: #121622;
+  background: #0e121d;
 }
 
 .chat-user-item.active {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(204, 34, 34, 0.12);
   border-left: 3px solid var(--red-primary);
 }
 
 .chat-window {
   display: flex;
   flex-direction: column;
-  background: #0b0d14;
-  height: 580px;
+  background: #090b12;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .chat-window-header {
   padding: 14px 20px;
-  background: #0e111a;
-  border-bottom: 1px solid var(--border-dark);
+  background: #0c0f18;
+  border-bottom: 1px solid #171d2b;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .chat-messages-scroll {
   flex: 1;
-  padding: 20px;
+  padding: 22px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  background: radial-gradient(circle at 90% 10%, rgba(204, 34, 34, 0.04) 0%, transparent 60%),
+              #080a11;
 }
 
 .chat-bubble {
   max-width: 72%;
-  padding: 10px 16px;
+  padding: 12px 18px;
   border-radius: 14px;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.45;
   position: relative;
   word-break: break-word;
+  transition: transform 0.15s ease;
 }
 
+/* Bulle du joueur / expéditeur actif (Mine) - Cyber Red esport haute visibilité */
 .chat-bubble.mine {
   align-self: flex-end;
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #cc1111 0%, #880b0b 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 80, 80, 0.45);
   border-bottom-right-radius: 2px;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 18px rgba(204, 17, 17, 0.35);
 }
 
+.chat-bubble.mine .chat-bubble-name {
+  font-size: 11px;
+  color: #ffd4d4;
+  font-weight: 800;
+  margin-bottom: 3px;
+  text-align: right;
+  letter-spacing: 0.3px;
+}
+
+.chat-bubble.mine .chat-bubble-content {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.chat-bubble.mine .chat-bubble-time {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Bulle du correspondant (Theirs) - Cyber Dark Slate avec bordure néon */
 .chat-bubble.theirs {
   align-self: flex-start;
-  background: #151926;
-  border: 1px solid #252c40;
-  color: #e2e8f0;
+  background: linear-gradient(135deg, #131724 0%, #0d101a 100%);
+  border: 1px solid #232c40;
+  color: #f1f5f9;
   border-bottom-left-radius: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
+.chat-bubble.theirs .chat-bubble-name {
+  font-size: 11px;
+  color: var(--red-primary);
+  font-weight: 800;
+  margin-bottom: 3px;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chat-bubble.theirs .chat-bubble-content {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+.chat-bubble.theirs .chat-bubble-time {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Barre de saisie */
 .chat-input-bar {
   padding: 14px 20px;
-  background: #090c12;
-  border-top: 1px solid var(--border-dark);
+  background: #07090f;
+  border-top: 1px solid #171d2b;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1083,36 +1242,100 @@
 
 .chat-input-field {
   flex: 1;
-  background: #111420;
-  border: 1px solid #202638;
+  background: #0f131f;
+  border: 1px solid #222a3d;
   border-radius: 24px;
-  padding: 12px 18px;
+  padding: 12px 20px;
   color: #fff;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .chat-input-field:focus {
   border-color: var(--red-primary);
+  box-shadow: 0 0 12px rgba(204, 34, 34, 0.25);
+}
+
+.chat-input-field::placeholder {
+  color: #64748b;
 }
 
 .chat-send-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--red-primary);
+  background: linear-gradient(135deg, #cc2222 0%, #991515 100%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
+  border: 1px solid rgba(255, 80, 80, 0.4);
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(204, 34, 34, 0.35);
+  flex-shrink: 0;
 }
 
-.chat-send-btn:hover {
-  background: #e2e8f0;
-  transform: scale(1.05);
+.chat-send-btn:hover:not(:disabled) {
+  background: #e60000;
+  transform: scale(1.06);
+  box-shadow: 0 4px 16px rgba(230, 0, 0, 0.55);
 }
+
+.chat-send-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Suggestions rapides / Prompts pour le joueur */
+.chat-quick-prompts {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px 0;
+  background: #07090f;
+  overflow-x: auto;
+}
+
+.chat-prompt-pill {
+  background: #111522;
+  border: 1px solid #1f273b;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.chat-prompt-pill:hover {
+  background: rgba(204, 34, 34, 0.15);
+  border-color: var(--red-primary);
+  color: #fff;
+}
+
+@keyframes cyberToastIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes cyberModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 

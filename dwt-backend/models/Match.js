@@ -44,7 +44,7 @@ const matchSchema = new mongoose.Schema(
     },
     streamUrl: {
       type: String,
-      default: 'https://twitch.tv'
+      default: 'https://www.twitch.tv/darkw0lfteam'
     },
     vodUrl: {
       type: String,

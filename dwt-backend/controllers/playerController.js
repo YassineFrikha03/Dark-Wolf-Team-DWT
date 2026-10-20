@@ -1,4 +1,7 @@
 const Player = require('../models/Player');
+const User = require('../models/User');
+const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 // @desc    Obtenir tous les joueurs (avec filtres optionnels par jeu, statut)
 // @route   GET /api/players
@@ -69,9 +72,70 @@ const getPlayerById = async (req, res, next) => {
 const createPlayer = async (req, res, next) => {
   try {
     const player = await Player.create(req.body);
+
+    // Synchroniser automatiquement avec un compte User pour la messagerie et l'espace joueur
+    try {
+      const cleanGamertag = player.gamertag.trim();
+      let userAccount = await User.findOne({
+        $or: [
+          { gamertag: { $regex: new RegExp(`^${cleanGamertag}$`, 'i') } },
+          ...(req.body.email ? [{ email: req.body.email.toLowerCase().trim() }] : [])
+        ]
+      });
+
+      if (userAccount) {
+        userAccount.role = 'player';
+        if (player.game) userAccount.favoriteGame = player.game;
+        if (player.avatar && (!userAccount.avatar || userAccount.avatar.includes('unsplash'))) {
+          userAccount.avatar = player.avatar;
+        }
+        await userAccount.save();
+      } else {
+        const generatedEmail = (req.body.email || `${cleanGamertag.toLowerCase().replace(/[^a-z0-9]/g, '')}@darkwolfteam.com`).trim();
+        const tempPassword = 'DWT2026!player';
+        userAccount = await User.create({
+          gamertag: cleanGamertag,
+          email: generatedEmail,
+          password: tempPassword,
+          role: 'player',
+          favoriteGame: player.game || 'Valorant',
+          avatar: player.avatar || 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80',
+          bio: player.bio || `Joueur officiel de la meute Dark Wolf Team sur ${player.game || 'Esport'}.`
+        });
+      }
+
+      // Initialiser la conversation dans le système de messagerie chez l'admin
+      let adminSenderId = req.user?._id;
+      if (!adminSenderId) {
+        const adminUser = await User.findOne({ role: 'admin' });
+        if (adminUser) adminSenderId = adminUser._id;
+      }
+
+      if (adminSenderId && userAccount?._id) {
+        const welcomeMessage = `🐺 Bienvenue dans la meute Dark Wolf Team, ${cleanGamertag} ! Tu as été ajouté au roster officiel ${player.game || ''} (${player.role || 'Joueur'}). Cet espace de messagerie privé te permet d'échanger en direct avec le staff. Prépare-toi pour les prochains entraînements et compétitions !`;
+
+        await Message.create({
+          sender: adminSenderId,
+          receiver: userAccount._id,
+          content: welcomeMessage
+        });
+
+        await Notification.create({
+          recipient: userAccount._id,
+          recipientRole: 'user',
+          type: 'message',
+          title: '🐺 Bienvenue dans le roster officiel DWT !',
+          message: `Ton compte joueur sur ${player.game} est actif. Rejoins ton espace joueur et ta messagerie staff.`,
+          metadata: { senderId: adminSenderId }
+        }).catch(err => console.error('Erreur notification nouveau joueur :', err.message));
+      }
+    } catch (syncErr) {
+      console.error('Erreur synchronisation compte utilisateur pour le joueur :', syncErr.message);
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Joueur ajouté à la team avec succès ! 🐺',
+      message: 'Joueur ajouté à la team et intégré à la messagerie avec succès ! 🐺',
       player
     });
   } catch (error) {

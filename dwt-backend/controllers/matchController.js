@@ -88,6 +88,18 @@ const updateMatch = async (req, res, next) => {
       });
     }
 
+    // Si le match vient d'être marqué comme terminé, résoudre automatiquement les pronostics des fans
+    if (match.status === 'finished') {
+      try {
+        const { resolvePredictionsForMatch } = require('./predictionController');
+        resolvePredictionsForMatch(match._id, match).catch((err) =>
+          console.error('Erreur lors de la résolution auto des pronostics :', err.message)
+        );
+      } catch (err) {
+        console.error('Erreur import resolvePredictionsForMatch :', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: 'Match mis à jour avec succès',

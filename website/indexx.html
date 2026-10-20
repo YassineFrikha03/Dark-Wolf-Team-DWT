@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dark Wolf Team | Dark Lab</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="scrollbar"></div>
+  <div id="cDot"></div>
+  <div id="cRing"></div>
+  <div id="particles"></div>
+
+  ><!-- CINEMATIC INTRO -->
+  <div id="INTRO">
+    <div class="wolfEyes">
+      <span></span>
+      <span></span>
+    </div>
+    <div class="scan"></div>
+    <div class="noise"></div>
+    <div class="particle" style="top:10%;left:15%"></div>
+    <div class="particle" style="top:30%;left:80%"></div>
+    <div class="particle" style="top:70%;left:20%"></div>
+    <div class="particle" style="top:60%;left:90%"></div>
+    <div class="particle" style="top:85%;left:50%"></div>
+    <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        ">
+      <div class="introSmoke s1"></div>
+      <div class="introSmoke s2"></div>
+      <div class="introNoise"></div>
+      <div class="iWolf">
+        <svg width="68" height="68" viewBox="0 0 46 46" fill="none">
+          <polygon points="23,3 30,14 43,14 34,22 37,35 23,27 9,35 12,22 3,14 16,14" fill="none" stroke="#5a5a6a"
+            stroke-width="1.2" />
+          <path d="M8,12 L16,18 L13,8 Z" fill="#2a2a3a" />
+          <path d="M38,12 L30,18 L33,8 Z" fill="#2a2a3a" />
+          <path d="M23,20 L28,28 L23,32 L18,28 Z" fill="#5a5a6a" />
+          <circle cx="19" cy="20" r="1.5" fill="#d4d4d4" />
+          <circle cx="27" cy="20" r="1.5" fill="#d4d4d4" />
+          <path d="M20,24 Q23,27 26,24" stroke="#9a9a9a" stroke-width="1" fill="none" />
+        </svg>
+      </div>
+      <div class="iLine"></div>
+      <div class="iName">Dark Wolf Team</div>
+      <div class="iSub">Dark Lab &mdash; Est. 2021</div>
+      <div class="iBars">
+        <div class="iBar"></div>
+        <div class="iBar"></div>
+        <div class="iBar"></div>
+        <div class="iBar"></div>
+        <div class="iBar"></div>
+      </div>
+    </div>
+    <button class="iSkip" onclick="skipIntro()">Skip &rarr;</button>
+  </div>
+
+  <!-- ═══ HEADER ═══ -->
+  <header id="hdr" class="top">
+    <a href="#" class="hlogo">
+      <svg width="44" height="44" viewBox="0 0 46 46" fill="none">
+        <polygon points="23,3 30,14 43,14 34,22 37,35 23,27 9,35 12,22 3,14 16,14" fill="none" stroke="#5a5a6a"
+          stroke-width="1.2" />
+        <path d="M8,12 L16,18 L13,8 Z" fill="#2a2a3a" />
+        <path d="M38,12 L30,18 L33,8 Z" fill="#2a2a3a" />
+        <path d="M23,20 L28,28 L23,32 L18,28 Z" fill="#5a5a6a" />
+        <circle cx="19" cy="20" r="1.5" fill="#d4d4d4" />
+        <circle cx="27" cy="20" r="1.5" fill="#d4d4d4" />
+        <path d="M20,24 Q23,27 26,24" stroke="#9a9a9a" stroke-width="1" fill="none" />
+        <line x1="23" y1="32" x2="23" y2="43" stroke="#3d3d3d" stroke-width="1.5" />
+        <line x1="23" y1="36" x2="18" y2="43" stroke="#2a2a2a" stroke-width="1" />
+        <line x1="23" y1="36" x2="28" y2="43" stroke="#2a2a2a" stroke-width="1" />
+      </svg>
+      <div class="htxt">
+        <span class="tn">Dark Wolf Team</span><span class="bn">Dark Lab</span>
+      </div>
+    </a>
+    <nav>
+      <div class="ng">
+        <button class="nb">
+          Shop
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 3.5l3 3 3-3" />
+          </svg>
+        </button>
+        <div class="dd">
+          <a href="#shop">Best Sellers</a><a href="#shop">Pro Kit</a><a href="#shop">New Collection</a> <a
+            href="#shop">Collabs</a><a href="#shop">Accessories</a><a href="#shop">Custom</a>
+          <a href="javascript:openMuseum()" style="color: var(--wolf)">Museum (Archive)</a>
+        </div>
+      </div>
+      <div class="ng">
+        <button class="nb">
+          DWT Teams
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 3.5l3 3 3-3" />
+          </svg>
+        </button>
+        <div class="dd">
+          <a href="javascript:openMembersModal()">Our Teams</a>
+          <a href="#news">Matches</a><a href="#teams">Achievements</a>
+        </div>
+      </div>
+      <div class="ng">
+        <button class="nb">
+          About DWT
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 3.5l3 3 3-3" />
+          </svg>
+        </button>
+        <div class="dd">
+          <a href="#join">Careers</a><a href="#footer">Partners</a>
+          <a href="#footer">Brand Guideline</a><a href="#contact">Contact</a>
+        </div>
+      </div>
+
+      <div class="ng">
+        <button class="nb" onclick="scrollTo('#join')">Join Us</button>
+      </div>
+
+      <div class="ng">
+        <button class="nb">Fan Zone <span class="arr"></span>
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 3.5l3 3 3-3" />
+          </svg>
+        </button>
+        <div class="dd">
+          <a href="javascript:void(0)" onclick="openFP('FAN')" class="hl">Fan Levels</a>
+          <a href="javascript:void(0)" onclick="openFP('CRATES')" class="hl">Mystery Crates</a>
+          <a href="javascript:void(0)" onclick="openFP('PRED')" class="hl">Predictions</a>
+        </div>
+
+    </nav>
+    <div class="hacts">
+      <button class="bcart" onclick="togglePanel()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 01-8 0" />
+        </svg>
+        <span id="cartBadge">0</span>
+      </button>
+      <button class="bsi" onclick="openModal('login')">Sign In</button>
+      <button class="bjn" onclick="openModal('register')">Join Now</button>
+    </div>
+
+  </header>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="hslides" id="hslides">
+      <div class="hslide act">
+        <div class="hsbg" style="
+              background: #0a0a14;
+              background-image:url(img/abyedh\ \ rajel\ wa9ef.png);
+            ">
+          <svg style="
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.06;
+              " viewBox="0 0 900 550" preserveAspectRatio="xMidYMid slice">
+            <polygon points="450,40 570,200 760,180 630,300 680,480 450,390 220,480 270,300 140,180 330,200"
+              fill="white" />
+          </svg>
+        </div>
+        <div class="hsov"></div>
+        <div class="hcont">
+          <div class="hlbl">New Collection 2026</div>
+          <h1 class="htitle">
+            HUNT.<br /><span>DOMINATE.</span><br />CONQUER.
+          </h1>
+          <p class="hsub">
+            Dark Wolf Team — Elite esports. Dark Lab — Premium gear crafted
+            for champions who refuse to lose.
+          </p>
+          <div class="hbtns">
+            <button class="bp" onclick="scrollTo('#shop')">
+              Shop Collection</button><button class="bs" onclick="scrollTo('#teams')">
+              Meet the Pack
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="hslide">
+        <div class="hsbg" style="
+              background: #0a0a0e;
+              background-image:url(img/abyedh.png);
+            ">
+          <svg style="
+                position: absolute;
+                right: -5%;
+                top: 10%;
+                opacity: 0.05;
+                width: 50%;
+              " viewBox="0 0 400 400">
+            <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
+              font-size="220" font-weight="900" fill="white">
+              DL
+            </text>
+          </svg>
+        </div>
+        <div class="hsov"></div>
+        <div class="hcont">
+          <div class="hlbl">Dark Lab Pro Kit</div>
+          <h1 class="htitle">PRO<br /><span>GEAR</span><br />ONLY.</h1>
+          <p class="hsub">
+            Performance-grade equipment engineered for the elite. Built by
+            wolves, worn by champions.
+          </p>
+          <div class="hbtns">
+            <button class="bp" onclick="scrollTo('#shop')">
+              View Pro Kit</button><button class="bs">Learn More</button>
+          </div>
+        </div>
+      </div>
+      <div class="hslide">
+        <div class="hsbg" style="
+              background: #080808;
+              background-image:url(img/fiha\ asfer.png);
+            ">
+          <svg style="
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.04;
+              " viewBox="0 0 900 550" preserveAspectRatio="xMidYMid slice">
+            <circle cx="450" cy="275" r="240" fill="white" />
+            <circle cx="450" cy="275" r="180" fill="#080808" />
+            <circle cx="450" cy="275" r="140" fill="white" opacity=".4" />
+          </svg>
+        </div>
+        <div class="hsov"></div>
+        <div class="hcont">
+          <div class="hlbl">Exclusive Collabs Drop</div>
+          <h1 class="htitle">LIMITED<br /><span>COLLAB</span><br />DROP.</h1>
+          <p class="hsub">
+            Exclusive collaborations. Limited units. Zero reprints. Move fast
+            or miss out.
+          </p>
+          <div class="hbtns">
+            <button class="bp" onclick="scrollTo('#shop')">See Collabs</button><button class="bs"
+              onclick="scrollTo('#countdown')">
+              Next Drop Timer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hdrag" id="hdrag"></div>
+    <div class="hdots" id="hdots">
+      <div class="hdot act" onclick="slide(0)"></div>
+      <div class="hdot" onclick="slide(1)"></div>
+      <div class="hdot" onclick="slide(2)"></div>
+    </div>
+  </section>
+
+  <!-- ═══ SHOP ═══ -->
+  <section id="shop" style="padding: 100px 60px; background: var(--dark1)">
+    <div class="shdr rv">
+      <div>
+        <div class="slbl">Dark Lab</div>
+        <h2 class="stitle">DARK WOLF TEAM<br />Featured Collection</h2>
+        <p style="
+              font-family: &quot;Rajdhani&quot;, sans-serif;
+              font-size: 14px;
+              color: var(--silver);
+              margin-top: 8px;
+            ">
+          Drop your gear. Dominate the arena.
+        </p>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <button class="bva" onclick="openMuseum()">Museum (Archive) →</button>
+        <button class="bva">View Full Shop →</button>
+      </div>
+    </div>
+    <div class="pcarousel-wrap">
+      <button class="carow left" onclick="scrollCarousel('pgrid', -1)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="pcarousel" id="pgrid"></div>
+      <button class="carow right" onclick="scrollCarousel('pgrid', 1)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ORDER PANEL -->
+  <div class="opanel" id="opanel">
+    <div class="ophdr">
+      <div class="optitle">Your Order</div>
+      <button class="bcp" onclick="togglePanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+    <div class="opbody" id="opitems"></div>
+    <div class="opftr">
+      <div class="otrow">
+        <span class="otlbl">Total</span><span class="otamt" id="ototal">TND 0.00</span>
+      </div>
+      <div style="
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: var(--gray3);
+          ">
+        <span>Items:
+          <strong id="oqty" style="color: var(--silver)">0</strong></span><span>•</span><span>Free shipping +150
+          TND</span>
+      </div>
+      <button class="bconf" onclick="confirmOrder()">Confirm Order</button>
+      <button class="bsip" onclick="openModal('login')">
+        Sign In / Login
+      </button>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAIL -->
+  <div class="pdpage" id="pdpage">
+    <button class="pdback" onclick="closePD()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </svg>
+      Back to Shop
+    </button>
+    <div class="pdinner" id="pdinner"></div>
+  </div>
+
+  <!-- MUSEUM PAGE -->
+  <div class="museumPage" id="museumPage">
+    <button class="musBack" onclick="closeMuseum()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </svg>
+      Back
+    </button>
+    <div class="musHero">
+      <div class="slbl">Dark Lab</div>
+      <h1 class="musTitle">DWT<br />MUSEUM</h1>
+      <p class="musDesc">
+        A tribute to every piece that shaped the culture. These drops are gone
+        — but never forgotten. The archive of the wolfpack legacy.
+      </p>
+    </div>
+    <div class="musGrid" id="musGrid"></div>
+  </div>
+
+  <!-- ═══ NEWS ═══ -->
+  <section id="news" style="padding: 100px 60px; background: var(--black)">
+    <div class="rv">
+      <div class="slbl">Latest Updates</div>
+      <h2 class="stitle">News & Matches</h2>
+    </div>
+    <div class="ngrid rv d1">
+      <div class="nfeat">
+        <div class="nfbg" style="
+              background: #111;
+              background-image: linear-gradient(135deg, #1a1a2e, #0a0a0a);
+            "></div>
+        <div class="nfcont">
+          <span class="ntag">Feature</span>
+          <h3 class="nttl">
+            Dark Wolf Team Claims Regional Championship — The Pack Rises to
+            the Top
+          </h3>
+          <span class="ndt">27 June 2026 • 5 min read</span>
+        </div>
+      </div>
+      <div class="nside">
+        <div class="ncard">
+          <div class="ncimg" style="
+                background: #141414;
+                background-image: linear-gradient(135deg, #1a1a2e, #0a0a0a);
+              "></div>
+          <div>
+            <span class="ntag" style="font-size: 9px; padding: 2px 7px">Valorant</span>
+            <div class="ncttl" style="margin-top: 5px">
+              DWT Valorant squad qualifies for MENA Open Finals
+            </div>
+            <div class="ncdt">25 June 2026</div>
+          </div>
+        </div>
+        <div class="ncard">
+          <div class="ncimg" style="
+                background: #141414;
+                background-image: linear-gradient(45deg, #1a0a0a, #0a0a0a);
+              "></div>
+          <div>
+            <span class="ntag m" style="font-size: 9px; padding: 2px 7px">FC 25</span>
+            <div class="ncttl" style="margin-top: 5px">
+              New signings in DWT FC25 roster for Summer Split
+            </div>
+            <div class="ncdt">22 June 2026</div>
+          </div>
+        </div>
+        <div class="ncard">
+          <div class="ncimg" style="
+                background: #141414;
+                background-image: linear-gradient(135deg, #0a1a0a, #0a0a0a);
+              "></div>
+          <div>
+            <span class="ntag" style="font-size: 9px; padding: 2px 7px">COD</span>
+            <div class="ncttl" style="margin-top: 5px">
+              Call of Duty team heads to Grand Finals — Live coverage
+            </div>
+            <div class="ncdt">20 June 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 44px" class="rv d2">
+      <div class="slbl" style="margin-bottom: 16px">Upcoming & Live</div>
+      <div class="mstrip-wrap">
+        <button class="marrow l" onclick="scrollCarousel('mstrip', -1)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <div class="mstrip" id="mstrip"></div>
+        <button class="marrow r" onclick="scrollCarousel('mstrip', 1)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TEAMS ═══ -->
+  <section id="teams" style="padding: 100px 60px; background: var(--dark1)">
+    <div class="tintro">
+      <div class="rvl">
+        <div class="slbl">Our Roster</div>
+        <h2 class="stitle">DWT<br />Teams</h2>
+        <p style="
+              margin-top: 14px;
+              margin-bottom: 20px;
+              font-size: 14px;
+              color: var(--silver);
+              line-height: 1.6;
+            ">
+          Built from the best. Competing at the highest level. Dark Wolf Team
+          — we don't just play games. We own them.
+        </p>
+        <p style="font-size: 13px; color: var(--gray3); line-height: 1.7">
+          Every player hand-selected. Every strategy forged in competition.
+          From Valorant to FC25 to Call of Duty — DWT fields elite squads
+          across the biggest stages in esports.
+        </p>
+      </div>
+      <div class="tstats rvr">
+        <div class="sblock">
+          <div class="snum" data-target="24">0</div>
+          <div class="slb">Active Players</div>
+        </div>
+        <div class="sblock">
+          <div class="snum" data-target="6">0</div>
+          <div class="slb">Game Titles</div>
+        </div>
+        <div class="sblock">
+          <div class="snum" data-target="38">0</div>
+          <div class="slb">Tournaments Won</div>
+        </div>
+        <div class="sblock">
+          <div class="snum" data-target="5">0</div>
+          <div class="slb">Years Competing</div>
+        </div>
+      </div>
+    </div>
+    <div class="rv" style="margin-bottom: 16px">
+      <div class="slbl">
+        Hover to Reveal · Scroll to See All · Click to See Roster
+      </div>
+    </div>
+    <div class="ggrid-wrap">
+      <button class="garrow l" onclick="scrollCarousel('ggrid', -1)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="ggrid" id="ggrid"></div>
+      <button class="garrow r" onclick="scrollCarousel('ggrid', 1)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══ YOUTUBE ═══ -->
+  <section id="media" style="padding: 100px 60px; background: var(--black)">
+    <div class="rv">
+      <div class="slbl">Dark Wolf Media</div>
+      <h2 class="stitle">Watch DWT</h2>
+    </div>
+    <div class="ytgrid">
+      <div class="rvl d1">
+        <div class="ytmain" onclick="window.open('https://youtube.com', '_blank')">
+          <div class="ythumb" style="
+                background: #111;
+                background-image: linear-gradient(135deg, #111, #1a1a2e);
+              ">
+            <div class="ytplay">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="ytinfo">
+          <h3 class="ytttl">
+            DWT Valorant — Regional Grand Finals Full Gameplay + Comms
+          </h3>
+          <div class="ytmeta">
+            <span>156K views</span><span>3 days ago</span><span>52:14</span>
+          </div>
+        </div>
+      </div>
+      <div class="rvr d1">
+        <div class="yside" id="yside"></div>
+        <button class="ytchbtn" onclick="window.open('https://youtube.com', '_blank')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+            <path
+              d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+          </svg>
+          Subscribe on YouTube
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SOCIAL ═══ -->
+  <section id="social" style="padding: 100px 60px; background: var(--dark1); text-align: center">
+    <h2 class="soctitle rv">Follow the Pack</h2>
+    <p class="socsub rv d1">
+      Every win, every drop, every moment — live on our channels.
+    </p>
+    <div class="soclinks rv d2" id="soclinks"></div>
+  </section>
+
+  <!-- ═══ COUNTDOWN ═══ -->
+  <section id="countdown" style="
+        padding: 80px 60px;
+        background: var(--black);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      ">
+    <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(
+            circle,
+            rgba(180, 180, 200, 0.05) 0%,
+            transparent 70%
+          );
+          pointer-events: none;
+        "></div>
+    <div class="cev rv">— Next Major Event —</div>
+    <h2 class="ctitle rv d1">DWT Summer Championship 2026</h2>
+    <div class="tblocks rv d2">
+      <div class="tblock">
+        <div class="tnum" id="tdays">00</div>
+        <div class="tlbl">Days</div>
+      </div>
+      <div class="tsep">:</div>
+      <div class="tblock">
+        <div class="tnum" id="thours">00</div>
+        <div class="tlbl">Hours</div>
+      </div>
+      <div class="tsep">:</div>
+      <div class="tblock">
+        <div class="tnum" id="tmins">00</div>
+        <div class="tlbl">Min</div>
+      </div>
+      <div class="tsep">:</div>
+      <div class="tblock">
+        <div class="tnum" id="tsecs">00</div>
+        <div class="tlbl">Sec</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ JOIN ═══ -->
+  <section id="join" style="
+        padding: 120px 60px;
+        background: var(--dark1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      ">
+    <div style="
+          content: &quot;DWT&quot;;
+          position: absolute;
+          font-family: &quot;Orbitron&quot;, monospace;
+          font-size: 280px;
+          font-weight: 900;
+          color: rgba(255, 255, 255, 0.013);
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          white-space: nowrap;
+          user-select: none;
+          font-style: normal;
+        ">
+      DWT
+    </div>
+    <h2 class="jtitle rv">
+      READY TO RUN<br />WITH THE <span style="color: var(--wolf)">PACK?</span>
+    </h2>
+    <p class="jsub rv d1">
+      Whether you're a player, creator, or fan — there's a place for you in
+      the Dark Wolf family.
+    </p>
+    <div class="jform rv d2">
+      <input type="email" class="jinput" placeholder="Enter your email address" /><button class="bjsubmit">Join
+        Now</button>
+    </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
+  <section id="contact">
+    <div class="rv">
+      <div class="slbl">Get In Touch</div>
+      <h2 class="stitle">Contact DWT</h2>
+    </div>
+    <div class="contactGrid">
+      <div class="contactInfo rv d1">
+        <div class="contactInfoItem">
+          <div class="cIcon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+          </div>
+          <div>
+            <div class="cLabel">General</div>
+            <div class="cVal">contact@darkwolfteam.gg</div>
+          </div>
+        </div>
+        <div class="contactInfoItem">
+          <div class="cIcon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+          </div>
+          <div>
+            <div class="cLabel">Partnerships</div>
+            <div class="cVal">partners@darklab.gg</div>
+          </div>
+        </div>
+        <div class="contactInfoItem">
+          <div class="cIcon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </div>
+          <div>
+            <div class="cLabel">Location</div>
+            <div class="cVal">Tunisia — North Africa</div>
+          </div>
+        </div>
+        <div class="contactInfoItem">
+          <div class="cIcon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path
+                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.5a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .82h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.94 6.94l1.5-1.5a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+            </svg>
+          </div>
+          <div>
+            <div class="cLabel">Esports Enquiries</div>
+            <div class="cVal">esports@darkwolfteam.gg</div>
+          </div>
+        </div>
+      </div>
+      <div class="contactForm rvr d1">
+        <div class="cRow">
+          <div class="cField">
+            <label class="cLabel2">First Name</label><input type="text" class="cInput" placeholder="Your name" />
+          </div>
+          <div class="cField">
+            <label class="cLabel2">Last Name</label><input type="text" class="cInput" placeholder="Last name" />
+          </div>
+        </div>
+        <div class="cField">
+          <label class="cLabel2">Email</label><input type="email" class="cInput" placeholder="wolf@email.com" />
+        </div>
+        <div class="cField">
+          <label class="cLabel2">Subject</label>
+          <select class="cInput" style="background: var(--dark2); cursor: none">
+            <option value="" style="background: var(--dark2)">
+              Choose a topic
+            </option>
+            <option style="background: var(--dark2)">
+              Partnership / Sponsorship
+            </option>
+            <option style="background: var(--dark2)">
+              Shop / Order Issue
+            </option>
+            <option style="background: var(--dark2)">Player Tryout</option>
+            <option style="background: var(--dark2)">Media / Press</option>
+            <option style="background: var(--dark2)">Other</option>
+          </select>
+        </div>
+        <div class="cField">
+          <label class="cLabel2">Message</label><textarea class="cInput"
+            placeholder="Write your message here..."></textarea>
+        </div>
+        <button class="bcsend">Send Message</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer id="footer" style="
+        background: var(--dark2);
+        border-top: 1px solid var(--gray1);
+        padding: 70px 60px 36px;
+      ">
+    <div class="fgrid">
+      <div>
+        <div style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              margin-bottom: 18px;
+            ">
+          <svg width="36" height="36" viewBox="0 0 46 46" fill="none">
+            <polygon points="23,3 30,14 43,14 34,22 37,35 23,27 9,35 12,22 3,14 16,14" fill="none" stroke="#3d3d3d"
+              stroke-width="1.2" />
+            <path d="M23,20 L28,28 L23,32 L18,28 Z" fill="#3d3d3d" />
+            <circle cx="19" cy="20" r="1.5" fill="#9a9a9a" />
+            <circle cx="27" cy="20" r="1.5" fill="#9a9a9a" />
+          </svg>
+          <div class="htxt">
+            <span class="tn" style="font-size: 11px">Dark Wolf Team</span><span class="bn">Dark Lab © 2026</span>
+          </div>
+        </div>
+        <p class="fdesc">
+          Elite esports organization competing across multiple titles. Driven
+          by the wolf instinct — hunt, adapt, dominate.
+        </p>
+        <div class="fsoc" id="fsoc"></div>
+      </div>
+      <div>
+        <div class="fctitle">Shop</div>
+        <ul class="flinks">
+          <li><a href="#shop">Best Sellers</a></li>
+          <li><a href="#shop">Pro Kit</a></li>
+          <li><a href="#shop">New Collection</a></li>
+          <li><a href="#shop">Collabs</a></li>
+          <li><a href="javascript:openMuseum()">Museum</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fctitle">DWT Teams</div>
+        <ul class="flinks">
+          <li><a href="javascript:openMembersModal()">Our Teams</a></li>
+          <li><a href="#news">Matches</a></li>
+          <li><a href="#teams">Achievements</a></li>
+          <li><a href="#media">Media</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fctitle">About DWT</div>
+        <ul class="flinks">
+          <li><a href="#join">Careers</a></li>
+          <li><a href="#">Partners</a></li>
+          <li><a href="#">Brand Guideline</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fbot">
+      <div class="fcopy">
+        © 2026 Dark Wolf Team / Dark Lab. All rights reserved.
+      </div>
+      <div class="fblinks">
+        <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookies</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AUTH MODAL -->
+  <div class="mov" id="authMov" onclick="if (event.target === this) closeModal();">
+    <div class="modal">
+      <button class="mclose" onclick="closeModal()">✕</button>
+      <div class="mtitle" id="mtitle">Welcome Back</div>
+      <div class="msub">Access your Dark Wolf account</div>
+      <div class="mtabs">
+        <button class="mtab act" id="ltab" onclick="switchTab('login')">
+          Sign In
+        </button>
+        <button class="mtab" id="rtab" onclick="switchTab('register')">
+          Register
+        </button>
+      </div>
+      <div id="lform">
+        <div class="mfld">
+          <label class="mlbl">Email</label><input type="email" class="minput" placeholder="wolf@darklab.gg" />
+        </div>
+        <div class="mfld">
+          <label class="mlbl">Password</label><input type="password" class="minput" placeholder="••••••••" />
+        </div>
+        <button class="bmsubmit">Sign In</button>
+      </div>
+      <div id="rform" style="display: none">
+        <div class="mfld">
+          <label class="mlbl">Username</label><input type="text" class="minput" placeholder="WolfPlayer_01" />
+        </div>
+        <div class="mfld">
+          <label class="mlbl">Email</label><input type="email" class="minput" placeholder="wolf@darklab.gg" />
+        </div>
+        <div class="mfld">
+          <label class="mlbl">Password</label><input type="password" class="minput"
+            placeholder="Create a strong password" />
+        </div>
+        <button class="bmsubmit">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMBERS MODAL -->
+  <div class="memov" id="memov" onclick="if (event.target === this) closeMem();">
+    <div class="meminner">
+      <button class="mclose" onclick="closeMem()">✕</button>
+      <div class="slbl">The Wolfpack</div>
+      <h2 class="stitle" style="font-size: 26px">DWT Roster</h2>
+      <div class="memtabs" id="memtabs"></div>
+      <div class="memgrid" id="memgrid"></div>
+    </div>
+  </div>
+
+  <!-- CHATBOT -->
+  <button id="chatBtn" onclick="toggleChat()">
+    <svg class="wolfHead" viewBox="0 0 46 46" fill="none">
+      <polygon points="23,3 30,14 43,14 34,22 37,35 23,27 9,35 12,22 3,14 16,14" fill="none" stroke="#6b6b6b"
+        stroke-width="1.2" />
+      <path d="M8,12 L16,18 L13,8 Z" fill="#3d3d3d" />
+      <path d="M38,12 L30,18 L33,8 Z" fill="#3d3d3d" />
+      <path d="M23,20 L28,28 L23,32 L18,28 Z" fill="#6b6b6b" />
+      <circle cx="19" cy="20" r="1.5" fill="#b8b8c8" />
+      <circle cx="27" cy="20" r="1.5" fill="#b8b8c8" />
+    </svg>
+  </button>
+  <div id="chatWindow">
+    <div class="chatHdr">
+      <div class="chatWolfIcon">
+        <svg width="18" height="18" viewBox="0 0 46 46" fill="none">
+          <polygon points="23,3 30,14 43,14 34,22 37,35 23,27 9,35 12,22 3,14 16,14" fill="none" stroke="#6b6b6b"
+            stroke-width="1.5" />
+          <circle cx="19" cy="20" r="1.5" fill="#b8b8c8" />
+          <circle cx="27" cy="20" r="1.5" fill="#b8b8c8" />
+        </svg>
+      </div>
+      <div>
+        <div class="chatName">Wolf Bot</div>
+        <div class="chatStatus">Online — Ready to help</div>
+      </div>
+      <button class="chatClose" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chatBody" id="chatBody"></div>
+    <div class="chatSuggestions">
+      <div class="chatSugLabel">Quick questions</div>
+      <div class="chatSugBtns" id="chatSugBtns"></div>
+    </div>
+    <div class="chatInputRow">
+      <input type="text" class="chatInput" id="chatInput" placeholder="Ask the wolf..."
+        onkeydown="if (event.key === 'Enter') sendChat();" />
+      <button class="chatSend" onclick="sendChat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</body>
+<script src="dwt.js"></script>
+
+</html>

@@ -6,6 +6,10 @@ export const getImageUrl = (img) => {
   if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
     return img;
   }
+  // Fichiers statiques du dossier public frontend
+  if (img.startsWith('/backgrounds/') || img.startsWith('/logo-dwt.png') || img.startsWith('/favicon.')) {
+    return img;
+  }
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
   return `${backendUrl}${img.startsWith('/') ? '' : '/'}${img}`;
 };

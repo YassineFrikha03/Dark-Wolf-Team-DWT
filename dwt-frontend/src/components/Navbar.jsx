@@ -1,256 +1,286 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { BrandTitle } from './WolfLogo';
+import { Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { 
-  ShoppingBag, 
-  LogOut, 
-  Menu, 
-  X,
-  ShieldCheck,
-  User,
-  Sparkles,
-  ChevronRight
-} from 'lucide-react';
+import { WolfLogo } from './WolfLogo';
 
-const Navbar = () => {
-  const location = useLocation();
-  const { user, logout, isAdmin } = useAuth();
-  const { totalItems } = useCart();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const Navbar = ({
+  onOpenAuth,
+  onOpenMuseum,
+  onOpenMembers,
+  onToggleCart,
+  onOpenFanPortal,
+  onOpenPlayer,
+  onOpenAdmin,
+  onOpenAchievements,
+  onOpenPartners,
+  onOpenBrandGuidelines,
+  onSelectShopCategory,
+}) => {
   const [scrolled, setScrolled] = useState(false);
+  const { user, logout } = useAuth();
+  const { totalItems } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 60);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile drawer on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+  const scrollTo = (id) => {
+    const el = document.querySelector(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-  const navLinks = [
-    { name: 'Accueil', path: '/' },
-    { name: 'À propos', path: '/a-propos' },
-    { name: 'Équipe', path: '/equipe' },
-    { name: 'Tournois', path: '/tournois' },
-    { name: 'Boutique', path: '/boutique', badge: 'Dark Lab' },
-    { name: 'Actualités', path: '/actualites' },
-    { name: 'Contact', path: '/contact' }
-  ];
+  const handleShopCategory = (cat) => {
+    if (onSelectShopCategory) onSelectShopCategory(cat);
+    scrollTo('#shop');
+  };
 
   return (
-    <header className={`navbar-header ${scrolled ? 'navbar-scrolled' : ''}`}>
-      <div className="navbar-container">
-        {/* Brand Logo & Name */}
-        <Link to="/" className="brand-logo-container" title="Dark Wolf Team - Accueil">
-          <BrandTitle />
-        </Link>
+    <header id="hdr" className={scrolled ? 'scrolled' : 'top'}>
+      <a href="#" className="hlogo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+        <img
+          src="/logo-dwt.png"
+          alt="Dark Wolf Team Logo"
+          style={{ width: '46px', height: '46px', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.2))' }}
+        />
+        <div className="htxt">
+          <span className="tn">Dark Wolf Team</span>
+          <span className="bn">Dark Lab</span>
+        </div>
+      </a>
 
-        {/* Center Navigation Links */}
-        <nav className="navbar-nav-desktop" aria-label="Navigation principale">
-          <ul className="navbar-menu">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.path;
-              return (
-                <li key={link.name} className="navbar-item">
-                  <Link
-                    to={link.path}
-                    className={`navbar-link ${isActive ? 'active' : ''}`}
-                  >
-                    <span>{link.name}</span>
-                    {link.badge && (
-                      <span className="navbar-link-tag">{link.badge}</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+      <nav>
+        {/* Shop Dropdown */}
+        <div className="ng">
+          <button className="nb" onClick={() => scrollTo('#shop')}>
+            Shop
+            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 3.5l3 3 3-3" />
+            </svg>
+          </button>
+          <div className="dd">
+            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Best Sellers'); }}>Best Sellers</a>
+            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Pro Kit'); }}>Pro Kit</a>
+            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('New Collection'); }}>New Collection</a>
+            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Collabs'); }}>Collabs</a>
+            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Accessories'); }}>Accessories</a>
+            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Pro Kit'); }}>Custom Gear</a>
+            <a
+              href="#museum"
+              onClick={(e) => { e.preventDefault(); onOpenMuseum(); }}
+              style={{ color: 'var(--wolf)' }}
+            >
+              Museum (Archive)
+            </a>
+          </div>
+        </div>
 
-        {/* Right Actions: Cart, User Profile / Auth, Mobile Toggle */}
-        <div className="navbar-right">
-          {/* Cart Icon with Counter */}
-          <Link 
-            to="/panier" 
-            className="navbar-action-btn navbar-cart-btn" 
-            title="Mon Panier"
-            aria-label={`Panier (${totalItems} articles)`}
-          >
-            <ShoppingBag size={19} />
-            {totalItems > 0 && (
-              <span className="navbar-cart-badge">
-                {totalItems > 99 ? '99+' : totalItems}
+        {/* DWT Teams Dropdown */}
+        <div className="ng">
+          <button className="nb" onClick={() => scrollTo('#teams')}>
+            DWT Teams
+            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 3.5l3 3 3-3" />
+            </svg>
+          </button>
+          <div className="dd">
+            <a href="#teams" onClick={(e) => { e.preventDefault(); onOpenMembers('All'); }}>
+              Our Teams & Rosters
+            </a>
+            <a 
+              href="#matches-live" 
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.querySelector('#matches-live') || document.querySelector('#mstrip');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  el.style.transition = 'all 0.5s ease';
+                  el.style.boxShadow = '0 0 45px rgba(230, 0, 0, 0.5)';
+                  el.style.borderColor = 'rgba(230, 0, 0, 0.8)';
+                  setTimeout(() => {
+                    el.style.boxShadow = '';
+                    el.style.borderColor = '';
+                  }, 2400);
+                } else {
+                  scrollTo('#news');
+                }
+              }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+            >
+              <span>Matches & Live</span>
+              <span style={{ 
+                fontSize: '9px', 
+                background: 'rgba(230,0,0,0.25)', 
+                color: '#ff4d4d', 
+                border: '1px solid #e60000', 
+                borderRadius: '10px', 
+                padding: '1px 6px', 
+                fontWeight: '800',
+                letterSpacing: '0.05em'
+              }}>
+                🔴 LIVE
               </span>
-            )}
-          </Link>
+            </a>
+            <a
+              href="#achievements"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onOpenAchievements) onOpenAchievements();
+              }}
+            >
+              Achievements & Trophées 🏆
+            </a>
+          </div>
+        </div>
 
-          {/* User Logged In state */}
-          {user ? (
-            <div className="navbar-user-actions">
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className="navbar-admin-chip" 
-                  title="Tableau de bord Administrateur"
-                >
-                  <ShieldCheck size={16} />
-                  <span>Admin</span>
-                </Link>
-              )}
+        {/* About DWT Dropdown */}
+        <div className="ng">
+          <button className="nb" onClick={() => scrollTo('#footer')}>
+            About DWT
+            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 3.5l3 3 3-3" />
+            </svg>
+          </button>
+          <div className="dd">
+            <a href="#join" onClick={(e) => { e.preventDefault(); scrollTo('#join'); }}>Careers (Recrutement)</a>
+            <a
+              href="#partners"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onOpenPartners) onOpenPartners();
+              }}
+            >
+              Partners (Sponsors)
+            </a>
+            <a
+              href="#brand"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onOpenBrandGuidelines) onOpenBrandGuidelines();
+              }}
+            >
+              Brand Guidelines (Logos & Chartes)
+            </a>
+            <a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a>
+          </div>
+        </div>
 
-              <Link 
-                to="/espace-joueur" 
-                className="navbar-user-chip"
-                title="Mon Espace Joueur"
-              >
-                <div className="navbar-user-avatar">
-                  <User size={15} />
-                </div>
-                <div className="navbar-user-info">
-                  <span className="navbar-user-name">{user.gamertag || user.email?.split('@')[0]}</span>
-                  <span className="navbar-user-role">{user.role === 'admin' ? 'Staff' : 'Membre'}</span>
-                </div>
-              </Link>
-
-              <button 
-                onClick={logout} 
-                className="navbar-action-btn navbar-logout-btn" 
-                title="Se déconnecter"
-                aria-label="Se déconnecter"
-              >
-                <LogOut size={17} />
-              </button>
-            </div>
-          ) : (
-            /* Visitor Auth Buttons */
-            <div className="navbar-guest-actions">
-              <Link to="/login" className="navbar-btn-login">
-                Connexion
-              </Link>
-              <Link to="/boutique" className="navbar-btn-primary">
-                <Sparkles size={14} />
-                <span>Shop</span>
-              </Link>
-            </div>
-          )}
-
-          {/* Mobile hamburger button */}
-          <button 
-            className="navbar-mobile-toggle" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        {/* Join Us Link */}
+        <div className="ng">
+          <button className="nb" onClick={() => scrollTo('#join')}>
+            Join Us
           </button>
         </div>
-      </div>
 
-      {/* Modern Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="navbar-mobile-drawer">
-          <div className="navbar-mobile-links">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.path;
-              return (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`navbar-mobile-link ${isActive ? 'active' : ''}`}
-                >
-                  <div className="mobile-link-inner">
-                    <span>{link.name}</span>
-                    {link.badge && <span className="navbar-link-tag">{link.badge}</span>}
-                  </div>
-                  <ChevronRight size={16} className="mobile-chevron" />
-                </Link>
-              );
-            })}
+        {/* Fan Zone Dropdown - Réservé aux joueurs et fans */}
+        {user?.role !== 'admin' && (
+          <div className="ng">
+            <button className="nb">
+              Fan Zone <span className="arr"></span>
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M2 3.5l3 3 3-3" />
+              </svg>
+            </button>
+            <div className="dd">
+              <a href="#wolfpack" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Mon Profil') : (onOpenFanPortal && onOpenFanPortal('PROFILE')); }} className="hl">
+                🐺 Identité Wolf Pack (Profil & Rangs)
+              </a>
+              <a href="#predictions" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Pronostics') : (onOpenFanPortal && onOpenFanPortal('PRED')); }} className="hl">
+                🎯 Pronostics de Matchs
+              </a>
+              <a href="#leaderboard" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Classement') : (onOpenFanPortal && onOpenFanPortal('LEADERBOARD')); }} className="hl">
+                🏆 Classement de la Saison
+              </a>
+              <a href="#missions" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Quêtes') : (onOpenFanPortal && onOpenFanPortal('MISSIONS')); }} className="hl">
+                📋 Quêtes Hebdomadaires
+              </a>
+              <a href="#chat" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Messagerie Staff') : (onOpenFanPortal && onOpenFanPortal('PROFILE')); }} className="hl">
+                💬 Messagerie Directe Staff
+              </a>
+              <a href="#orders" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Ma Boutique') : (onOpenFanPortal && onOpenFanPortal('PROFILE')); }} className="hl">
+                🛍️ Mes Commandes Boutique
+              </a>
+            </div>
           </div>
+        )}
+      </nav>
 
-          <div className="navbar-mobile-footer">
-            <Link
-              to="/panier"
-              onClick={() => setMobileMenuOpen(false)}
-              className="navbar-mobile-cart-btn"
-            >
-              <ShoppingBag size={18} />
-              <span>Voir le panier ({totalItems})</span>
-            </Link>
+      <div className="hacts">
+        <button className="bcart" onClick={onToggleCart} aria-label="Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          <span id="cartBadge">{totalItems}</span>
+        </button>
 
-            {user ? (
-              <div className="navbar-mobile-user-box">
-                <div className="mobile-user-meta">
-                  <div className="navbar-user-avatar">
-                    <User size={16} />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: '700', color: '#fff', fontSize: '15px' }}>{user.gamertag}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{user.email}</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  <Link 
-                    to="/espace-joueur" 
-                    className="navbar-btn-primary" 
-                    style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Mon Espace
-                  </Link>
-                  {isAdmin && (
-                    <Link 
-                      to="/admin" 
-                      className="navbar-btn-login"
-                      style={{ justifyContent: 'center' }}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Admin
-                    </Link>
-                  )}
-                  <button 
-                    onClick={() => { logout(); setMobileMenuOpen(false); }} 
-                    className="navbar-action-btn"
-                    title="Déconnexion"
-                    style={{ border: '1px solid var(--border-dark)', borderRadius: '6px' }}
-                  >
-                    <LogOut size={16} />
-                  </button>
-                </div>
-              </div>
+        {user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {user.role === 'admin' ? (
+              <button
+                type="button"
+                className="bnav-admin"
+                onClick={onOpenAdmin}
+                title="Accéder au panneau d'administration officiel"
+              >
+                <Shield size={13} color="#ff4d4d" />
+                <span>Admin Dashboard</span>
+              </button>
             ) : (
-              <div className="navbar-mobile-auth-grid">
-                <Link 
-                  to="/login" 
-                  className="navbar-btn-login" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ justifyContent: 'center' }}
+              <button
+                type="button"
+                className="bnav-player"
+                onClick={() => onOpenPlayer ? onOpenPlayer('Mon Profil') : (onOpenFanPortal && onOpenFanPortal('PROFILE'))}
+                title="Accéder à mon Espace Joueur & Meute (Page Complète)"
+              >
+                <WolfLogo size={15} />
+                <span>{user.gamertag || user.email?.split('@')[0]}</span>
+                <span
+                  className="bnav-badge-rank"
+                  style={{
+                    background:
+                      user.wolfRank === 'Alpha'
+                        ? 'rgba(230,0,0,0.25)'
+                        : user.wolfRank === 'Hunter'
+                        ? 'rgba(245,158,11,0.2)'
+                        : 'rgba(56,189,248,0.2)',
+                    color:
+                      user.wolfRank === 'Alpha'
+                        ? '#ff4d4d'
+                        : user.wolfRank === 'Hunter'
+                        ? '#f59e0b'
+                        : '#38bdf8',
+                    border: '1px solid currentColor',
+                  }}
                 >
-                  Se connecter
-                </Link>
-                <Link 
-                  to="/contact" 
-                  className="navbar-btn-primary" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ justifyContent: 'center' }}
-                >
-                  Rejoindre la meute
-                </Link>
-              </div>
+                  {user.wolfRank || 'Cub'} • {user.wolfPoints || 150} PTS
+                </span>
+              </button>
             )}
+            <button type="button" className="bsi" onClick={logout} style={{ padding: '7px 14px', fontSize: '11px' }}>
+              Déconnexion
+            </button>
           </div>
-        </div>
-      )}
+        ) : (
+          <>
+            <button type="button" className="bsi" onClick={() => onOpenAuth('login')}>
+              Mon Compte
+            </button>
+            <button type="button" className="bjn" onClick={() => onOpenAuth('register')}>
+              Join Now
+            </button>
+          </>
+        )}
+      </div>
     </header>
   );
 };
 
 export default Navbar;
-

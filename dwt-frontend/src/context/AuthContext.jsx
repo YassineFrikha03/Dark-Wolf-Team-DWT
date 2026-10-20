@@ -3,8 +3,46 @@ import API from '../services/api';
 
 const AuthContext = createContext();
 
+// Détection précise d'un rafraîchissement de page dans l'onglet actif (F5 / reload) vs une nouvelle visite / reconnexion
+const isPageReload = () => {
+  try {
+    const navEntries = performance.getEntriesByType('navigation');
+    if (navEntries && navEntries.length > 0) {
+      return navEntries[0].type === 'reload';
+    }
+    if (window.performance && window.performance.navigation) {
+      return window.performance.navigation.type === 1; // 1 = TYPE_RELOAD
+    }
+  } catch {
+    return false;
+  }
+  return false;
+};
+
+// Récupérer le token initial :
+// - Si simple rechargement (F5) dans l'onglet en cours, préserver temporairement la session de travail
+// - Si nouvelle visite / reconnexion au site (ouverture de l'onglet, du navigateur ou nouvelle navigation),
+//   on garantit que TOUS les comptes (admin et joueur) sont déconnectés par défaut.
+const getInitialToken = () => {
+  try {
+    localStorage.removeItem('dwt_token');
+    if (isPageReload()) {
+      return sessionStorage.getItem('dwt_token') || null;
+    }
+    // Déconnexion complète à chaque réouverture / reconnexion au site
+    sessionStorage.removeItem('dwt_token');
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  // Nettoyer d'anciens jetons résiduels de localStorage pour garantir la sécurité à la fermeture
+  const [token, setToken] = useState(() => getInitialToken());
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(Boolean(token));
+
+  // Toujours nettoyer le localStorage au montage pour éviter toute persistance accidentelle
   useEffect(() => {
     try {
       localStorage.removeItem('dwt_token');
@@ -13,38 +51,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => {
-    try {
-      return sessionStorage.getItem('dwt_token') || null;
-    } catch {
-      return null;
-    }
-  });
-  const [loading, setLoading] = useState(true);
-
-  // Charger le profil si token présent
+  // Charger le profil utilisateur si token actif (cas d'un F5 dans la session en cours)
   useEffect(() => {
     const fetchMe = async () => {
       if (!token) {
         setLoading(false);
+        setUser(null);
         return;
       }
       try {
         const res = await API.get('/auth/me');
         if (res.data.success) {
           setUser(res.data.user);
-        }
-      } catch (err) {
-        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-          console.warn('Session expirée ou invalide :', err.message);
+        } else {
           sessionStorage.removeItem('dwt_token');
           localStorage.removeItem('dwt_token');
           setToken(null);
           setUser(null);
-        } else {
-          console.warn('Erreur temporaire de connexion à l\'API :', err.message);
         }
+      } catch (err) {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          console.warn('Session expirée ou invalide :', err.message);
+        }
+        sessionStorage.removeItem('dwt_token');
+        localStorage.removeItem('dwt_token');
+        setToken(null);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -77,10 +109,21 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    sessionStorage.removeItem('dwt_token');
-    localStorage.removeItem('dwt_token');
+    try {
+      sessionStorage.removeItem('dwt_token');
+      localStorage.removeItem('dwt_token');
+    } catch {
+      // ignore
+    }
     setToken(null);
     setUser(null);
+
+    // Si on était sur une vue protégée, réinitialiser l'URL sur l'accueil
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    if (path.includes('admin') || hash.includes('admin') || path.includes('player') || path.includes('espace-joueur')) {
+      window.history.replaceState(null, '', '/');
+    }
   };
 
   const updateUser = (updatedUser) => {
@@ -88,10 +131,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser, isAdmin: user?.role === 'admin' || user?.role === 'moderator' }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        register,
+        logout,
+        updateUser,
+        isAdmin: user?.role === 'admin' || user?.role === 'moderator'
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+

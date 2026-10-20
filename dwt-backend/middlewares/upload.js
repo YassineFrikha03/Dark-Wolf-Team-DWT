@@ -20,22 +20,22 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtre pour les types de fichiers (images uniquement)
+// Filtre pour les types de fichiers (images et vidéos)
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif|svg|avif/;
+  const allowedTypes = /jpeg|jpg|png|webp|gif|svg|avif|mp4|webm|mov|mkv|avi|ogg|m4v/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype) || file.mimetype.startsWith('image/');
+  const mimetype = allowedTypes.test(file.mimetype) || file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
 
   if (extname || mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error('Seules les images (JPEG, PNG, WEBP, GIF, SVG, AVIF) sont autorisées !'));
+    cb(new Error('Format non supporté. Seules les images (PNG, JPG, WEBP) et vidéos (MP4, WEBM, MOV, MKV) sont acceptées !'));
   }
 };
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB max
+  limits: { fileSize: 250 * 1024 * 1024 }, // 250MB max pour les vidéos et images HD
   fileFilter: fileFilter
 });
 

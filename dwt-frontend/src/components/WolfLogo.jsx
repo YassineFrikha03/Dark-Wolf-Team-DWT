@@ -3,7 +3,7 @@ import React from 'react';
 // Logo Officiel Dark Wolf Team importé directement depuis l'image fournie par le client
 export const WolfLogo = ({ size = 48, className = "", style = {} }) => (
   <img 
-    src="/dwt-wolf-logo.png" 
+    src="/logo-dwt.png" 
     alt="Dark Wolf Team Logo"
     width={size}
     height={size}

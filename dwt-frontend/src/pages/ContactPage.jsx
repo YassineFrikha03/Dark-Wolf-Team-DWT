@@ -15,6 +15,7 @@ import {
 import API from '../services/api';
 import RecruitmentSection from '../sections/RecruitmentSection';
 import { WolfLogo } from '../components/WolfLogo';
+import { SOCIAL_LINKS } from '../config/socialLinks';
 
 const ContactPage = () => {
   const location = useLocation();
@@ -307,15 +308,33 @@ const ContactPage = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(88, 101, 242, 0.15)', color: '#5865F2' }}>
+                  <a 
+                    href={SOCIAL_LINKS.discord} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px', 
+                      textDecoration: 'none', 
+                      padding: '8px', 
+                      borderRadius: '8px', 
+                      background: 'rgba(88, 101, 242, 0.08)', 
+                      border: '1px solid rgba(88, 101, 242, 0.2)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#5865F2'; e.currentTarget.style.background = 'rgba(88, 101, 242, 0.18)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(88, 101, 242, 0.2)'; e.currentTarget.style.background = 'rgba(88, 101, 242, 0.08)'; }}
+                  >
+                    <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(88, 101, 242, 0.2)', color: '#5865F2' }}>
                       <MessageSquare size={18} />
                     </div>
-                    <div>
-                      <div style={{ fontSize: '13px', color: '#64748b' }}>Discord Officiel DWT</div>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>discord.gg/darkwolfteam</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '13px', color: '#94a3b8' }}>Discord Officiel DWT</div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>Rejoindre le Discord DWT 🐺</div>
                     </div>
-                  </div>
+                    <ExternalLink size={14} color="#818cf8" style={{ marginRight: '6px' }} />
+                  </a>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80' }}>

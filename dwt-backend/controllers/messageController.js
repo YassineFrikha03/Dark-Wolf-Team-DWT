@@ -1,5 +1,6 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
+const Player = require('../models/Player');
 const Application = require('../models/Application');
 const Notification = require('../models/Notification');
 const { sendEmail } = require('../config/mailer');
@@ -64,8 +65,8 @@ const sendMessage = async (req, res, next) => {
     });
 
     const populatedMessage = await Message.findById(message._id)
-      .populate('sender', 'gamertag role avatar')
-      .populate('receiver', 'gamertag role avatar');
+      .populate('sender', 'gamertag role avatar favoriteGame')
+      .populate('receiver', 'gamertag role avatar favoriteGame');
 
     // Créer une notification pour le destinataire
     const isSenderAdmin = req.user.role === 'admin' || req.user.role === 'moderator';
@@ -135,8 +136,8 @@ const getMessagesWithUser = async (req, res, next) => {
       ]
     })
       .sort({ createdAt: 1 })
-      .populate('sender', 'gamertag role avatar')
-      .populate('receiver', 'gamertag role avatar');
+      .populate('sender', 'gamertag role avatar favoriteGame')
+      .populate('receiver', 'gamertag role avatar favoriteGame');
 
     // Marquer les messages reçus comme lus
     await Message.updateMany(
@@ -162,14 +163,67 @@ const getConversations = async (req, res, next) => {
     const currentUserId = req.user._id;
     const isAdmin = req.user.role === 'admin' || req.user.role === 'moderator';
 
-    // Récupérer tous les utilisateurs pertinents
     let candidateUsers = [];
     if (isAdmin) {
-      // Pour l'admin : tous les autres utilisateurs (joueurs, membres comme CYRSOO)
-      candidateUsers = await User.find({ _id: { $ne: currentUserId } }).select('gamertag email role avatar bio lastLogin');
+      // Pour l'admin : synchroniser tous les joueurs recrutés de la collection Player
+      try {
+        const allActivePlayers = await Player.find({ isActive: true });
+        for (const p of allActivePlayers) {
+          if (!p.gamertag) continue;
+          let uAcc = await User.findOne({
+            gamertag: { $regex: new RegExp(`^${p.gamertag.trim()}$`, 'i') }
+          });
+
+          if (!uAcc) {
+            const fakeEmail = `${p.gamertag.toLowerCase().replace(/[^a-z0-9]/g, '')}@darkwolfteam.com`;
+            uAcc = await User.create({
+              gamertag: p.gamertag.trim(),
+              email: fakeEmail,
+              password: 'DWT2026!player',
+              role: 'player',
+              avatar: p.avatar,
+              favoriteGame: p.game,
+              bio: p.bio || `Joueur officiel Dark Wolf Team sur ${p.game}.`
+            });
+          } else if (uAcc.role !== 'player' && uAcc.role !== 'admin') {
+            uAcc.role = 'player';
+            if (p.game) uAcc.favoriteGame = p.game;
+            await uAcc.save();
+          }
+
+          // Vérifier si un message de bienvenue a déjà été envoyé
+          const hasMessage = await Message.findOne({
+            $or: [
+              { sender: currentUserId, receiver: uAcc._id },
+              { sender: uAcc._id, receiver: currentUserId }
+            ]
+          });
+
+          if (!hasMessage) {
+            await Message.create({
+              sender: currentUserId,
+              receiver: uAcc._id,
+              content: `🐺 Bienvenue dans la meute Dark Wolf Team, ${p.gamertag} ! Ton espace de messagerie privé avec le staff est prêt pour échanger sur tes entraînements, tournois et scrims.`
+            }).catch(() => {});
+          }
+        }
+      } catch (syncErr) {
+        console.error('Erreur synchronisation joueurs dans la messagerie :', syncErr.message);
+      }
+
+      // Tous les utilisateurs (joueurs recrutés et membres)
+      candidateUsers = await User.find({ _id: { $ne: currentUserId } })
+        .select('gamertag email role avatar bio lastLogin favoriteGame');
     } else {
-      // Pour le joueur : les admins
-      candidateUsers = await User.find({ role: 'admin' }).select('gamertag email role avatar bio lastLogin');
+      // Pour le joueur : cibler les administrateurs et modérateurs
+      candidateUsers = await User.find({ 
+        role: { $in: ['admin', 'moderator'] } 
+      }).select('gamertag email role avatar bio lastLogin favoriteGame');
+
+      if (candidateUsers.length === 0) {
+        const fallbackAdmin = await User.findOne({ role: 'admin' }).select('gamertag email role avatar bio lastLogin favoriteGame');
+        if (fallbackAdmin) candidateUsers.push(fallbackAdmin);
+      }
     }
 
     const conversations = await Promise.all(
@@ -190,16 +244,29 @@ const getConversations = async (req, res, next) => {
         return {
           user: u,
           lastMessage: lastMsg,
-          unreadCount
+          unreadCount,
+          isPlayer: u.role === 'player'
         };
       })
     );
 
-    // Trier les conversations : celles avec messages en premier (plus récentes), puis les autres
+    // Trier les conversations intelligemment :
+    // 1. Celles avec messages non lus d'abord
+    // 2. Celles avec messages récents ensuite
+    // 3. Les joueurs officiels recrutés ensuite
+    // 4. Les autres membres
     conversations.sort((a, b) => {
+      if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+      if (b.unreadCount > 0 && a.unreadCount === 0) return 1;
+
       const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
       const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
-      return timeB - timeA;
+      if (timeA !== timeB) return timeB - timeA;
+
+      if (a.isPlayer && !b.isPlayer) return -1;
+      if (!a.isPlayer && b.isPlayer) return 1;
+
+      return (a.user.gamertag || '').localeCompare(b.user.gamertag || '');
     });
 
     res.status(200).json({

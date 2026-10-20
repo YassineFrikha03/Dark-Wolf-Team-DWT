@@ -66,6 +66,50 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true
+    },
+    // Système Wolf Pack Gamification
+    wolfPoints: {
+      type: Number,
+      default: 150 // Points de bienvenue pour les nouveaux fans
+    },
+    wolfXP: {
+      type: Number,
+      default: 150 // XP de départ
+    },
+    wolfRank: {
+      type: String,
+      enum: ['Cub', 'Scout', 'Hunter', 'Alpha'],
+      default: 'Cub'
+    },
+    avatarFrame: {
+      type: String,
+      default: 'default'
+    },
+    wolfBadges: [
+      {
+        id: { type: String, required: true },
+        title: { type: String, required: true },
+        description: { type: String, default: '' },
+        icon: { type: String, default: 'Shield' },
+        unlockedAt: { type: Date, default: Date.now }
+      }
+    ],
+    predictionStats: {
+      total: { type: Number, default: 0 },
+      won: { type: Number, default: 0 },
+      pointsWon: { type: Number, default: 0 },
+      mvpGuesses: { type: Number, default: 0 }
+    },
+    weeklyMissionsCompleted: [
+      {
+        code: { type: String, required: true },
+        weekKey: { type: String, required: true },
+        completedAt: { type: Date, default: Date.now }
+      }
+    ],
+    lastWeeklyBonusClaimed: {
+      type: String,
+      default: ''
     }
   },
   { timestamps: true }
@@ -83,6 +127,42 @@ userSchema.pre('save', async function () {
 // Méthode pour comparer les mots de passe
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Méthode pour ajouter des points et de l'XP avec montée en rang automatique
+userSchema.methods.addWolfReward = async function (points = 0, xp = 0) {
+  const { calculateRank, RANKS } = require('../utils/wolfRank');
+  const oldRank = this.wolfRank || 'Cub';
+
+  this.wolfPoints = (this.wolfPoints || 0) + points;
+  this.wolfXP = (this.wolfXP || 0) + xp;
+
+  const rankInfo = calculateRank(this.wolfXP);
+  const newRank = rankInfo.currentRank;
+  let leveledUp = false;
+
+  if (oldRank !== newRank) {
+    this.wolfRank = newRank;
+    leveledUp = true;
+    // Vérifier si le badge de ce nouveau rang est déjà présent
+    const rankConfig = RANKS.find((r) => r.name === newRank);
+    if (rankConfig && !this.wolfBadges.some((b) => b.id === rankConfig.badgeId)) {
+      this.wolfBadges.push({
+        id: rankConfig.badgeId,
+        title: rankConfig.badgeTitle,
+        description: rankConfig.badgeDesc,
+        icon: 'Award',
+        unlockedAt: new Date()
+      });
+    }
+    // Assigner automatiquement le cadre correspondant si l'utilisateur a toujours le cadre par défaut
+    if (this.avatarFrame === 'default') {
+      this.avatarFrame = rankConfig.frame;
+    }
+  }
+
+  await this.save();
+  return { leveledUp, oldRank, newRank, wolfPoints: this.wolfPoints, wolfXP: this.wolfXP };
 };
 
 module.exports = mongoose.model('User', userSchema);

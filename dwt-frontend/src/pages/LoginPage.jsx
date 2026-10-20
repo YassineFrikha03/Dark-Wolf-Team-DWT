@@ -106,10 +106,10 @@ const LoginPage = () => {
         </div>
 
         {/* Social Logins matching mockup */}
-        <button className="auth-social-btn" onClick={() => alert('Connexion Discord')}>
+        <button className="auth-social-btn" onClick={() => setErrorMsg('Connexion Discord en cours d\'intégration 🎮')}>
           <DiscordIcon size={18} /> Se connecter avec Discord
         </button>
-        <button className="auth-social-btn" onClick={() => alert('Connexion Google')}>
+        <button className="auth-social-btn" onClick={() => setErrorMsg('Connexion Google en cours d\'intégration 🐺')}>
           <GoogleIcon size={18} /> Se connecter avec Google
         </button>
 

@@ -1,0 +1,214 @@
+/* ==========================================================================
+   WOLF PACK GAMIFICATION & PREDICTIONS STYLES
+   Dark Wolf Team (DWT)
+   ========================================================================== */
+
+/* Frame Animations & Borders */
+.avatar-frame-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.avatar-frame-default {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.avatar-frame-cub_bronze {
+  border: 2px solid #cd7f32;
+  box-shadow: 0 0 10px rgba(205, 127, 50, 0.4);
+}
+
+.avatar-frame-scout_silver {
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.5), inset 0 0 8px rgba(56, 189, 248, 0.3);
+  animation: scoutPulse 3s infinite ease-in-out;
+}
+
+@keyframes scoutPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.8), 0 0 30px rgba(56, 189, 248, 0.2); }
+}
+
+.avatar-frame-hunter_gold {
+  border: 2px solid #f59e0b;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.6), inset 0 0 10px rgba(245, 158, 11, 0.4);
+  animation: hunterGlow 2.5s infinite alternate;
+}
+
+@keyframes hunterGlow {
+  0% { box-shadow: 0 0 14px rgba(245, 158, 11, 0.5); border-color: #f59e0b; }
+  100% { box-shadow: 0 0 24px rgba(245, 158, 11, 0.9), 0 0 35px rgba(245, 158, 11, 0.4); border-color: #fbbf24; }
+}
+
+.avatar-frame-alpha_fire {
+  border: 2px solid #e60000;
+  box-shadow: 0 0 22px rgba(230, 0, 0, 0.8), inset 0 0 12px rgba(230, 0, 0, 0.6);
+  animation: alphaFire 2s infinite ease-in-out;
+}
+
+@keyframes alphaFire {
+  0% {
+    box-shadow: 0 0 15px rgba(230, 0, 0, 0.7), 0 0 25px rgba(255, 68, 68, 0.4);
+    border-color: #e60000;
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(230, 0, 0, 1), 0 0 45px rgba(255, 68, 68, 0.6);
+    border-color: #ff3333;
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(230, 0, 0, 0.7), 0 0 25px rgba(255, 68, 68, 0.4);
+    border-color: #e60000;
+  }
+}
+
+/* Rank Badge Pills */
+.rank-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Orbitron', monospace;
+}
+
+.rank-pill.Cub {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #94a3b8;
+}
+
+.rank-pill.Scout {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+.rank-pill.Hunter {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+.rank-pill.Alpha {
+  background: rgba(230, 0, 0, 0.2);
+  border: 1px solid rgba(230, 0, 0, 0.6);
+  color: #ff4d4d;
+  box-shadow: 0 0 12px rgba(230, 0, 0, 0.4);
+  animation: alphaPillPulse 2s infinite ease-in-out;
+}
+
+@keyframes alphaPillPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(230, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(230, 0, 0, 0.7); }
+}
+
+/* Tab buttons */
+.wp-tab-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.wp-tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.wp-tab-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(230, 0, 0, 0.25), rgba(255, 68, 68, 0.1));
+  border-color: rgba(230, 0, 0, 0.6);
+  box-shadow: 0 0 15px rgba(230, 0, 0, 0.25);
+}
+
+/* Mission Card */
+.wp-mission-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: all 0.25s ease;
+}
+
+.wp-mission-card:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.wp-mission-card.completed {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.04);
+}
+
+/* Podium Cards */
+.wp-podium-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.wp-podium-1st {
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.12), rgba(0, 0, 0, 0.4));
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+  transform: translateY(-8px);
+}
+
+.wp-podium-2nd {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.08), rgba(0, 0, 0, 0.4));
+}
+
+.wp-podium-3rd {
+  border: 1px solid rgba(205, 127, 50, 0.4);
+  background: linear-gradient(180deg, rgba(205, 127, 50, 0.08), rgba(0, 0, 0, 0.4));
+}
+
+/* Custom Scrollbar in Modal */
+.wp-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.wp-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.wp-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.wp-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

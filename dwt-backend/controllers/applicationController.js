@@ -238,7 +238,12 @@ const updateApplicationStatus = async (req, res, next) => {
       }
 
       // 3. Ouvrir l'espace de communication entre l'Admin et le Joueur
-      const adminSenderId = req.user?._id;
+      let adminSenderId = req.user?._id;
+      if (!adminSenderId) {
+        const adminUser = await User.findOne({ role: 'admin' });
+        if (adminUser) adminSenderId = adminUser._id;
+      }
+
       if (adminSenderId && userAccount?._id) {
         const welcomeText = `🐺 Bienvenue dans la meute Dark Wolf Team, ${cleanGamertag} ! Ta candidature pour le roster ${application.game} a été validée avec succès. Cet espace de messagerie privé te permet d'échanger en direct avec le staff. Prépare-toi pour les scrims et tournois !`;
         
