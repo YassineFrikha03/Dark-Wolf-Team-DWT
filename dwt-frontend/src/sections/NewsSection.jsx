@@ -120,7 +120,7 @@ const NewsSection = () => {
         {/* EN-TÊTE PRINCIPAL */}
         <div className="section-header news-hub-header">
           <div className="about-badge news-hub-badge">
-            📰 GAZETTE OFFICIELLE • DARK WOLF TEAM
+             GAZETTE OFFICIELLE • DARK WOLF TEAM
           </div>
           <h2 className="section-title news-hub-title">ACTUALITÉS & ANNONCES</h2>
           <p className="section-subtitle news-hub-subtitle">

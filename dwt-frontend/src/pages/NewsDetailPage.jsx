@@ -171,7 +171,7 @@ const NewsDetailPage = () => {
   // Partage sur X (Twitter)
   const handleShareTwitter = () => {
     if (!article) return;
-    const shareText = encodeURIComponent(`${article.title} - Dark Wolf Team 🐺`);
+    const shareText = encodeURIComponent(`${article.title} - Dark Wolf Team `);
     const url = encodeURIComponent(window.location.href);
     window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${url}`, '_blank', 'noopener,noreferrer');
   };
@@ -426,7 +426,7 @@ const NewsDetailPage = () => {
             {/* Récapitulatif de Match si Tournoi */}
             {article.matchRecap && (
               <div className="article-match-card">
-                <div className="match-card-badge">🏆 RÉSULTAT OFFICIEL DU MATCH</div>
+                <div className="match-card-badge"> RÉSULTAT OFFICIEL DU MATCH</div>
                 <div className="match-teams-row">
                   <div className="match-team dwt-team">
                     <WolfLogo size={32} />
@@ -566,7 +566,7 @@ const NewsDetailPage = () => {
           <section className="article-related-section">
             <div className="related-header">
               <div className="about-badge" style={{ margin: 0 }}>
-                📰 DANS L'ACTUALITÉ
+                 DANS L'ACTUALITÉ
               </div>
               <h3 className="related-title">AUTRES ANNONCES DE LA MEUTE</h3>
             </div>

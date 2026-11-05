@@ -60,6 +60,21 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: undefined
     },
+    googleId: {
+      type: String,
+      sparse: true,
+      index: true
+    },
+    discordId: {
+      type: String,
+      sparse: true,
+      index: true
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'discord'],
+      default: 'local'
+    },
     lastLogin: {
       type: Date
     },

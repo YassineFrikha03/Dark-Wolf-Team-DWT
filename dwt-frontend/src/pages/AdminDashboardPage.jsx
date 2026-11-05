@@ -41,11 +41,25 @@ import {
   Film,
   Star,
   Play,
-  Sparkles
+  Sparkles,
+  Timer,
+  Clock,
+  Tag,
+  ArrowRight,
+  Flame,
+  Zap,
+  Percent,
+  Ticket,
+  Copy,
+  Globe,
+  Target,
+  Palette
 } from 'lucide-react';
 import { WolfLogo } from '../components/WolfLogo';
 import { CyberConfirmModal } from '../components/CyberConfirmModal';
 import { CyberToast } from '../components/CyberToast';
+import CustomGearAdminSection from '../components/CustomGearAdminSection';
+import CustomizerModal from '../customizer/CustomizerModal';
 import API from '../services/api';
 import { getImageUrl } from '../utils/imageUrl';
 import { useAuth } from '../context/AuthContext';
@@ -127,6 +141,59 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const videoFileInputRef = useRef(null);
   const [revenueStats, setRevenueStats] = useState(null);
 
+  // Gestion des Codes Promo & Réductions (avec Autorisation Admin et Attribution Joueurs)
+  const [couponsList, setCouponsList] = useState([]);
+  const [eligibleRecipients, setEligibleRecipients] = useState({ players: [], users: [] });
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState(null);
+  const [savingCoupon, setSavingCoupon] = useState(false);
+  const [couponPlayerSearch, setCouponPlayerSearch] = useState('');
+  const [couponPlayerGameFilter, setCouponPlayerGameFilter] = useState('all');
+  const [couponRecipientType, setCouponRecipientType] = useState('all'); // 'all', 'players', 'users'
+  const [couponFormData, setCouponFormData] = useState({
+    code: '',
+    description: '',
+    discountType: 'percentage', // 'percentage' | 'fixed'
+    discountValue: 10,
+    minOrderAmount: 0,
+    maxDiscount: '',
+    startDate: '',
+    endDate: '',
+    usageLimit: '',
+    isActive: true, // Autorisation Admin
+    isRestricted: false, // Ciblage réservé aux joueurs sélectionnés
+    assignedPlayers: [], // IDs de Player
+    assignedUsers: [] // IDs de User
+  });
+
+  // Helper pour formater les dates pour <input type="datetime-local"> (YYYY-MM-DDTHH:mm)
+  const formatDateTimeLocal = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  // Gestion du Compteur d'Attente & Événements (Countdown)
+  const [countdownList, setCountdownList] = useState([]);
+  const [activeCountdown, setActiveCountdown] = useState(null);
+  const [showCountdownModal, setShowCountdownModal] = useState(false);
+  const [editingCountdown, setEditingCountdown] = useState(null);
+  const [savingCountdown, setSavingCountdown] = useState(false);
+  const [countdownFormData, setCountdownFormData] = useState({
+    title: 'DWT Summer Championship 2026',
+    subtitle: '— Next Major Event —',
+    targetDate: '',
+    description: '',
+    badge: 'ÉVÉNEMENT MAJEUR',
+    game: 'Valorant',
+    buttonText: 'Voir le Tournoi',
+    buttonLink: '#tournois',
+    isActive: true
+  });
+  const [previewTimeLeft, setPreviewTimeLeft] = useState({ days: '00', hours: '00', mins: '00', secs: '00' });
+
   // Modals & Gestion du Musée (Archive DWT)
   const [museumList, setMuseumList] = useState([]);
   const [showMuseumModal, setShowMuseumModal] = useState(false);
@@ -158,6 +225,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [replyEmailText, setReplyEmailText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
+
+  // Gestion Équipement Custom (Studio Custom & Fixation des Prix)
+  const [customGearList, setCustomGearList] = useState([]);
+  const [previewStudioModal, setPreviewStudioModal] = useState(false);
 
   // Notifications & Confirmations Cyber Design System
   const [notifications, setNotifications] = useState([]);
@@ -365,7 +436,12 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         gamesRes,
         slidesRes,
         museumRes,
-        videosRes
+        videosRes,
+        countAllRes,
+        countActRes,
+        couponsRes,
+        recipientsRes,
+        customGearRes
       ] = await Promise.all([
         API.get('/stats/overview').catch(() => ({ data: { stats: {} } })),
         API.get('/matches').catch(() => ({ data: { matches: [] } })),
@@ -382,7 +458,12 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         API.get('/games').catch(() => ({ data: { games: [] } })),
         API.get('/slides').catch(() => ({ data: { slides: [] } })),
         API.get('/museum/admin').catch(() => ({ data: { items: [] } })),
-        API.get('/videos').catch(() => ({ data: { videos: [] } }))
+        API.get('/videos').catch(() => ({ data: { videos: [] } })),
+        API.get('/countdown/all').catch(() => ({ data: { events: [] } })),
+        API.get('/countdown').catch(() => ({ data: { countdown: null } })),
+        API.get('/coupons').catch(() => ({ data: { coupons: [] } })),
+        API.get('/coupons/recipients').catch(() => ({ data: { players: [], users: [] } })),
+        API.get('/custom-gear/admin/all').catch(() => ({ data: { gear: [] } }))
       ]);
 
       const st = statsRes.data?.stats || {};
@@ -391,6 +472,8 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       const slds = slidesRes.data?.slides || [];
       const mus = museumRes.data?.items || [];
       const vids = videosRes.data?.videos || [];
+      const countEvents = countAllRes.data?.events || [];
+      const actCountdown = countActRes.data?.countdown || countEvents.find(c => c.isActive) || countEvents[0] || null;
       const distinctGamesCount = gms.length || st.gamesCount || (new Set(pls.map(p => p.game)).size) || 3;
 
       setStats({
@@ -401,6 +484,9 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
       setMatches(matchesRes.data?.matches || []);
       setStoreOrders(ordersRes.data?.orders || []);
+      setCouponsList(couponsRes.data?.coupons || []);
+      setEligibleRecipients(recipientsRes.data || { players: [], users: [] });
+      setAllUsersList(recipientsRes.data?.users || []);
       setRecruitmentList(appsRes.data?.applications || []);
       setPlayersList(pls);
       setNewsList(newsRes.data?.articles || []);
@@ -409,7 +495,25 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       setGamesList(gms);
       setSlidesList(slds);
       setMuseumList(mus);
+      setCustomGearList(customGearRes.data?.gear || []);
       setVideosList(vids);
+      setCountdownList(countEvents);
+      setActiveCountdown(actCountdown);
+
+      if (actCountdown) {
+        setCountdownFormData({
+          title: actCountdown.title || '',
+          subtitle: actCountdown.subtitle || '— Next Major Event —',
+          targetDate: formatDateTimeLocal(actCountdown.targetDate),
+          description: actCountdown.description || '',
+          badge: actCountdown.badge || 'ÉVÉNEMENT MAJEUR',
+          game: actCountdown.game || '',
+          buttonText: actCountdown.buttonText || '',
+          buttonLink: actCountdown.buttonLink || '#tournois',
+          isActive: actCountdown.isActive !== undefined ? actCountdown.isActive : true
+        });
+      }
+
       setRevenueStats(revenueRes.data?.stats || null);
       setNotifications(notifRes.data?.notifications || []);
       setUnreadNotifCount(notifRes.data?.unreadCount || 0);
@@ -427,6 +531,32 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       setLoading(false);
     }
   };
+
+  // Compteur en direct pour l'aperçu du Dashboard
+  useEffect(() => {
+    const targetDateStr = countdownFormData.targetDate || activeCountdown?.targetDate;
+    if (!targetDateStr) return;
+
+    const target = new Date(targetDateStr).getTime();
+    const updatePreviewTimer = () => {
+      const now = new Date().getTime();
+      const diff = target - now;
+      if (isNaN(diff) || diff <= 0) {
+        setPreviewTimeLeft({ days: '00', hours: '00', mins: '00', secs: '00' });
+        return;
+      }
+      setPreviewTimeLeft({
+        days: String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0'),
+        hours: String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0'),
+        mins: String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0'),
+        secs: String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0'),
+      });
+    };
+
+    updatePreviewTimer();
+    const interval = setInterval(updatePreviewTimer, 1000);
+    return () => clearInterval(interval);
+  }, [countdownFormData.targetDate, activeCountdown?.targetDate]);
 
   useEffect(() => {
     fetchAllData();
@@ -535,7 +665,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       await API.put('/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadNotifCount(0);
-      showToast('Toutes les notifications sont marquées comme lues ! 🐺✓', 'success');
+      showToast('Toutes les notifications sont marquées comme lues ! ✓', 'success');
     } catch (err) {
       console.error(err);
     }
@@ -636,7 +766,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       : (productFormData.image ? [productFormData.image] : []);
 
     if (imagesToSave.length === 0) {
-      showToast('Veuillez téléverser au moins une photo pour le produit depuis votre PC avant d\'enregistrer 📷', 'error');
+      showToast('Veuillez téléverser au moins une photo pour le produit depuis votre PC avant d\'enregistrer ', 'error');
       return;
     }
     try {
@@ -658,10 +788,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
       if (editingProduct) {
         await API.put(`/products/${editingProduct._id}`, payload);
-        showToast('Produit mis à jour avec succès ! 🛍️', 'success');
+        showToast('Produit mis à jour avec succès ! ', 'success');
       } else {
         await API.post('/products', payload);
-        showToast('Produit ajouté à la boutique avec succès ! 🐺🛍️', 'success');
+        showToast('Produit ajouté à la boutique avec succès ! ', 'success');
       }
 
       setShowProductModal(false);
@@ -697,7 +827,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       const res = await API.patch(`/products/${prodId}/stock`, { delta });
       if (res.data?.success) {
         setProductsList(prev => prev.map(p => p._id === prodId ? res.data.product : p));
-        showToast('Stock produit mis à jour ! 📦', 'success');
+        showToast('Stock produit mis à jour ! ', 'success');
       }
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur lors de l\'ajustement du stock', 'error');
@@ -742,7 +872,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     try {
       await API.put(`/matches/${id}`, { status: 'live' });
       setMatches(prev => prev.map(m => m._id === id ? { ...m, status: 'live' } : m));
-      showToast('Match approuvé et passé en statut LIVE ! ⚔️', 'success');
+      showToast('Match approuvé et passé en statut LIVE ! ', 'success');
     } catch (err) {
       showToast('Erreur lors de la mise à jour du match', 'error');
     }
@@ -778,12 +908,198 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     }
   };
 
+  // --- ACTIONS CODES PROMO & RÉDUCTIONS (AUTORISATION ADMIN & ATTRIBUTION JOUEURS) ---
+  const handleToggleCouponStatus = async (coupon) => {
+    try {
+      const res = await API.patch(`/coupons/${coupon._id}/toggle`);
+      const updated = res.data.coupon || { ...coupon, isActive: res.data.isActive };
+      setCouponsList(prev => prev.map(c => c._id === coupon._id ? updated : c));
+      showToast(
+        updated.isActive 
+          ? `Code promo "${coupon.code}" AUTORISÉ et activé dans la boutique ! ` 
+          : `Code promo "${coupon.code}" DÉSACTIVÉ / Suspendu par l'administration. `,
+        updated.isActive ? 'success' : 'info'
+      );
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Erreur lors du changement d\'autorisation du code promo', 'error');
+    }
+  };
+
+  const handleOpenCreateCoupon = () => {
+    setEditingCoupon(null);
+    setCouponFormData({
+      code: '',
+      description: '',
+      discountType: 'percentage',
+      discountValue: 10,
+      minOrderAmount: 0,
+      maxDiscount: '',
+      startDate: '',
+      endDate: '',
+      usageLimit: '',
+      isActive: true,
+      isRestricted: false,
+      assignedPlayers: [],
+      assignedUsers: []
+    });
+    setCouponPlayerSearch('');
+    setCouponPlayerGameFilter('all');
+    setCouponRecipientType('all');
+    setShowCouponModal(true);
+  };
+
+  const handleOpenEditCoupon = (coupon) => {
+    setEditingCoupon(coupon);
+    const assignedPIds = (coupon.assignedPlayers || []).map(p => typeof p === 'object' ? p._id : p);
+    const assignedUIds = (coupon.assignedUsers || []).map(u => typeof u === 'object' ? u._id : u);
+    const isRestrictedVal = Boolean(coupon.isRestricted || assignedPIds.length > 0 || assignedUIds.length > 0);
+
+    setCouponFormData({
+      code: coupon.code || '',
+      description: coupon.description || '',
+      discountType: coupon.discountType || 'percentage',
+      discountValue: coupon.discountValue || 10,
+      minOrderAmount: coupon.minOrderAmount || 0,
+      maxDiscount: coupon.maxDiscount || '',
+      startDate: formatDateTimeLocal(coupon.startDate),
+      endDate: formatDateTimeLocal(coupon.endDate),
+      usageLimit: coupon.usageLimit || '',
+      isActive: coupon.isActive !== undefined ? coupon.isActive : true,
+      isRestricted: isRestrictedVal,
+      assignedPlayers: assignedPIds,
+      assignedUsers: assignedUIds
+    });
+    setCouponPlayerSearch('');
+    setCouponPlayerGameFilter('all');
+    setCouponRecipientType('all');
+    setShowCouponModal(true);
+  };
+
+  const handleTogglePlayerSelection = (playerId) => {
+    setCouponFormData(prev => {
+      const exists = prev.assignedPlayers.includes(playerId);
+      return {
+        ...prev,
+        assignedPlayers: exists
+          ? prev.assignedPlayers.filter(id => id !== playerId)
+          : [...prev.assignedPlayers, playerId]
+      };
+    });
+  };
+
+  const handleToggleUserSelection = (userId) => {
+    setCouponFormData(prev => {
+      const exists = prev.assignedUsers.includes(userId);
+      return {
+        ...prev,
+        assignedUsers: exists
+          ? prev.assignedUsers.filter(id => id !== userId)
+          : [...prev.assignedUsers, userId]
+      };
+    });
+  };
+
+  const handleSelectAllVisibleRecipients = (filteredPlayers, filteredUsers) => {
+    setCouponFormData(prev => {
+      const pIds = Array.from(new Set([...prev.assignedPlayers, ...filteredPlayers.map(p => p._id)]));
+      const uIds = Array.from(new Set([...prev.assignedUsers, ...filteredUsers.map(u => u._id)]));
+      return {
+        ...prev,
+        assignedPlayers: pIds,
+        assignedUsers: uIds
+      };
+    });
+  };
+
+  const handleDeselectAllRecipients = () => {
+    setCouponFormData(prev => ({
+      ...prev,
+      assignedPlayers: [],
+      assignedUsers: []
+    }));
+  };
+
+  const handleSaveCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponFormData.code.trim() || !couponFormData.discountValue) {
+      showToast('Veuillez renseigner le code et la valeur de réduction', 'error');
+      return;
+    }
+
+    if (couponFormData.isRestricted && couponFormData.assignedPlayers.length === 0 && couponFormData.assignedUsers.length === 0) {
+      showToast('Veuillez sélectionner au moins un joueur pour un code restreint, ou activez l\'option "Tous les Clients"', 'warning');
+      return;
+    }
+
+    setSavingCoupon(true);
+    try {
+      const payload = {
+        code: couponFormData.code.trim().toUpperCase(),
+        description: couponFormData.description.trim(),
+        discountType: couponFormData.discountType,
+        discountValue: Number(couponFormData.discountValue),
+        minOrderAmount: couponFormData.minOrderAmount ? Number(couponFormData.minOrderAmount) : 0,
+        maxDiscount: couponFormData.maxDiscount ? Number(couponFormData.maxDiscount) : null,
+        startDate: couponFormData.startDate ? new Date(couponFormData.startDate) : new Date(),
+        endDate: couponFormData.endDate ? new Date(couponFormData.endDate) : null,
+        usageLimit: couponFormData.usageLimit ? Number(couponFormData.usageLimit) : null,
+        isActive: Boolean(couponFormData.isActive),
+        isRestricted: Boolean(couponFormData.isRestricted),
+        assignedPlayers: couponFormData.isRestricted ? couponFormData.assignedPlayers : [],
+        assignedUsers: couponFormData.isRestricted ? couponFormData.assignedUsers : []
+      };
+
+      if (editingCoupon) {
+        const res = await API.put(`/coupons/${editingCoupon._id}`, payload);
+        const updated = res.data.coupon || res.data;
+        setCouponsList(prev => prev.map(c => c._id === editingCoupon._id ? updated : c));
+        showToast(`Code promo "${updated.code}" mis à jour avec succès !`, 'success');
+      } else {
+        const res = await API.post('/coupons', payload);
+        const created = res.data.coupon || res.data;
+        setCouponsList(prev => [created, ...prev]);
+        showToast(`Code promo "${created.code}" créé et autorisé dans la boutique ! `, 'success');
+      }
+      setShowCouponModal(false);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Erreur lors de l\'enregistrement du code promo', 'error');
+    } finally {
+      setSavingCoupon(false);
+    }
+  };
+
+  const handleDeleteCoupon = (coupon) => {
+    openConfirm({
+      title: 'SUPPRIMER CE CODE PROMO ?',
+      message: `Voulez-vous supprimer définitivement le code promo "${coupon.code}" ?`,
+      subtext: 'Les utilisateurs et joueurs ne pourront plus appliquer ce code lors de leurs achats.',
+      confirmText: 'Supprimer le Code Promo',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await API.delete(`/coupons/${coupon._id}`);
+          setCouponsList(prev => prev.filter(c => c._id !== coupon._id));
+          showToast(`Code promo "${coupon.code}" supprimé avec succès.`, 'success');
+        } catch (err) {
+          showToast(err.response?.data?.message || 'Erreur lors de la suppression du code promo', 'error');
+        }
+      }
+    });
+  };
+
+  const handleCopyCouponCode = (code) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(code);
+      showToast(`Code promo "${code}" copié dans le presse-papier ! `, 'info');
+    }
+  };
+
   const handleUpdateAppStatus = async (appId, newStatus) => {
     try {
       const res = await API.put(`/applications/${appId}/status`, { status: newStatus });
       setRecruitmentList(prev => prev.map(a => a._id === appId ? { ...a, status: newStatus } : a));
       if (newStatus === 'accepted') {
-        showToast(res.data?.message || 'Candidature acceptée ! Le joueur a été ajouté au roster officiel et son espace de communication est actif. 🐺🎮', 'success');
+        showToast(res.data?.message || 'Candidature acceptée ! Le joueur a été ajouté au roster officiel et son espace de communication est actif. ', 'success');
       } else {
         showToast(`Candidature mise à jour (${newStatus}).`, 'info');
       }
@@ -803,7 +1119,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         replyEmailBody: replyEmailText.trim(),
         status: 'replied'
       });
-      showToast(`Réponse par email envoyée avec succès à ${selectedContact.email} ! 🐺✉️`, 'success');
+      showToast(`Réponse par email envoyée avec succès à ${selectedContact.email} ! `, 'success');
       setShowReplyModal(false);
       setReplyEmailText('');
       setSelectedContact(null);
@@ -947,7 +1263,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     setNewsSubmitting(true);
     try {
       await API.post('/news', newsFormData);
-      showToast('Actualité publiée avec succès ! 🐺📰', 'success');
+      showToast('Actualité publiée avec succès ! ', 'success');
       setShowNewsModal(false);
       setNewsFormData({ title: '', category: 'Annonce', game: 'Général', summary: '', content: '', coverImage: '' });
       setNewsUploadError('');
@@ -999,10 +1315,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     try {
       if (editingPlayer) {
         await API.put(`/players/${editingPlayer._id}`, playerFormData);
-        showToast(`Joueur ${playerFormData.gamertag} mis à jour avec succès ! 🐺🎮`, 'success');
+        showToast(`Joueur ${playerFormData.gamertag} mis à jour avec succès ! `, 'success');
       } else {
         await API.post('/players', playerFormData);
-        showToast(`Joueur ${playerFormData.gamertag} ajouté à l'équipe ${playerFormData.game} ! 🐺🎮`, 'success');
+        showToast(`Joueur ${playerFormData.gamertag} ajouté à l'équipe ${playerFormData.game} ! `, 'success');
       }
       setShowPlayerModal(false);
       setEditingPlayer(null);
@@ -1055,10 +1371,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
       if (editingMatch) {
         await API.put(`/matches/${editingMatch._id}`, payload);
-        showToast('Match et diffusion mis à jour avec succès ! ⚔️🔴', 'success');
+        showToast('Match et diffusion mis à jour avec succès ! ', 'success');
       } else {
         await API.post('/matches', payload);
-        showToast('Match programmé avec succès ! ⚔️', 'success');
+        showToast('Match programmé avec succès ! ', 'success');
       }
       setShowMatchModal(false);
       setEditingMatch(null);
@@ -1089,7 +1405,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       if (res.data?.success) {
         setMatches(prev => prev.map(m => m._id === match._id ? res.data.match : m));
         showToast(newStatus === 'live' 
-          ? 'Match passé en DIRECT ! La diffusion est ouverte aux spectateurs sur le site. 🔴🐺' 
+          ? 'Match passé en DIRECT ! La diffusion est ouverte aux spectateurs sur le site. ' 
           : 'Match marqué comme Terminé.', 'success');
       }
     } catch (err) {
@@ -1139,10 +1455,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     try {
       if (editingGame) {
         await API.put(`/games/${editingGame._id}`, gameFormData);
-        showToast('Jeu et affiche mis à jour avec succès ! 🐺🎮', 'success');
+        showToast('Jeu et affiche mis à jour avec succès ! ', 'success');
       } else {
         await API.post('/games', gameFormData);
-        showToast('Nouveau jeu et affiche ajoutés avec succès ! 🐺🎮', 'success');
+        showToast('Nouveau jeu et affiche ajoutés avec succès ! ', 'success');
       }
       setShowGameModal(false);
       fetchAllData();
@@ -1161,7 +1477,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       onConfirm: async () => {
         try {
           await API.delete(`/games/${gameId}`);
-          showToast('Jeu supprimé avec succès ! 🎮🗑️', 'success');
+          showToast('Jeu supprimé avec succès ! ', 'success');
           fetchAllData();
         } catch (err) {
           showToast(err.response?.data?.message || 'Erreur lors de la suppression', 'error');
@@ -1282,7 +1598,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const handleSaveSlide = async (e) => {
     e.preventDefault();
     if (!slideFormData.backgroundImage) {
-      showToast('Veuillez téléverser une affiche de fond cinématique depuis votre PC 🎬', 'error');
+      showToast('Veuillez téléverser une affiche de fond cinématique depuis votre PC ', 'error');
       return;
     }
     try {
@@ -1301,10 +1617,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
       if (editingSlide) {
         await API.put(`/slides/${editingSlide._id}`, payload);
-        showToast('Affiche cinématique mise à jour avec succès ! 🎬', 'success');
+        showToast('Affiche cinématique mise à jour avec succès ! ', 'success');
       } else {
         await API.post('/slides', payload);
-        showToast('Nouvelle affiche cinématique ajoutée au carrousel ! 🐺🎬', 'success');
+        showToast('Nouvelle affiche cinématique ajoutée au carrousel ! ', 'success');
       }
 
       setShowSlideModal(false);
@@ -1326,7 +1642,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         try {
           await API.delete(`/slides/${slideId}`);
           setSlidesList(prev => prev.filter(s => s._id !== slideId));
-          showToast('Affiche cinématique supprimée avec succès ! 🎬✓', 'success');
+          showToast('Affiche cinématique supprimée avec succès ! ✓', 'success');
           fetchAllData();
         } catch (err) {
           showToast(err.response?.data?.message || 'Erreur lors de la suppression', 'error');
@@ -1340,7 +1656,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       const updatedStatus = !slide.isActive;
       await API.put(`/slides/${slide._id}`, { isActive: updatedStatus });
       setSlidesList(prev => prev.map(s => s._id === slide._id ? { ...s, isActive: updatedStatus } : s));
-      showToast(updatedStatus ? 'Affiche cinématique activée ! 🎬' : 'Affiche cinématique désactivée.', 'success');
+      showToast(updatedStatus ? 'Affiche cinématique activée ! ' : 'Affiche cinématique désactivée.', 'success');
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur lors du changement de statut', 'error');
     }
@@ -1411,7 +1727,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const handleSaveMuseumItem = async (e) => {
     e.preventDefault();
     if (!museumFormData.image) {
-      showToast('Veuillez téléverser une photo pour cette pièce d\'archive du musée 🏛️', 'error');
+      showToast('Veuillez téléverser une photo pour cette pièce d\'archive du musée ', 'error');
       return;
     }
     try {
@@ -1427,10 +1743,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       };
       if (editingMuseumItem) {
         await API.put(`/museum/${editingMuseumItem._id}`, payload);
-        showToast('Pièce du musée mise à jour avec succès ! 🏛️✨', 'success');
+        showToast('Pièce du musée mise à jour avec succès ! ', 'success');
       } else {
         await API.post('/museum', payload);
-        showToast('Nouvelle pièce d\'archive ajoutée au musée DWT ! 🏛️✨', 'success');
+        showToast('Nouvelle pièce d\'archive ajoutée au musée DWT ! ', 'success');
       }
       setShowMuseumModal(false);
       setEditingMuseumItem(null);
@@ -1451,7 +1767,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         try {
           await API.delete(`/museum/${itemId}`);
           setMuseumList(prev => prev.filter(item => item._id !== itemId));
-          showToast(`Pièce "${name}" retirée du musée avec succès ! 🏛️✨`, 'success');
+          showToast(`Pièce "${name}" retirée du musée avec succès ! `, 'success');
         } catch (err) {
           showToast('Erreur lors de la suppression de la pièce', 'error');
         }
@@ -1464,7 +1780,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       const res = await API.put(`/museum/${item._id}`, { isActive: !item.isActive });
       if (res.data?.success) {
         setMuseumList(prev => prev.map(m => m._id === item._id ? res.data.item : m));
-        showToast(!item.isActive ? 'Pièce d\'archive activée ! 🏛️' : 'Pièce d\'archive masquée.', 'success');
+        showToast(!item.isActive ? 'Pièce d\'archive activée ! ' : 'Pièce d\'archive masquée.', 'success');
       }
     } catch (err) {
       showToast('Erreur modification statut actif', 'error');
@@ -1563,7 +1879,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
           videoUrl: uploadedPath,
           title: prev.title || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").toUpperCase()
         }));
-        showToast('Fichier vidéo MP4 téléversé avec succès sur le serveur ! 🐺🎬', 'success');
+        showToast('Fichier vidéo MP4 téléversé avec succès sur le serveur ! ', 'success');
       } else {
         setVideoFileUploadError('Réponse inattendue du serveur lors du téléversement.');
       }
@@ -1586,7 +1902,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       const uploadedPath = res.data?.fileUrl || res.data?.filePath || res.data?.file?.path || res.data?.file?.url || res.data?.url;
       if (uploadedPath) {
         setVideoFormData(prev => ({ ...prev, thumbnail: uploadedPath }));
-        showToast('Miniature vidéo téléversée avec succès ! 🎬📸', 'success');
+        showToast('Miniature vidéo téléversée avec succès ! ', 'success');
       } else {
         setVideoUploadError('Réponse invalide du serveur de téléversement');
       }
@@ -1600,11 +1916,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const handleSaveVideo = async (e) => {
     e.preventDefault();
     if (!videoFormData.title.trim()) {
-      showToast('Veuillez renseigner un titre pour la vidéo 🎬', 'error');
+      showToast('Veuillez renseigner un titre pour la vidéo ', 'error');
       return;
     }
     if (!videoFormData.videoUrl.trim()) {
-      showToast('Veuillez téléverser un fichier MP4 ou saisir un lien vidéo YouTube 🎬', 'error');
+      showToast('Veuillez téléverser un fichier MP4 ou saisir un lien vidéo YouTube ', 'error');
       return;
     }
 
@@ -1629,12 +1945,12 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       if (editingVideo) {
         const res = await API.put(`/videos/${editingVideo._id}`, payload);
         if (res.data?.success) {
-          showToast('Vidéo mise à jour avec succès ! 🐺🎬', 'success');
+          showToast('Vidéo mise à jour avec succès ! ', 'success');
         }
       } else {
         const res = await API.post('/videos', payload);
         if (res.data?.success) {
-          showToast('Nouvelle vidéo ajoutée à la médiathèque DWT ! 🐺🎬', 'success');
+          showToast('Nouvelle vidéo ajoutée à la médiathèque DWT ! ', 'success');
         }
       }
       setShowVideoModal(false);
@@ -1650,7 +1966,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       const res = await API.put(`/videos/${video._id}`, { isActive: !video.isActive });
       if (res.data?.success) {
         setVideosList(prev => prev.map(v => v._id === video._id ? res.data.video : v));
-        showToast(!video.isActive ? 'Vidéo activée et visible sur le site ! 🎬' : 'Vidéo masquée du site.', 'success');
+        showToast(!video.isActive ? 'Vidéo activée et visible sur le site ! ' : 'Vidéo masquée du site.', 'success');
       }
     } catch (err) {
       showToast('Erreur lors du changement de statut de la vidéo', 'error');
@@ -1661,7 +1977,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     try {
       const res = await API.put(`/videos/${video._id}/set-main`);
       if (res.data?.success) {
-        showToast(`"${video.title}" est maintenant le Trailer Principal du site ! 🔥🐺`, 'success');
+        showToast(`"${video.title}" est maintenant le Trailer Principal du site ! `, 'success');
         fetchAllData();
       }
     } catch (err) {
@@ -1680,9 +1996,134 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         try {
           await API.delete(`/videos/${videoId}`);
           setVideosList(prev => prev.filter(v => v._id !== videoId));
-          showToast('Vidéo supprimée de la médiathèque avec succès ! 🗑️', 'success');
+          showToast('Vidéo supprimée de la médiathèque avec succès ! ', 'success');
         } catch (err) {
           showToast('Erreur lors de la suppression de la vidéo', 'error');
+        }
+      }
+    });
+  };
+
+  // --- ACTIONS COMPTEUR D'ATTENTE & EVENEMENTS (COUNTDOWN) ---
+  const handleOpenCreateCountdown = () => {
+    setEditingCountdown(null);
+    const defaultFutureDate = new Date(Date.now() + 30 * 24 * 3600 * 1000);
+    setCountdownFormData({
+      title: '',
+      subtitle: '— Next Major Event —',
+      targetDate: formatDateTimeLocal(defaultFutureDate),
+      description: '',
+      badge: 'ÉVÉNEMENT MAJEUR',
+      game: 'Valorant',
+      buttonText: 'Voir le Tournoi',
+      buttonLink: '#tournois',
+      isActive: true
+    });
+    setShowCountdownModal(true);
+  };
+
+  const handleOpenEditCountdown = (item) => {
+    setEditingCountdown(item);
+    setCountdownFormData({
+      title: item.title || '',
+      subtitle: item.subtitle || '— Next Major Event —',
+      targetDate: formatDateTimeLocal(item.targetDate),
+      description: item.description || '',
+      badge: item.badge || 'ÉVÉNEMENT MAJEUR',
+      game: item.game || '',
+      buttonText: item.buttonText || '',
+      buttonLink: item.buttonLink || '#tournois',
+      isActive: item.isActive !== undefined ? item.isActive : true
+    });
+    setShowCountdownModal(true);
+  };
+
+  const handleApplyDatePreset = (days) => {
+    const newDate = new Date(Date.now() + days * 24 * 3600 * 1000);
+    setCountdownFormData(prev => ({
+      ...prev,
+      targetDate: formatDateTimeLocal(newDate)
+    }));
+  };
+
+  const handleSaveCountdown = async (e) => {
+    if (e) e.preventDefault();
+    if (!countdownFormData.title?.trim()) {
+      showToast("Veuillez saisir le titre de l'événement ⏳", 'error');
+      return;
+    }
+    if (!countdownFormData.targetDate) {
+      showToast("Veuillez sélectionner la date et l'heure cibles de l'événement ", 'error');
+      return;
+    }
+
+    setSavingCountdown(true);
+    try {
+      const payload = {
+        title: countdownFormData.title.trim(),
+        subtitle: countdownFormData.subtitle?.trim() || '— Next Major Event —',
+        targetDate: new Date(countdownFormData.targetDate).toISOString(),
+        description: countdownFormData.description?.trim() || '',
+        badge: countdownFormData.badge?.trim() || 'ÉVÉNEMENT MAJEUR',
+        game: countdownFormData.game?.trim() || '',
+        buttonText: countdownFormData.buttonText?.trim() || '',
+        buttonLink: countdownFormData.buttonLink?.trim() || '#tournois',
+        isActive: countdownFormData.isActive
+      };
+
+      const targetId = editingCountdown?._id || activeCountdown?._id;
+      let res;
+      if (editingCountdown?._id) {
+        res = await API.put(`/countdown/${editingCountdown._id}`, payload);
+      } else if (activeCountdown?._id && !showCountdownModal) {
+        res = await API.put(`/countdown/${activeCountdown._id}`, payload);
+      } else {
+        res = await API.post('/countdown', payload);
+      }
+
+      if (res.data?.success) {
+        showToast(res.data.message || 'Compteur d\'attente de l\'événement configuré avec succès ! ⏳', 'success');
+        setShowCountdownModal(false);
+        setEditingCountdown(null);
+        window.dispatchEvent(new Event('dwt_countdown_updated'));
+        fetchAllData();
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.response?.data?.message || 'Erreur lors de la sauvegarde du compte à rebours', 'error');
+    } finally {
+      setSavingCountdown(false);
+    }
+  };
+
+  const handleActivateCountdown = async (item) => {
+    try {
+      const res = await API.put(`/countdown/${item._id}/activate`);
+      if (res.data?.success) {
+        showToast(`"${item.title}" est maintenant le compte à rebours actif sur le site ! `, 'success');
+        window.dispatchEvent(new Event('dwt_countdown_updated'));
+        fetchAllData();
+      }
+    } catch (err) {
+      showToast('Erreur lors de l\'activation de l\'événement', 'error');
+    }
+  };
+
+  const handleDeleteCountdown = (item) => {
+    openConfirm({
+      title: 'SUPPRIMER CET ÉVÉNEMENT ?',
+      message: `Voulez-vous vraiment supprimer définitivement "${item.title}" ?`,
+      subtext: 'Cet événement sera retiré de la liste des comptes à rebours.',
+      confirmText: 'Supprimer',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await API.delete(`/countdown/${item._id}`);
+          showToast('Événement supprimé avec succès ! ', 'success');
+          window.dispatchEvent(new Event('dwt_countdown_updated'));
+          fetchAllData();
+        } catch (err) {
+          showToast('Erreur lors de la suppression de l\'événement', 'error');
         }
       }
     });
@@ -1693,11 +2134,13 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
   const sidebarLinks = [
     { label: 'Tableau de Bord', icon: <LayoutDashboard size={18} /> },
+    { label: 'Compte à Rebours', icon: <Timer size={18} />, badge: activeCountdown?.isActive ? 'Actif' : undefined },
     { label: 'Affiches Cinématiques', icon: <SlidersHorizontal size={18} />, badge: slidesList.length },
     { label: 'Vidéos & Trailers', icon: <Film size={18} />, badge: videosList.length },
     { label: 'Gestion des Jeux', icon: <Gamepad2 size={18} />, badge: gamesList.length },
     { label: 'Museum (Archive)', icon: <Layers size={18} />, badge: museumList.length },
     { label: 'Boutique & Ventes', icon: <ShoppingBag size={18} /> },
+    { label: 'Studio Custom', icon: <Palette size={18} />, badge: customGearList.length },
     { label: 'Messagerie & Contact', icon: <MessageSquare size={18} />, badge: totalUnreadMessages },
     { label: 'Gestion des Joueurs', icon: <Users size={18} />, badge: pendingAppsCount },
     { label: 'Tournois', icon: <Trophy size={18} /> },
@@ -1868,7 +2311,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                             Aucune notification pour le moment
                           </div>
                           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                            Tout est calme dans la meute ! 🐺✨
+                            Tout est calme dans la meute ! 
                           </div>
                         </div>
                       ) : (
@@ -1979,6 +2422,115 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   <div>
                     <div className="dash-kpi-value">{playersList.length}</div>
                     <div className="dash-kpi-label">Joueurs au Roster</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Widget Compteur d'Attente de l'Événement (Live Preview & Accès Rapide) */}
+              <div className="dash-card" style={{
+                background: 'linear-gradient(135deg, rgba(230,0,0,0.08) 0%, rgba(13,19,31,0.95) 100%)',
+                border: '1px solid rgba(230,0,0,0.35)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                margin: '20px 0'
+              }}>
+                <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: 'rgba(230,0,0,0.2)',
+                      border: '1px solid rgba(230,0,0,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--red-primary)'
+                    }}>
+                      <Timer size={20} />
+                    </div>
+                    <div>
+                      <span className="dash-card-title" style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Compteur d'Attente de l'Événement sur le Site
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: '800',
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          background: activeCountdown?.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(148,163,184,0.15)',
+                          color: activeCountdown?.isActive ? '#22c55e' : '#94a3b8',
+                          border: `1px solid ${activeCountdown?.isActive ? '#22c55e' : '#64748b'}`
+                        }}>
+                          {activeCountdown?.isActive ? 'EN LIGNE' : 'INACTIF'}
+                        </span>
+                      </span>
+                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                        L'événement programmé ci-dessous décompte en temps réel sur la page d'accueil.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="btn-rejoindre"
+                    style={{ padding: '8px 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                    onClick={() => setActiveNav('Compte à Rebours')}
+                  >
+                    <Edit3 size={14} /> Régler le Compteur
+                  </button>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  padding: '16px 20px',
+                  background: '#070a10',
+                  borderRadius: '8px',
+                  border: '1px solid #1a2336'
+                }}>
+                  <div style={{ flex: '1 1 300px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--red-primary)', fontWeight: '800', letterSpacing: '0.15em' }}>
+                        {activeCountdown?.subtitle || '— Next Major Event —'}
+                      </span>
+                      {activeCountdown?.badge && (
+                        <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(230,0,0,0.15)', color: '#ff4d4d', padding: '1px 6px', borderRadius: '4px' }}>
+                          {activeCountdown.badge}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '19px', fontWeight: '900', color: '#fff', fontFamily: 'Orbitron, sans-serif' }}>
+                      {activeCountdown?.title || 'DWT Summer Championship 2026'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748b', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Calendar size={13} color="var(--red-primary)" />
+                      <span>
+                        Date cible : {activeCountdown?.targetDate ? new Date(activeCountdown.targetDate).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' }) : 'Non configurée'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Timer preview digits */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'center', background: '#0e1422', border: '1px solid #233047', borderRadius: '6px', padding: '8px 12px', minWidth: '55px' }}>
+                      <div style={{ fontFamily: 'Orbitron', fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{previewTimeLeft.days}</div>
+                      <div style={{ fontSize: '9px', color: '#64748b', textTransform: 'uppercase', marginTop: '4px' }}>Jours</div>
+                    </div>
+                    <span style={{ color: 'var(--red-primary)', fontWeight: '900', fontSize: '18px' }}>:</span>
+                    <div style={{ textAlign: 'center', background: '#0e1422', border: '1px solid #233047', borderRadius: '6px', padding: '8px 12px', minWidth: '55px' }}>
+                      <div style={{ fontFamily: 'Orbitron', fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{previewTimeLeft.hours}</div>
+                      <div style={{ fontSize: '9px', color: '#64748b', textTransform: 'uppercase', marginTop: '4px' }}>Heures</div>
+                    </div>
+                    <span style={{ color: 'var(--red-primary)', fontWeight: '900', fontSize: '18px' }}>:</span>
+                    <div style={{ textAlign: 'center', background: '#0e1422', border: '1px solid #233047', borderRadius: '6px', padding: '8px 12px', minWidth: '55px' }}>
+                      <div style={{ fontFamily: 'Orbitron', fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{previewTimeLeft.mins}</div>
+                      <div style={{ fontSize: '9px', color: '#64748b', textTransform: 'uppercase', marginTop: '4px' }}>Min</div>
+                    </div>
+                    <span style={{ color: 'var(--red-primary)', fontWeight: '900', fontSize: '18px' }}>:</span>
+                    <div style={{ textAlign: 'center', background: '#0e1422', border: '1px solid #233047', borderRadius: '6px', padding: '8px 12px', minWidth: '55px' }}>
+                      <div style={{ fontFamily: 'Orbitron', fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{previewTimeLeft.secs}</div>
+                      <div style={{ fontSize: '9px', color: '#64748b', textTransform: 'uppercase', marginTop: '4px' }}>Sec</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2185,6 +2737,18 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                 >
                   <ShoppingBag size={16} /> Commandes ({storeOrders.length})
                 </button>
+                <button 
+                  className={`dash-subtab-btn ${shopSubTab === 'coupons' ? 'active' : ''}`}
+                  onClick={() => setShopSubTab('coupons')}
+                >
+                  <Tag size={16} /> Codes Promo ({couponsList.length})
+                </button>
+                <button 
+                  className={`dash-subtab-btn ${shopSubTab === 'custom_gear' ? 'active' : ''}`}
+                  onClick={() => setShopSubTab('custom_gear')}
+                >
+                  <Palette size={16} /> Équipement Custom ({customGearList.length})
+                </button>
               </div>
 
               {/* SOUS-ONGLET 1: CHIFFRE D'AFFAIRES & FINANCES */}
@@ -2323,7 +2887,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                     borderRadius: '4px', 
                                     fontWeight: '700' 
                                   }}>
-                                    📷 {pImgCount} photo{pImgCount > 1 ? 's' : ''}
+                                     {pImgCount} photo{pImgCount > 1 ? 's' : ''}
                                   </span>
                                 )}
                               </div>
@@ -2530,11 +3094,21 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                 <strong>Articles :</strong> {o.orderItems?.map(it => `${it.name} (x${it.qty}${it.size ? ` / ${it.size}` : ''})`).join(', ')}
                               </div>
                               <div style={{ fontSize: '12px', color: '#64748b', marginTop: '3px' }}>
-                                📍 {o.shippingAddress?.address}, {o.shippingAddress?.city} • 📞 {o.shippingAddress?.phone} • ✉️ {o.shippingAddress?.email}
+                                 {o.shippingAddress?.address}, {o.shippingAddress?.city} •  {o.shippingAddress?.phone} •  {o.shippingAddress?.email}
                               </div>
                               <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
                                 Date: {new Date(o.createdAt).toLocaleString('fr-FR')}
                               </div>
+                              {o.couponCode && (
+                                <div style={{ fontSize: '12px', color: '#10b981', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <Tag size={12} />
+                                  <span>Code Promo appliqué :</span>
+                                  <span className="coupon-code-badge" style={{ padding: '1px 6px', fontSize: '11px', borderColor: '#10b981', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)' }}>
+                                    {o.couponCode}
+                                  </span>
+                                  <span style={{ color: '#10b981', fontWeight: '700' }}>(-{o.discountAmount ? Number(o.discountAmount).toFixed(2) : 0} DT)</span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -2562,7 +3136,434 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   </div>
                 </div>
               )}
+
+              {/* SOUS-ONGLET 6: GESTION DES CODES PROMO & RÉDUCTIONS */}
+              {shopSubTab === 'coupons' && (
+                <div>
+                  {/* KPI Cards pour les Réductions */}
+                  <div className="dash-kpi-grid" style={{ marginBottom: '24px' }}>
+                    <div className="dash-kpi-card">
+                      <div className="dash-kpi-icon" style={{ background: 'rgba(230,0,0,0.15)', color: 'var(--red-primary)' }}>
+                        <Tag size={24} />
+                      </div>
+                      <div>
+                        <div className="dash-kpi-value">{couponsList.length}</div>
+                        <div className="dash-kpi-label">Codes Promo Créés</div>
+                      </div>
+                    </div>
+
+                    <div className="dash-kpi-card">
+                      <div className="dash-kpi-icon" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                        <CheckCircle2 size={24} />
+                      </div>
+                      <div>
+                        <div className="dash-kpi-value" style={{ color: '#10b981' }}>
+                          {couponsList.filter(c => c.isActive).length}
+                        </div>
+                        <div className="dash-kpi-label">Autorisés par l'Admin (Actifs)</div>
+                      </div>
+                    </div>
+
+                    <div className="dash-kpi-card">
+                      <div className="dash-kpi-icon" style={{ background: 'rgba(56,189,248,0.15)', color: '#38bdf8' }}>
+                        <Target size={24} />
+                      </div>
+                      <div>
+                        <div className="dash-kpi-value" style={{ color: '#38bdf8' }}>
+                          {couponsList.filter(c => c.isRestricted && ((c.assignedPlayers?.length > 0) || (c.assignedUsers?.length > 0))).length}
+                        </div>
+                        <div className="dash-kpi-label">Réservés aux Joueurs</div>
+                      </div>
+                    </div>
+
+                    <div className="dash-kpi-card">
+                      <div className="dash-kpi-icon" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                        <AlertTriangle size={24} />
+                      </div>
+                      <div>
+                        <div className="dash-kpi-value" style={{ color: '#f87171' }}>
+                          {couponsList.filter(c => !c.isActive).length}
+                        </div>
+                        <div className="dash-kpi-label">Suspendus / Non Autorisés</div>
+                      </div>
+                    </div>
+
+                    <div className="dash-kpi-card">
+                      <div className="dash-kpi-icon" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>
+                        <Ticket size={24} />
+                      </div>
+                      <div>
+                        <div className="dash-kpi-value">
+                          {couponsList.reduce((acc, c) => acc + (c.usedCount || 0), 0)}
+                        </div>
+                        <div className="dash-kpi-label">Utilisations Cumulées</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Header de la section avec bouton Créer */}
+                  <div className="dash-card">
+                    <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
+                      <div>
+                        <span className="dash-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Tag size={20} color="var(--red-primary)" />
+                          Gestion des Codes Promo & Réductions
+                        </span>
+                        <div style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px' }}>
+                          Créez des remises en pourcentage (%) ou montant fixe (DT). L'autorisation de l'administrateur est obligatoire pour qu'un code soit accepté au paiement.
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn-rejoindre"
+                        onClick={handleOpenCreateCoupon}
+                        style={{ padding: '8px 18px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      >
+                        <Plus size={16} /> Nouveau Code Promo
+                      </button>
+                    </div>
+
+                    {/* Liste des codes promo */}
+                    <div style={{ padding: '20px' }}>
+                      {couponsList.length === 0 ? (
+                        <div className="dash-empty-state" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(230,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--red-primary)' }}>
+                            <Tag size={28} />
+                          </div>
+                          <div style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>
+                            Aucun code promo créé
+                          </div>
+                          <div style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '20px', maxWidth: '420px', margin: '0 auto 20px' }}>
+                            Proposez des offres spéciales à vos fans et membres de la meute en configurant un premier code promo avec réduction automatique.
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-rejoindre"
+                            onClick={handleOpenCreateCoupon}
+                            style={{ padding: '8px 20px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                          >
+                            <Plus size={16} /> Créer un Code Promo
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '18px' }}>
+                          {couponsList.map((cpn) => {
+                            const isExpired = cpn.endDate && new Date(cpn.endDate) < new Date();
+                            const limitReached = cpn.usageLimit && cpn.usedCount >= cpn.usageLimit;
+
+                            return (
+                              <div
+                                key={cpn._id}
+                                onClick={() => handleOpenEditCoupon(cpn)}
+                                title="Cliquer sur la case pour modifier ce code promo"
+                                style={{
+                                  background: 'linear-gradient(135deg, rgba(14, 20, 32, 0.95) 0%, rgba(9, 13, 22, 0.98) 100%)',
+                                  border: cpn.isActive ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid #202b3f',
+                                  borderRadius: '12px',
+                                  padding: '20px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'space-between',
+                                  gap: '16px',
+                                  position: 'relative',
+                                  overflow: 'hidden',
+                                  boxShadow: cpn.isActive ? '0 0 20px rgba(16, 185, 129, 0.08)' : 'none',
+                                  transition: 'all 0.25s ease',
+                                  cursor: 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'translateY(-3px)';
+                                  e.currentTarget.style.borderColor = cpn.isActive ? 'rgba(16, 185, 129, 0.75)' : 'rgba(230, 0, 0, 0.65)';
+                                  e.currentTarget.style.boxShadow = cpn.isActive 
+                                    ? '0 12px 28px rgba(16, 185, 129, 0.18)' 
+                                    : '0 12px 28px rgba(230, 0, 0, 0.16)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'translateY(0)';
+                                  e.currentTarget.style.borderColor = cpn.isActive ? 'rgba(16, 185, 129, 0.35)' : '#202b3f';
+                                  e.currentTarget.style.boxShadow = cpn.isActive ? '0 0 20px rgba(16, 185, 129, 0.08)' : 'none';
+                                }}
+                              >
+                                {isExpired && (
+                                  <div style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    right: '-32px',
+                                    background: '#ef4444',
+                                    color: '#fff',
+                                    fontSize: '9px',
+                                    fontWeight: '900',
+                                    padding: '2px 36px',
+                                    transform: 'rotate(45deg)',
+                                    letterSpacing: '1px'
+                                  }}>
+                                    EXPIRÉ
+                                  </div>
+                                )}
+
+                                {/* Top: Code & Discount Badge */}
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px' }}>
+                                    <span
+                                      className="coupon-code-badge"
+                                      title="Cliquer pour copier le code"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCopyCouponCode(cpn.code);
+                                      }}
+                                    >
+                                      <Tag size={13} />
+                                      {cpn.code}
+                                      <Copy size={11} style={{ opacity: 0.6 }} />
+                                    </span>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{
+                                        fontSize: '18px',
+                                        fontWeight: '900',
+                                        fontFamily: 'Orbitron, sans-serif',
+                                        color: cpn.discountType === 'percentage' ? '#ff4d4d' : '#10b981'
+                                      }}>
+                                        {cpn.discountType === 'percentage' ? `-${cpn.discountValue}%` : `-${cpn.discountValue} DT`}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {cpn.description && (
+                                    <div style={{ color: '#cbd5e1', fontSize: '13px', lineHeight: 1.4, marginBottom: '12px' }}>
+                                      {cpn.description}
+                                    </div>
+                                  )}
+
+                                  {/* Détails / Conditions */}
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: '#94a3b8' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <span>Achat minimum :</span>
+                                      <strong style={{ color: '#e2e8f0' }}>{cpn.minOrderAmount ? `${cpn.minOrderAmount} DT` : 'Aucun'}</strong>
+                                    </div>
+                                    {cpn.maxDiscount && (
+                                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Plafond max remise :</span>
+                                        <strong style={{ color: '#e2e8f0' }}>{cpn.maxDiscount} DT</strong>
+                                      </div>
+                                    )}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <span>Utilisations :</span>
+                                      <strong style={{ color: limitReached ? '#ef4444' : '#e2e8f0' }}>
+                                        {cpn.usedCount || 0} {cpn.usageLimit ? `/ ${cpn.usageLimit}` : '(Illimité)'}
+                                      </strong>
+                                    </div>
+                                    {cpn.startDate && (
+                                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Date de début :</span>
+                                        <strong style={{ color: '#e2e8f0' }}>
+                                          {new Date(cpn.startDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </strong>
+                                      </div>
+                                    )}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <span>Expiration :</span>
+                                      <strong style={{ color: isExpired ? '#ef4444' : '#e2e8f0' }}>
+                                        {cpn.endDate ? new Date(cpn.endDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Permanent'}
+                                      </strong>
+                                    </div>
+                                  </div>
+
+                                  {/* Cible & Joueurs Attribués */}
+                                  <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                                    {cpn.isRestricted && ((cpn.assignedPlayers?.length > 0) || (cpn.assignedUsers?.length > 0)) ? (
+                                      <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                          <span style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '5px',
+                                            fontSize: '11px',
+                                            fontWeight: '700',
+                                            color: '#38bdf8',
+                                            background: 'rgba(56, 189, 248, 0.12)',
+                                            padding: '2px 8px',
+                                            borderRadius: '6px',
+                                            border: '1px solid rgba(56, 189, 248, 0.3)'
+                                          }}>
+                                            <Target size={12} />
+                                            Réservé Joueurs ({(cpn.assignedPlayers?.length || 0) + (cpn.assignedUsers?.length || 0)})
+                                          </span>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                                          {[
+                                            ...(cpn.assignedPlayers || []).map(p => ({
+                                              id: p._id || p,
+                                              name: p.gamertag || 'Joueur',
+                                              avatar: p.avatar,
+                                              tag: p.game || 'Roster'
+                                            })),
+                                            ...(cpn.assignedUsers || []).map(u => ({
+                                              id: u._id || u,
+                                              name: u.gamertag || 'Membre',
+                                              avatar: u.avatar,
+                                              tag: 'Membre'
+                                            }))
+                                          ].slice(0, 5).map((item, idx) => (
+                                            <span
+                                              key={item.id || idx}
+                                              title={`${item.name} (${item.tag})`}
+                                              style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                fontSize: '11px',
+                                                fontWeight: '600',
+                                                background: '#151c2d',
+                                                border: '1px solid #23304a',
+                                                padding: '2px 8px 2px 4px',
+                                                borderRadius: '12px',
+                                                color: '#cbd5e1'
+                                              }}
+                                            >
+                                              <img
+                                                src={getImageUrl(item.avatar)}
+                                                alt={item.name}
+                                                style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }}
+                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=100&q=80'; }}
+                                              />
+                                              {item.name}
+                                            </span>
+                                          ))}
+                                          {((cpn.assignedPlayers?.length || 0) + (cpn.assignedUsers?.length || 0)) > 5 && (
+                                            <span style={{
+                                              fontSize: '10px',
+                                              fontWeight: '700',
+                                              color: '#94a3b8',
+                                              background: 'rgba(255,255,255,0.06)',
+                                              padding: '2px 6px',
+                                              borderRadius: '10px',
+                                              alignSelf: 'center'
+                                            }}>
+                                              +{((cpn.assignedPlayers?.length || 0) + (cpn.assignedUsers?.length || 0)) - 5}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span style={{
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '5px',
+                                          fontSize: '11px',
+                                          fontWeight: '700',
+                                          color: '#10b981',
+                                          background: 'rgba(16, 185, 129, 0.1)',
+                                          padding: '2px 8px',
+                                          borderRadius: '6px',
+                                          border: '1px solid rgba(16, 185, 129, 0.25)'
+                                        }}>
+                                          <Globe size={12} />
+                                          Public (Tous les Clients & Joueurs)
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Bottom: Admin Authorization Toggle + Action Buttons */}
+                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                                  {/* Admin Authorization Switch Button */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggleCouponStatus(cpn);
+                                    }}
+                                    title={cpn.isActive ? 'Cliquez pour révoquer / désactiver' : 'Cliquez pour autoriser ce code'}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                      padding: '6px 12px',
+                                      borderRadius: '8px',
+                                      border: cpn.isActive ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(239, 68, 68, 0.5)',
+                                      background: cpn.isActive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                      color: cpn.isActive ? '#10b981' : '#f87171',
+                                      fontSize: '11px',
+                                      fontWeight: '800',
+                                      cursor: 'pointer',
+                                      letterSpacing: '0.5px',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                  >
+                                    <div style={{
+                                      width: '8px',
+                                      height: '8px',
+                                      borderRadius: '50%',
+                                      background: cpn.isActive ? '#10b981' : '#ef4444',
+                                      boxShadow: cpn.isActive ? '0 0 8px #10b981' : '0 0 8px #ef4444'
+                                    }} />
+                                    {cpn.isActive ? 'AUTORISÉ (ACTIF)' : 'SUSPENDU / DÉSACTIVÉ'}
+                                  </button>
+
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <button
+                                      type="button"
+                                      className="dash-action-btn"
+                                      title="Modifier ce code"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenEditCoupon(cpn);
+                                      }}
+                                      style={{ padding: '6px 10px' }}
+                                    >
+                                      <Edit3 size={15} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="dash-action-btn delete"
+                                      title="Supprimer ce code"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteCoupon(cpn);
+                                      }}
+                                      style={{ padding: '6px 10px', color: '#ef4444' }}
+                                    >
+                                      <Trash2 size={15} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SOUS-ONGLET 7: ÉQUIPEMENT CUSTOM & PRIX EN DIRECT */}
+              {shopSubTab === 'custom_gear' && (
+                <CustomGearAdminSection
+                  customGearList={customGearList}
+                  onRefresh={fetchAllData}
+                  showToast={(text, type) => setToast({ text, type })}
+                  openConfirm={openConfirm}
+                  onOpenCustomStudio={() => setPreviewStudioModal(true)}
+                />
+              )}
             </div>
+          )}
+
+          {/* TAB INDÉPENDANT DANS LA SIDEBAR : STUDIO CUSTOM */}
+          {activeNav === 'Studio Custom' && (
+            <CustomGearAdminSection
+              customGearList={customGearList}
+              onRefresh={fetchAllData}
+              showToast={(text, type) => setToast({ text, type })}
+              openConfirm={openConfirm}
+              onOpenCustomStudio={() => setPreviewStudioModal(true)}
+            />
           )}
 
           {/* TAB 3: SYSTEME DE MESSAGERIE & CONTACT (CHAT DIRECT + FORMULAIRES DE CONTACT) */}
@@ -2686,14 +3687,14 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                             className={`chat-filter-chip ${chatFilterRole === 'player' ? 'active' : ''}`}
                             onClick={() => setChatFilterRole('player')}
                           >
-                            🎮 Joueurs ({recruitedPlayersCount})
+                             Joueurs ({recruitedPlayersCount})
                           </button>
                           <button
                             type="button"
                             className={`chat-filter-chip ${chatFilterRole === 'user' ? 'active' : ''}`}
                             onClick={() => setChatFilterRole('user')}
                           >
-                            🐺 Membres ({conversations.length - recruitedPlayersCount})
+                             Membres ({conversations.length - recruitedPlayersCount})
                           </button>
                         </div>
                       </div>
@@ -2797,7 +3798,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                   </div>
 
                                   <div style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {conv.lastMessage?.content || (isPlayer ? '🐺 Joueur recruté dans la meute' : 'Aucun message')}
+                                    {conv.lastMessage?.content || (isPlayer ? ' Joueur recruté dans la meute' : 'Aucun message')}
                                   </div>
                                 </div>
                               </div>
@@ -2872,7 +3873,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                               Aucun message échangé pour le moment.
                             </div>
                             <div style={{ marginTop: '6px', fontSize: '13px', color: '#94a3b8' }}>
-                              Envoyez un message pour démarrer la discussion officielle avec {selectedUser?.gamertag} ! 🐺💬
+                              Envoyez un message pour démarrer la discussion officielle avec {selectedUser?.gamertag} ! 
                             </div>
                           </div>
                         ) : (
@@ -3131,7 +4132,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                     {app.gamertag}
                                   </span>
                                   <span style={{ fontSize: '13px', color: '#38bdf8', fontWeight: '700' }}>
-                                    🎮 {app.game}
+                                     {app.game}
                                   </span>
                                   <span style={{
                                     fontSize: '10px',
@@ -3147,12 +4148,12 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
-                                  <div>✉️ <strong>Email :</strong> {app.email}</div>
-                                  <div>💬 <strong>Discord :</strong> {app.discordTag || '-'}</div>
-                                  <div>🏆 <strong>Rang :</strong> {app.rank}</div>
-                                  <div>🎯 <strong>Rôle visé :</strong> {app.rolePreference || app.role || 'Flexible'}</div>
-                                  <div>🎂 <strong>Âge :</strong> {app.age} ans</div>
-                                  <div>📅 <strong>Reçu le :</strong> {new Date(app.createdAt).toLocaleString('fr-FR')}</div>
+                                  <div> <strong>Email :</strong> {app.email}</div>
+                                  <div> <strong>Discord :</strong> {app.discordTag || '-'}</div>
+                                  <div> <strong>Rang :</strong> {app.rank}</div>
+                                  <div> <strong>Rôle visé :</strong> {app.rolePreference || app.role || 'Flexible'}</div>
+                                  <div> <strong>Âge :</strong> {app.age} ans</div>
+                                  <div> <strong>Reçu le :</strong> {new Date(app.createdAt).toLocaleString('fr-FR')}</div>
                                 </div>
 
                                 <div style={{
@@ -3617,7 +4618,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                     onConfirm: async () => {
                                       try {
                                         await API.delete(`/players/${p._id}`);
-                                        showToast(`Joueur ${p.gamertag} retiré avec succès ! 🐺`, 'success');
+                                        showToast(`Joueur ${p.gamertag} retiré avec succès ! `, 'success');
                                         fetchAllData();
                                       } catch (err) {
                                         showToast(err.response?.data?.message || 'Erreur lors de la suppression', 'error');
@@ -3834,7 +4835,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
                           {m.streamUrl && (
                             <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span>📺 Flux stream : {m.streamUrl}</span>
+                              <span> Flux stream : {m.streamUrl}</span>
                             </div>
                           )}
                         </div>
@@ -3905,7 +4906,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                             color: isLive ? '#22c55e' : '#ff4d4d'
                           }}
                         >
-                          {isLive ? 'Arrêter Live' : '🔴 Lancer Live'}
+                          {isLive ? 'Arrêter Live' : ' Lancer Live'}
                         </button>
 
                         <button 
@@ -3929,7 +4930,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                               onConfirm: async () => {
                                 try {
                                   await API.delete(`/matches/${m._id}`);
-                                  showToast('Match supprimé avec succès ! ⚔️✓', 'success');
+                                  showToast('Match supprimé avec succès ! ✓', 'success');
                                   fetchAllData();
                                 } catch (err) {
                                   showToast(err.response?.data?.message || 'Erreur lors de la suppression du match', 'error');
@@ -3983,7 +4984,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                           onConfirm: async () => {
                             try {
                               await API.delete(`/news/${n._id}`);
-                              showToast('Article supprimé avec succès ! 📰✓', 'success');
+                              showToast('Article supprimé avec succès ! ✓', 'success');
                               fetchAllData();
                             } catch (err) {
                               showToast(err.response?.data?.message || 'Erreur suppression article', 'error');
@@ -4670,10 +5671,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
                 {[
                   { id: 'all', label: `Toutes (${videosList.length})` },
-                  { id: 'trailer', label: `🎬 Trailers (${videosList.filter(v => v.category === 'trailer').length})` },
-                  { id: 'product_ad', label: `🛍️ Pubs Produits (${videosList.filter(v => v.category === 'product_ad').length})` },
-                  { id: 'announcement', label: `📢 Annonces (${videosList.filter(v => v.category === 'announcement').length})` },
-                  { id: 'match_highlight', label: `🏆 Matchs (${videosList.filter(v => v.category === 'match_highlight').length})` }
+                  { id: 'trailer', label: ` Trailers (${videosList.filter(v => v.category === 'trailer').length})` },
+                  { id: 'product_ad', label: ` Pubs Produits (${videosList.filter(v => v.category === 'product_ad').length})` },
+                  { id: 'announcement', label: ` Annonces (${videosList.filter(v => v.category === 'announcement').length})` },
+                  { id: 'match_highlight', label: ` Matchs (${videosList.filter(v => v.category === 'match_highlight').length})` }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -4778,7 +5779,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                 alignItems: 'center',
                                 gap: '4px'
                               }}>
-                                <Sparkles size={11} /> ★ TRAILER PRINCIPAL
+                                <Sparkles size={11} />  TRAILER PRINCIPAL
                               </span>
                             )}
                             <span style={{
@@ -4790,7 +5791,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                               fontSize: '10px',
                               fontWeight: '800'
                             }}>
-                              {video.category === 'trailer' ? '🎬 TRAILER' : video.category === 'product_ad' ? '🛍️ PUB PRODUIT' : video.category === 'announcement' ? '📢 ANNONCE' : '🏆 MATCH'}
+                              {video.category === 'trailer' ? ' TRAILER' : video.category === 'product_ad' ? ' PUB PRODUIT' : video.category === 'announcement' ? ' ANNONCE' : ' MATCH'}
                             </span>
                             <span style={{
                               background: video.videoUrl?.startsWith('/uploads/') || /\.(mp4|webm|mov|ogg|mkv|m4v)(\?.*)?$/i.test(video.videoUrl || '') ? 'rgba(34, 197, 94, 0.2)' : 'rgba(230, 0, 0, 0.2)',
@@ -4802,7 +5803,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                               fontWeight: '900',
                               letterSpacing: '0.04em'
                             }}>
-                              {video.videoUrl?.startsWith('/uploads/') || /\.(mp4|webm|mov|ogg|mkv|m4v)(\?.*)?$/i.test(video.videoUrl || '') ? '📁 MP4 LOCAL' : '🔴 YOUTUBE'}
+                              {video.videoUrl?.startsWith('/uploads/') || /\.(mp4|webm|mov|ogg|mkv|m4v)(\?.*)?$/i.test(video.videoUrl || '') ? ' MP4 LOCAL' : ' YOUTUBE'}
                             </span>
                           </div>
 
@@ -4943,6 +5944,794 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB: COMPTEUR D'ATTENTE & EVENEMENTS (COUNTDOWN) */}
+          {activeNav === 'Compte à Rebours' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* Header Card */}
+              <div className="dash-card">
+                <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '14px' }}>
+                  <div>
+                    <span className="dash-card-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Timer size={22} color="var(--red-primary)" />
+                      Compteur d'Attente de l'Événement (Compte à Rebours)
+                    </span>
+                    <div style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px' }}>
+                      Réglez l'événement en vedette, son titre et la date limite du compte à rebours affiché sur la page d'accueil du site.
+                    </div>
+                  </div>
+                  <button
+                    className="btn-rejoindre"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 20px', cursor: 'pointer' }}
+                    onClick={handleOpenCreateCountdown}
+                  >
+                    <Plus size={16} /> Programmer un Nouvel Événement
+                  </button>
+                </div>
+
+                {/* KPI Overview Bar */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '16px' }}>
+                  <div style={{ background: '#0a0d14', border: '1px solid #1a2336', borderRadius: '8px', padding: '14px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Événement Actif</div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff', marginTop: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {activeCountdown?.title || 'Aucun'}
+                    </div>
+                  </div>
+                  <div style={{ background: '#0a0d14', border: '1px solid #1a2336', borderRadius: '8px', padding: '14px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Statut Affichage</div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: activeCountdown?.isActive ? '#22c55e' : '#f87171', marginTop: '6px' }}>
+                      {activeCountdown?.isActive ? '● En Direct sur la Page d\'Accueil' : '○ Masqué / Inactif'}
+                    </div>
+                  </div>
+                  <div style={{ background: '#0a0d14', border: '1px solid #1a2336', borderRadius: '8px', padding: '14px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Temps Restant Estimé</div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#38bdf8', marginTop: '6px' }}>
+                      {previewTimeLeft.days}j {previewTimeLeft.hours}h {previewTimeLeft.mins}m {previewTimeLeft.secs}s
+                    </div>
+                  </div>
+                  <div style={{ background: '#0a0d14', border: '1px solid #1a2336', borderRadius: '8px', padding: '14px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Total Événements</div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff', marginTop: '6px' }}>
+                      {countdownList.length} configuré{countdownList.length > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: APERÇU EN DIRECT DU SITE (CYBER PREVIEW) */}
+              <div className="dash-card" style={{
+                background: 'radial-gradient(ellipse at top, #0f0a1c 0%, #06080e 80%)',
+                border: '1px solid rgba(230,0,0,0.4)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  borderBottom: '1px solid #1a2336',
+                  paddingBottom: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--red-primary)', fontSize: '12px', fontWeight: '800', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                    <Eye size={16} /> Aperçu en Temps Réel (Comme sur la page d'accueil)
+                  </div>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: countdownFormData.isActive ? '#22c55e' : '#94a3b8',
+                    background: countdownFormData.isActive ? 'rgba(34,197,94,0.12)' : 'rgba(148,163,184,0.12)',
+                    padding: '2px 10px',
+                    borderRadius: '12px',
+                    border: `1px solid ${countdownFormData.isActive ? 'rgba(34,197,94,0.3)' : '#334155'}`
+                  }}>
+                    {countdownFormData.isActive ? '● Visible sur le site' : '○ Masqué sur le site'}
+                  </span>
+                </div>
+
+                {/* The actual live countdown preview element */}
+                <div style={{ textAlign: 'center', padding: '20px 10px' }}>
+                  {countdownFormData.badge && (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'rgba(230, 0, 0, 0.15)',
+                      border: '1px solid rgba(230, 0, 0, 0.4)',
+                      color: 'var(--red-primary)',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      letterSpacing: '0.2em',
+                      padding: '3px 12px',
+                      borderRadius: '20px',
+                      textTransform: 'uppercase',
+                      marginBottom: '10px'
+                    }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red-primary)', display: 'inline-block', boxShadow: '0 0 8px #ff0000' }}></span>
+                      {countdownFormData.badge}
+                    </div>
+                  )}
+
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    letterSpacing: '0.28em',
+                    color: '#94a3b8',
+                    textTransform: 'uppercase',
+                    marginBottom: '6px'
+                  }}>
+                    {countdownFormData.subtitle || '— Next Major Event —'}
+                  </div>
+
+                  <h2 style={{
+                    fontFamily: 'Orbitron, monospace',
+                    fontSize: 'clamp(20px, 3vw, 32px)',
+                    fontWeight: '800',
+                    color: '#fff',
+                    textTransform: 'uppercase',
+                    margin: '0 auto 16px',
+                    letterSpacing: '0.04em'
+                  }}>
+                    {countdownFormData.title || 'DWT Summer Championship 2026'}
+                  </h2>
+
+                  {countdownFormData.description && (
+                    <p style={{
+                      color: '#94a3b8',
+                      fontSize: '14px',
+                      maxWidth: '600px',
+                      margin: '0 auto 24px',
+                      lineHeight: '1.6'
+                    }}>
+                      {countdownFormData.description}
+                    </p>
+                  )}
+
+                  {/* Timer preview digits */}
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '14px', flexWrap: 'wrap', margin: '20px 0' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div style={{
+                        fontFamily: 'Orbitron, monospace',
+                        fontSize: 'clamp(36px, 5vw, 64px)',
+                        fontWeight: '900',
+                        color: '#fff',
+                        lineHeight: 1,
+                        minWidth: '90px',
+                        textShadow: '0 0 20px rgba(255,255,255,0.2)'
+                      }}>
+                        {previewTimeLeft.days}
+                      </div>
+                      <div style={{ fontFamily: 'Rajdhani', fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', color: '#64748b', textTransform: 'uppercase' }}>Jours</div>
+                    </div>
+                    <div style={{ fontFamily: 'Orbitron', fontSize: 'clamp(24px, 4vw, 44px)', fontWeight: '900', color: 'var(--red-primary)', paddingBottom: '16px' }}>:</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div style={{
+                        fontFamily: 'Orbitron, monospace',
+                        fontSize: 'clamp(36px, 5vw, 64px)',
+                        fontWeight: '900',
+                        color: '#fff',
+                        lineHeight: 1,
+                        minWidth: '90px',
+                        textShadow: '0 0 20px rgba(255,255,255,0.2)'
+                      }}>
+                        {previewTimeLeft.hours}
+                      </div>
+                      <div style={{ fontFamily: 'Rajdhani', fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', color: '#64748b', textTransform: 'uppercase' }}>Heures</div>
+                    </div>
+                    <div style={{ fontFamily: 'Orbitron', fontSize: 'clamp(24px, 4vw, 44px)', fontWeight: '900', color: 'var(--red-primary)', paddingBottom: '16px' }}>:</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div style={{
+                        fontFamily: 'Orbitron, monospace',
+                        fontSize: 'clamp(36px, 5vw, 64px)',
+                        fontWeight: '900',
+                        color: '#fff',
+                        lineHeight: 1,
+                        minWidth: '90px',
+                        textShadow: '0 0 20px rgba(255,255,255,0.2)'
+                      }}>
+                        {previewTimeLeft.mins}
+                      </div>
+                      <div style={{ fontFamily: 'Rajdhani', fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', color: '#64748b', textTransform: 'uppercase' }}>Minutes</div>
+                    </div>
+                    <div style={{ fontFamily: 'Orbitron', fontSize: 'clamp(24px, 4vw, 44px)', fontWeight: '900', color: 'var(--red-primary)', paddingBottom: '16px' }}>:</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div style={{
+                        fontFamily: 'Orbitron, monospace',
+                        fontSize: 'clamp(36px, 5vw, 64px)',
+                        fontWeight: '900',
+                        color: '#fff',
+                        lineHeight: 1,
+                        minWidth: '90px',
+                        textShadow: '0 0 20px rgba(255,255,255,0.2)'
+                      }}>
+                        {previewTimeLeft.secs}
+                      </div>
+                      <div style={{ fontFamily: 'Rajdhani', fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', color: '#64748b', textTransform: 'uppercase' }}>Secondes</div>
+                    </div>
+                  </div>
+
+                  {countdownFormData.buttonText && (
+                    <div style={{ marginTop: '20px' }}>
+                      <span className="btn-rejoindre" style={{ padding: '10px 28px', fontSize: '13px', display: 'inline-block' }}>
+                        {countdownFormData.buttonText}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* FORMULAIRE DE CONFIGURATION PRINCIPALE DU COMPTEUR (CYBER DESIGN) */}
+              <div className="dash-card" style={{
+                background: 'linear-gradient(180deg, rgba(13, 18, 30, 0.95) 0%, rgba(8, 11, 18, 0.98) 100%)',
+                border: '1px solid #1c263c',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.6)'
+              }}>
+                <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #1c263c', paddingBottom: '16px' }}>
+                  <div>
+                    <span className="dash-card-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <SlidersHorizontal size={20} color="var(--red-primary)" />
+                      Configuration Avancée de l'Événement & du Compteur
+                    </span>
+                    <div style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px' }}>
+                      Renseignez les informations de l'événement ci-dessous. Les modifications s'appliquent en temps réel sur la page d'accueil.
+                    </div>
+                  </div>
+                  {activeCountdown && (
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      background: countdownFormData.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(148,163,184,0.15)',
+                      color: countdownFormData.isActive ? '#22c55e' : '#94a3b8',
+                      border: `1px solid ${countdownFormData.isActive ? 'rgba(34,197,94,0.35)' : '#334155'}`
+                    }}>
+                      {countdownFormData.isActive ? '● COMPTEUR EN DIRECT' : '○ COMPTEUR DÉSACTIVÉ'}
+                    </span>
+                  )}
+                </div>
+
+                <form onSubmit={handleSaveCountdown} style={{ marginTop: '20px' }}>
+                  
+                  {/* SECTION 1: IDENTITÉ DE L'ÉVÉNEMENT */}
+                  <div className="cyber-form-section">
+                    <div className="cyber-section-header">
+                      <div className="cyber-section-title">
+                        <Trophy size={16} color="var(--red-primary)" /> 1. Identité de l'Événement & Titre
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>Textes mis en valeur sur le site</span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                      {/* CHAMP: TITRE */}
+                      <div className="dash-form-group" style={{ margin: 0 }}>
+                        <label className="dash-form-label" style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: '800' }}>
+                          <span>Titre de l'Événement *</span>
+                          <span style={{ fontSize: '11px', color: 'var(--red-primary)' }}>Obligatoire</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="cyber-form-input"
+                          placeholder="ex: DWT Summer Championship 2026"
+                          value={countdownFormData.title}
+                          onChange={(e) => setCountdownFormData({ ...countdownFormData, title: e.target.value })}
+                          required
+                          style={{ fontSize: '15px', fontWeight: '700', letterSpacing: '0.02em', color: '#fff' }}
+                        />
+                        {/* Suggestions de titres rapides */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          <span style={{ fontSize: '10px', color: '#64748b', alignSelf: 'center', marginRight: '4px' }}>Suggestions :</span>
+                          {[
+                            'DWT Summer Championship 2026',
+                            'Valorant Pro Series Grand Finals',
+                            'Dark Wolf Alpha Drop 2.0',
+                            'FC 25 International Cup'
+                          ].map(t => (
+                            <button
+                              key={t}
+                              type="button"
+                              className={`cyber-chip ${countdownFormData.title === t ? 'active' : ''}`}
+                              onClick={() => setCountdownFormData({ ...countdownFormData, title: t })}
+                            >
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* CHAMP: SOUS-TITRE / TYPE */}
+                      <div className="dash-form-group" style={{ margin: 0 }}>
+                        <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>
+                          Type d'Événement / Sous-titre
+                        </label>
+                        <input
+                          type="text"
+                          className="cyber-form-input"
+                          placeholder="ex: — Next Major Event — ou Grande Finale"
+                          value={countdownFormData.subtitle}
+                          onChange={(e) => setCountdownFormData({ ...countdownFormData, subtitle: e.target.value })}
+                          style={{ fontSize: '14px', color: '#e2e8f0' }}
+                        />
+                        {/* Suggestions de sous-titres rapides */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          <span style={{ fontSize: '10px', color: '#64748b', alignSelf: 'center', marginRight: '4px' }}>Presets :</span>
+                          {[
+                            '— Next Major Event —',
+                            'Grande Finale Mondiale',
+                            'Tournoi Officiel Esport',
+                            'Drop Exclusif Dark Lab',
+                            'Match Showcase'
+                          ].map(st => (
+                            <button
+                              key={st}
+                              type="button"
+                              className={`cyber-chip ${countdownFormData.subtitle === st ? 'active' : ''}`}
+                              onClick={() => setCountdownFormData({ ...countdownFormData, subtitle: st })}
+                            >
+                              {st}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: PROGRAMMATION TEMPORELLE & DATE CIBLE */}
+                  <div className="cyber-form-section">
+                    <div className="cyber-section-header">
+                      <div className="cyber-section-title">
+                        <Calendar size={16} color="#38bdf8" /> 2. Date & Heure Cibles du Compte à Rebours
+                      </div>
+                      {/* Raccourcis temporels */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', marginRight: '4px' }}>Raccourcis :</span>
+                        {[
+                          { label: '+24h', days: 1 },
+                          { label: '+3 jours', days: 3 },
+                          { label: '+7 jours', days: 7 },
+                          { label: '+14 jours', days: 14 },
+                          { label: '+30 jours', days: 30 },
+                          { label: '+3 mois', days: 90 }
+                        ].map(preset => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            className="cyber-chip"
+                            onClick={() => handleApplyDatePreset(preset.days)}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="dash-form-group" style={{ margin: 0 }}>
+                      <input
+                        type="datetime-local"
+                        className="cyber-form-input"
+                        value={countdownFormData.targetDate}
+                        onChange={(e) => setCountdownFormData({ ...countdownFormData, targetDate: e.target.value })}
+                        required
+                        style={{
+                          fontSize: '16px',
+                          color: '#38bdf8',
+                          fontWeight: '800',
+                          fontFamily: 'Orbitron, monospace',
+                          padding: '14px 18px',
+                          background: '#070a14',
+                          border: '1px solid #1e2c45'
+                        }}
+                      />
+                    </div>
+
+                    {/* Rappel lisible en français & temps restant estimé */}
+                    {countdownFormData.targetDate && (
+                      <div style={{
+                        marginTop: '12px',
+                        padding: '10px 16px',
+                        background: '#070a10',
+                        borderRadius: '6px',
+                        border: '1px solid #1a2233',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '10px',
+                        fontSize: '12px'
+                      }}>
+                        <div style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Clock size={14} color="#38bdf8" />
+                          <span>
+                            Prévu pour : <strong style={{ color: '#fff' }}>{new Date(countdownFormData.targetDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</strong>
+                          </span>
+                        </div>
+                        <div style={{
+                          color: new Date(countdownFormData.targetDate) < new Date() ? '#f87171' : '#22c55e',
+                          fontWeight: '800',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          {new Date(countdownFormData.targetDate) < new Date() ? (
+                            ' Date déjà expirée (Événement en direct)'
+                          ) : (
+                            `⏳ Temps restant : ${previewTimeLeft.days}j ${previewTimeLeft.hours}h ${previewTimeLeft.mins}m ${previewTimeLeft.secs}s`
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SECTION 3: DISCIPLINE, JEU & BADGE */}
+                  <div className="cyber-form-section">
+                    <div className="cyber-section-header">
+                      <div className="cyber-section-title">
+                        <Gamepad2 size={16} color="#a855f7" /> 3. Discipline, Roster & Badge de Mise en Avant
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>Associer un jeu officiel et une étiquette</span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                      {/* CHAMP: JEU OU ROSTER */}
+                      <div className="dash-form-group" style={{ margin: 0 }}>
+                        <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>
+                          Jeu ou Roster Associé
+                        </label>
+                        <input
+                          type="text"
+                          className="cyber-form-input"
+                          placeholder="ex: Valorant, FC 25, Boutique Dark Lab..."
+                          value={countdownFormData.game}
+                          onChange={(e) => setCountdownFormData({ ...countdownFormData, game: e.target.value })}
+                        />
+                        {/* Suggestions de jeux */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          {[
+                            'Valorant',
+                            'FC 25',
+                            'Counter-Strike 2',
+                            'Rocket League',
+                            'Fortnite',
+                            'Boutique Dark Lab'
+                          ].map(g => (
+                            <button
+                              key={g}
+                              type="button"
+                              className={`cyber-chip ${countdownFormData.game === g ? 'active' : ''}`}
+                              onClick={() => setCountdownFormData({ ...countdownFormData, game: g })}
+                            >
+                              {g}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* CHAMP: BADGE DE MISE EN AVANT */}
+                      <div className="dash-form-group" style={{ margin: 0 }}>
+                        <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>
+                          Badge de Mise en Avant
+                        </label>
+                        <input
+                          type="text"
+                          className="cyber-form-input"
+                          placeholder="ex: ÉVÉNEMENT MAJEUR, DROP ALPHA..."
+                          value={countdownFormData.badge}
+                          onChange={(e) => setCountdownFormData({ ...countdownFormData, badge: e.target.value })}
+                        />
+                        {/* Suggestions de badges */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          {[
+                            'ÉVÉNEMENT MAJEUR',
+                            'FINALE MONDIALE',
+                            'DROP LIMITÉ',
+                            'TOURNOI OFFICIEL',
+                            'EN DIRECT'
+                          ].map(b => (
+                            <button
+                              key={b}
+                              type="button"
+                              className={`cyber-chip ${countdownFormData.badge === b ? 'active' : ''}`}
+                              onClick={() => setCountdownFormData({ ...countdownFormData, badge: b })}
+                            >
+                              {b}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 4: CALL TO ACTION (BOUTON DE REDIRECTION) */}
+                  <div className="cyber-form-section">
+                    <div className="cyber-section-header">
+                      <div className="cyber-section-title">
+                        <Zap size={16} color="#eab308" /> 4. Bouton d'Action & Redirection Visiteurs
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>Permet aux visiteurs d'accéder au tournoi ou à la boutique</span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                      {/* CHAMP: TEXTE DU BOUTON */}
+                      <div className="dash-form-group" style={{ margin: 0 }}>
+                        <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>
+                          Texte du Bouton (CTA)
+                        </label>
+                        <input
+                          type="text"
+                          className="cyber-form-input"
+                          placeholder="ex: Voir le Tournoi, Découvrir le Drop, Rejoindre..."
+                          value={countdownFormData.buttonText}
+                          onChange={(e) => setCountdownFormData({ ...countdownFormData, buttonText: e.target.value })}
+                        />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          {[
+                            'Voir le Tournoi',
+                            'Découvrir le Drop',
+                            'Rejoindre la Meute',
+                            'Voir les Détails'
+                          ].map(btnT => (
+                            <button
+                              key={btnT}
+                              type="button"
+                              className={`cyber-chip ${countdownFormData.buttonText === btnT ? 'active' : ''}`}
+                              onClick={() => setCountdownFormData({ ...countdownFormData, buttonText: btnT })}
+                            >
+                              {btnT}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* CHAMP: LIEN / CIBLE DU BOUTON */}
+                      <div className="dash-form-group" style={{ margin: 0 }}>
+                        <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>
+                          Lien / Cible du Bouton
+                        </label>
+                        <input
+                          type="text"
+                          className="cyber-form-input"
+                          placeholder="ex: #tournois, #shop, ou https://..."
+                          value={countdownFormData.buttonLink}
+                          onChange={(e) => setCountdownFormData({ ...countdownFormData, buttonLink: e.target.value })}
+                        />
+                        {/* Raccourcis de cibles de section */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          {[
+                            { label: '#tournois (Matchs)', val: '#tournois' },
+                            { label: '#shop (Boutique)', val: '#shop' },
+                            { label: '#teams (Roster)', val: '#teams' },
+                            { label: '#join (Tryouts)', val: '#join' }
+                          ].map(t => (
+                            <button
+                              key={t.val}
+                              type="button"
+                              className={`cyber-chip ${countdownFormData.buttonLink === t.val ? 'active' : ''}`}
+                              onClick={() => setCountdownFormData({ ...countdownFormData, buttonLink: t.val })}
+                            >
+                              {t.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 5: DESCRIPTION DE L'ÉVÉNEMENT */}
+                  <div className="cyber-form-section">
+                    <div className="cyber-section-header">
+                      <div className="cyber-section-title">
+                        <FileText size={16} color="#94a3b8" /> 5. Description / Détails de l'Événement
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>Texte affiché sous le titre de l'événement</span>
+                    </div>
+
+                    <div className="dash-form-group" style={{ margin: 0 }}>
+                      <textarea
+                        className="cyber-form-textarea"
+                        rows={3}
+                        placeholder="Donnez quelques détails sur ce qui attend la communauté lors de cet événement..."
+                        value={countdownFormData.description}
+                        onChange={(e) => setCountdownFormData({ ...countdownFormData, description: e.target.value })}
+                        style={{ resize: 'vertical', lineHeight: '1.6' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* SECTION 6: INTERRUPTEUR SWITCH VISIBILITÉ CYBER */}
+                  <div 
+                    className="cyber-switch-container"
+                    onClick={() => setCountdownFormData({ ...countdownFormData, isActive: !countdownFormData.isActive })}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className={`cyber-switch-track ${countdownFormData.isActive ? 'on' : ''}`}>
+                        <div className="cyber-switch-thumb" />
+                      </div>
+                      <div>
+                        <div style={{ color: '#fff', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          Activer ce compte à rebours sur la page d'accueil du site
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                          {countdownFormData.isActive 
+                            ? "L'événement et son compte à rebours sont immédiatement visibles par tous les visiteurs sur le site."
+                            : "Le compte à rebours est masqué sur la page d'accueil (brouillon administrateur)."}
+                        </div>
+                      </div>
+                    </div>
+
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      background: countdownFormData.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                      color: countdownFormData.isActive ? '#22c55e' : '#f87171',
+                      border: `1px solid ${countdownFormData.isActive ? '#22c55e' : '#f87171'}`
+                    }}>
+                      {countdownFormData.isActive ? '● EN LIGNE' : '○ MASQUÉ'}
+                    </span>
+                  </div>
+
+                  {/* BOUTON D'ENREGISTREMENT & ACTION */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '14px', marginTop: '24px' }}>
+                    <button
+                      type="submit"
+                      className="btn-rejoindre"
+                      disabled={savingCountdown}
+                      style={{
+                        padding: '14px 38px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        fontSize: '15px',
+                        fontWeight: '800',
+                        cursor: savingCountdown ? 'not-allowed' : 'pointer',
+                        background: 'linear-gradient(135deg, #e60000 0%, #a80000 100%)',
+                        boxShadow: '0 4px 25px rgba(230, 0, 0, 0.45)',
+                        borderRadius: '6px'
+                      }}
+                    >
+                      {savingCountdown ? (
+                        <>
+                          <RefreshCw size={18} className="animate-spin" /> Enregistrement en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Check size={20} /> Enregistrer et Publier le Compteur
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* LISTE DE TOUS LES EVENEMENTS CONFIGURÉS */}
+              <div className="dash-card">
+                <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <span className="dash-card-title">Tous les Événements & Historique ({countdownList.length})</span>
+                    <div style={{ color: '#94a3b8', fontSize: '13px', marginTop: '2px' }}>
+                      Sélectionnez un événement en un clic pour le définir comme compte à rebours officiel du site.
+                    </div>
+                  </div>
+                  <button
+                    className="dash-subtab-btn"
+                    onClick={handleOpenCreateCountdown}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Plus size={14} /> Nouvel Événement
+                  </button>
+                </div>
+
+                <div className="dash-list-col" style={{ marginTop: '16px' }}>
+                  {countdownList.length === 0 ? (
+                    <div className="dash-empty-state">
+                      Aucun événement enregistré. Créez-en un pour lancer votre premier compte à rebours !
+                    </div>
+                  ) : (
+                    countdownList.map((item) => {
+                      const isCurrentActive = item._id === activeCountdown?._id || item.isActive;
+                      const dateObj = item.targetDate ? new Date(item.targetDate) : null;
+                      const isPast = dateObj ? dateObj < new Date() : false;
+
+                      return (
+                        <div
+                          key={item._id}
+                          className="dash-list-item-row"
+                          style={{
+                            borderColor: isCurrentActive ? 'rgba(230,0,0,0.45)' : undefined,
+                            background: isCurrentActive ? 'rgba(230,0,0,0.04)' : undefined,
+                            padding: '16px 20px',
+                            gap: '16px'
+                          }}
+                        >
+                          <div className="dash-item-left" style={{ flex: 1 }}>
+                            <div
+                              className="dash-wolf-badge-tiny"
+                              style={{
+                                background: isCurrentActive ? 'rgba(230,0,0,0.2)' : undefined,
+                                borderColor: isCurrentActive ? 'rgba(230,0,0,0.4)' : undefined
+                              }}
+                            >
+                              <Timer size={18} color={isCurrentActive ? 'var(--red-primary)' : '#64748b'} />
+                            </div>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                <span className="dash-item-title" style={{ fontSize: '16px', fontWeight: '800' }}>
+                                  {item.title}
+                                </span>
+                                <span style={{
+                                  fontSize: '10px',
+                                  fontWeight: '800',
+                                  padding: '2px 8px',
+                                  borderRadius: '10px',
+                                  background: isCurrentActive ? 'rgba(34,197,94,0.15)' : 'rgba(100,116,139,0.15)',
+                                  color: isCurrentActive ? '#22c55e' : '#94a3b8',
+                                  border: `1px solid ${isCurrentActive ? 'rgba(34,197,94,0.3)' : 'rgba(100,116,139,0.3)'}`
+                                }}>
+                                  {isCurrentActive ? 'ACTIF SUR LE SITE' : 'INACTIF'}
+                                </span>
+                                {item.game && (
+                                  <span style={{ fontSize: '10px', color: '#38bdf8', background: 'rgba(56,189,248,0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                    {item.game}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                <span> {item.subtitle || '— Next Major Event —'}</span>
+                                <span>
+                                   {dateObj ? dateObj.toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }) : 'Pas de date'}
+                                </span>
+                                {isPast && (
+                                  <span style={{ color: '#f87171', fontWeight: '700' }}> Date passée</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {!isCurrentActive && (
+                              <button
+                                type="button"
+                                className="btn-dash-approve"
+                                style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                onClick={() => handleActivateCountdown(item)}
+                              >
+                                <CheckCircle2 size={14} /> Activer sur le site
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="dash-subtab-btn"
+                              style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              onClick={() => {
+                                handleOpenEditCountdown(item);
+                              }}
+                            >
+                              <Edit3 size={14} /> Modifier
+                            </button>
+                            {countdownList.length > 1 && (
+                              <button
+                                type="button"
+                                className="btn-dash-reject"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
+                                onClick={() => handleDeleteCountdown(item)}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -5317,7 +7106,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   Annuler
                 </button>
                 <button type="submit" className="btn-dash-reject" disabled={uploadingImage}>
-                  {editingProduct ? 'Mettre à jour le Produit' : 'Publier dans la Boutique 🛍️'}
+                  {editingProduct ? 'Mettre à jour le Produit' : 'Publier dans la Boutique '}
                 </button>
               </div>
             </form>
@@ -5567,7 +7356,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   padding: '2px 8px',
                   borderRadius: '10px'
                 }}>
-                  DIFFUSION EN DIRECT 🔴
+                  DIFFUSION EN DIRECT 
                 </span>
               )}
             </div>
@@ -5617,7 +7406,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                     onChange={(e) => setMatchFormData({ ...matchFormData, status: e.target.value })}
                   >
                     <option value="upcoming">À venir (Upcoming)</option>
-                    <option value="live">EN DIRECT (Live Now 🔴)</option>
+                    <option value="live">EN DIRECT (Live Now )</option>
                     <option value="finished">Terminé (Finished)</option>
                   </select>
                 </div>
@@ -5637,7 +7426,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
               </div>
 
               <div className="dash-form-group">
-                <label className="dash-form-label">Lien du Flux Vidéo Stream (Twitch, YouTube, Kick) 📺</label>
+                <label className="dash-form-label">Lien du Flux Vidéo Stream (Twitch, YouTube, Kick) </label>
                 <input 
                   type="text" 
                   className="dash-form-input" 
@@ -5654,7 +7443,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                     onClick={() => setMatchFormData({ ...matchFormData, streamUrl: 'https://www.twitch.tv/darkw0lfteam' })}
                     style={{ background: 'rgba(145, 70, 255, 0.2)', border: '1px solid #9146FF', color: '#c084fc', fontSize: '11px', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                   >
-                    🐺 Twitch DWT Officiel
+                     Twitch DWT Officiel
                   </button>
                   <button
                     type="button"
@@ -5730,7 +7519,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   Annuler
                 </button>
                 <button type="submit" className="btn-dash-reject">
-                  {editingMatch ? (matchFormData.status === 'live' ? 'Diffuser en Direct 🔴' : 'Sauvegarder') : 'Programmer le Match'}
+                  {editingMatch ? (matchFormData.status === 'live' ? 'Diffuser en Direct ' : 'Sauvegarder') : 'Programmer le Match'}
                 </button>
               </div>
             </form>
@@ -5884,7 +7673,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   className="auth-submit-btn" 
                   style={{ width: 'auto', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  {editingPlayer ? 'Enregistrer les Modifications 🐺✓' : 'Ajouter Joueur à l\'Équipe 🐺🎮'}
+                  {editingPlayer ? 'Enregistrer les Modifications ✓' : 'Ajouter Joueur à l\'Équipe '}
                 </button>
               </div>
             </form>
@@ -6174,7 +7963,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   Annuler
                 </button>
                 <button type="submit" className="btn-dash-reject" disabled={uploadingGamePoster}>
-                  {editingGame ? 'Enregistrer les Modifications 🎮' : 'Ajouter le Titre & Affiche 🐺🎮'}
+                  {editingGame ? 'Enregistrer les Modifications ' : 'Ajouter le Titre & Affiche '}
                 </button>
               </div>
             </form>
@@ -6338,7 +8127,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   className="dash-form-textarea" 
                   value={slideFormData.subtitle}
                   onChange={(e) => setSlideFormData({ ...slideFormData, subtitle: e.target.value })}
-                  placeholder="Ex: Dark Wolf Team — Elite esports. Dark Lab — Premium gear crafted for champions who refuse to lose." 
+                  placeholder="Ex: Dark Wolf Team — Elite esports. Dark Lab — Équipements d'élite conçus pour les champions." 
                 />
               </div>
 
@@ -6395,23 +8184,23 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                         defaultValue=""
                       >
                         <option value="" disabled>-- Choisir une page / section --</option>
-                        <option value="#shop">🛍️ Boutique Officielle (#shop)</option>
-                        <option value="#shop:pro-kit">👕 Pro Kit & Maillots (#shop:pro-kit)</option>
-                        <option value="#shop:collabs">🔥 Collabs Exclusives (#shop:collabs)</option>
-                        <option value="#shop:best-sellers">⭐ Best Sellers Store (#shop:best-sellers)</option>
-                        <option value="#teams">🐺 Équipes & Rosters (#teams)</option>
-                        <option value="#matches-live">🔴 Matchs & Live Stream (#matches-live)</option>
+                        <option value="#shop"> Boutique Officielle (#shop)</option>
+                        <option value="#shop:pro-kit"> Pro Kit & Maillots (#shop:pro-kit)</option>
+                        <option value="#shop:collabs"> Collabs Exclusives (#shop:collabs)</option>
+                        <option value="#shop:best-sellers"> Best Sellers Store (#shop:best-sellers)</option>
+                        <option value="#teams"> Équipes & Rosters (#teams)</option>
+                        <option value="#matches-live"> Matchs & Live Stream (#matches-live)</option>
                         <option value="#countdown">⏳ Compte à Rebours Drop (#countdown)</option>
-                        <option value="#news">📰 Actualités & Scoops (#news)</option>
-                        <option value="#join">🎯 Recrutement / Tryouts (#join)</option>
-                        <option value="#contact">📬 Contact Staff (#contact)</option>
-                        <option value="#museum">🏛️ Musée DWT Archives (#museum)</option>
-                        <option value="#achievements">🏆 Palmarès & Trophées (#achievements)</option>
-                        <option value="#partners">🤝 Partenaires & Sponsors (#partners)</option>
-                        <option value="#player">🎮 Espace Joueur & Fan Zone (#player)</option>
-                        <option value="#player:pronostics">🎲 Pronostics de Matchs (#player:pronostics)</option>
-                        <option value="#social">💬 Discord & Réseaux (#social)</option>
-                        <option value="#cart">🛒 Panier d'achat (#cart)</option>
+                        <option value="#news"> Actualités & Scoops (#news)</option>
+                        <option value="#join"> Recrutement / Tryouts (#join)</option>
+                        <option value="#contact"> Contact Staff (#contact)</option>
+                        <option value="#museum"> Musée DWT Archives (#museum)</option>
+                        <option value="#achievements"> Palmarès & Trophées (#achievements)</option>
+                        <option value="#partners"> Partenaires & Sponsors (#partners)</option>
+                        <option value="#player"> Espace Joueur & Fan Zone (#player)</option>
+                        <option value="#player:pronostics"> Pronostics de Matchs (#player:pronostics)</option>
+                        <option value="#social"> Discord & Réseaux (#social)</option>
+                        <option value="#cart"> Panier d'achat (#cart)</option>
                       </select>
                     </div>
 
@@ -6476,19 +8265,19 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                         defaultValue=""
                       >
                         <option value="" disabled>-- Choisir une page / section --</option>
-                        <option value="#teams">🐺 Équipes & Rosters (#teams)</option>
-                        <option value="#shop">🛍️ Boutique Officielle (#shop)</option>
+                        <option value="#teams"> Équipes & Rosters (#teams)</option>
+                        <option value="#shop"> Boutique Officielle (#shop)</option>
                         <option value="#countdown">⏳ Compte à Rebours Drop (#countdown)</option>
-                        <option value="#matches-live">🔴 Matchs & Live Stream (#matches-live)</option>
-                        <option value="#news">📰 Actualités & Scoops (#news)</option>
-                        <option value="#join">🎯 Recrutement / Tryouts (#join)</option>
-                        <option value="#contact">📬 Contact Staff (#contact)</option>
-                        <option value="#museum">🏛️ Musée DWT Archives (#museum)</option>
-                        <option value="#achievements">🏆 Palmarès & Trophées (#achievements)</option>
-                        <option value="#partners">🤝 Partenaires & Sponsors (#partners)</option>
-                        <option value="#player">🎮 Espace Joueur & Fan Zone (#player)</option>
-                        <option value="#social">💬 Discord & Réseaux (#social)</option>
-                        <option value="#cart">🛒 Panier d'achat (#cart)</option>
+                        <option value="#matches-live"> Matchs & Live Stream (#matches-live)</option>
+                        <option value="#news"> Actualités & Scoops (#news)</option>
+                        <option value="#join"> Recrutement / Tryouts (#join)</option>
+                        <option value="#contact"> Contact Staff (#contact)</option>
+                        <option value="#museum"> Musée DWT Archives (#museum)</option>
+                        <option value="#achievements"> Palmarès & Trophées (#achievements)</option>
+                        <option value="#partners"> Partenaires & Sponsors (#partners)</option>
+                        <option value="#player"> Espace Joueur & Fan Zone (#player)</option>
+                        <option value="#social"> Discord & Réseaux (#social)</option>
+                        <option value="#cart"> Panier d'achat (#cart)</option>
                       </select>
                     </div>
 
@@ -6535,7 +8324,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   Annuler
                 </button>
                 <button type="submit" className="btn-dash-reject" disabled={uploadingSlideImage}>
-                  {editingSlide ? 'Enregistrer les Modifications 🎬' : 'Ajouter au Carrousel Cinématique 🐺🎬'}
+                  {editingSlide ? 'Enregistrer les Modifications ' : 'Ajouter au Carrousel Cinématique '}
                 </button>
               </div>
             </form>
@@ -6753,7 +8542,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   Annuler
                 </button>
                 <button type="submit" className="btn-dash-reject" disabled={uploadingMuseumImage}>
-                  {editingMuseumItem ? 'Enregistrer les Modifications 🏛️' : 'Ajouter au Museum DWT 🏛️✨'}
+                  {editingMuseumItem ? 'Enregistrer les Modifications ' : 'Ajouter au Museum DWT '}
                 </button>
               </div>
             </form>
@@ -6818,10 +8607,10 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                     value={videoFormData.category}
                     onChange={(e) => setVideoFormData({ ...videoFormData, category: e.target.value })}
                   >
-                    <option value="trailer">🎬 Trailer Officiel de l'équipe</option>
-                    <option value="product_ad">🛍️ Spot Publicitaire / Produit Boutique</option>
-                    <option value="announcement">📢 Annonce Officielle / Recrutement</option>
-                    <option value="match_highlight">🏆 Best-Of & Temps Forts Match</option>
+                    <option value="trailer"> Trailer Officiel de l'équipe</option>
+                    <option value="product_ad"> Spot Publicitaire / Produit Boutique</option>
+                    <option value="announcement"> Annonce Officielle / Recrutement</option>
+                    <option value="match_highlight"> Best-Of & Temps Forts Match</option>
                   </select>
                 </div>
               </div>
@@ -6861,7 +8650,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                     }}
                   >
                     <Upload size={15} color={videoSourceMode === 'upload' ? 'var(--red-primary)' : '#94a3b8'} />
-                    <span>📁 Téléverser un fichier MP4 / WEBM (PC)</span>
+                    <span> Téléverser un fichier MP4 / WEBM (PC)</span>
                   </button>
 
                   <button
@@ -6885,7 +8674,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                     }}
                   >
                     <Film size={15} color={videoSourceMode === 'youtube' ? 'var(--red-primary)' : '#94a3b8'} />
-                    <span>🔗 Lien YouTube (ou externe)</span>
+                    <span> Lien YouTube (ou externe)</span>
                   </button>
                 </div>
 
@@ -6930,7 +8719,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                         {/* Mini lecteur d'aperçu HTML5 intégré */}
                         <div style={{ position: 'relative', width: '100%', height: '170px', background: '#000', borderRadius: '6px', overflow: 'hidden' }}>
                           <video 
-                            src={videoFormData.videoUrl.startsWith('/uploads/') ? `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${videoFormData.videoUrl}` : videoFormData.videoUrl} 
+                            src={videoFormData.videoUrl.startsWith('/uploads/') ? `${import.meta.env.VITE_BACKEND_URL || ''}${videoFormData.videoUrl}` : videoFormData.videoUrl} 
                             controls 
                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                           />
@@ -7171,7 +8960,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   style={{ width: '18px', height: '18px', accentColor: 'var(--red-primary)', cursor: 'pointer' }}
                 />
                 <label htmlFor="isMainTrailerCheck" style={{ color: '#fff', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
-                  <strong style={{ color: '#ff4d4d' }}>★ Définir comme Trailer Principal de la Dark Wolf Team</strong>
+                  <strong style={{ color: '#ff4d4d' }}> Définir comme Trailer Principal de la Dark Wolf Team</strong>
                   <div style={{ color: '#94a3b8', fontSize: '12px', marginTop: '2px' }}>
                     Cette vidéo occupera le grand écran vedette à gauche de la section Watch DWT.
                   </div>
@@ -7277,7 +9066,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   Annuler
                 </button>
                 <button type="submit" className="btn-dash-reject" disabled={uploadingVideoImage || uploadingVideoFile}>
-                  {editingVideo ? 'Enregistrer les Modifications 🎬' : 'Publier la Vidéo 🐺🎬'}
+                  {editingVideo ? 'Enregistrer les Modifications ' : 'Publier la Vidéo '}
                 </button>
               </div>
             </form>
@@ -7306,7 +9095,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
             <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000' }}>
               {previewVideoModal.videoUrl.startsWith('/uploads/') || /\.(mp4|webm|mov|ogg|mkv|m4v)(\?.*)?$/i.test(previewVideoModal.videoUrl) ? (
                 <video
-                  src={previewVideoModal.videoUrl.startsWith('/uploads/') ? `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${previewVideoModal.videoUrl}` : previewVideoModal.videoUrl}
+                  src={previewVideoModal.videoUrl.startsWith('/uploads/') ? `${import.meta.env.VITE_BACKEND_URL || ''}${previewVideoModal.videoUrl}` : previewVideoModal.videoUrl}
                   controls
                   autoPlay
                   style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }}
@@ -7335,6 +9124,926 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
           </div>
         </div>
       )}
+
+      {/* MODAL: AJOUTER / MODIFIER UN ÉVÉNEMENT DU COMPTEUR */}
+      {showCountdownModal && (
+        <div className="dash-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowCountdownModal(false); }}>
+          <div className="dash-modal-box dash-modal-box-lg" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <h3 className="dash-modal-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Timer size={22} color="var(--red-primary)" />
+                  {editingCountdown ? 'Modifier l\'Événement du Compte à Rebours' : 'Ajouter un Nouvel Événement'}
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+                  Configurez le titre de l'événement, son sous-titre et sa date limite
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCountdownModal(false)}
+                className="dash-more-btn"
+                style={{ padding: '6px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCountdown}>
+              <div className="dash-form-group">
+                <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>Titre de l'Événement *</label>
+                <input
+                  type="text"
+                  className="cyber-form-input"
+                  placeholder="ex: DWT Summer Championship 2026"
+                  value={countdownFormData.title}
+                  onChange={(e) => setCountdownFormData({ ...countdownFormData, title: e.target.value })}
+                  required
+                  style={{ fontSize: '15px', fontWeight: '700' }}
+                />
+              </div>
+
+              <div className="dash-form-group">
+                <label className="dash-form-label" style={{ color: '#fff', fontWeight: '800' }}>Sous-titre / Catégorie de l'Événement</label>
+                <input
+                  type="text"
+                  className="cyber-form-input"
+                  placeholder="ex: — Next Major Event —"
+                  value={countdownFormData.subtitle}
+                  onChange={(e) => setCountdownFormData({ ...countdownFormData, subtitle: e.target.value })}
+                />
+              </div>
+
+              <div className="dash-form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label className="dash-form-label" style={{ margin: 0, color: '#fff', fontWeight: '800' }}>Date et Heure Cibles *</label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button type="button" className="cyber-chip" onClick={() => handleApplyDatePreset(7)}>+7j</button>
+                    <button type="button" className="cyber-chip" onClick={() => handleApplyDatePreset(30)}>+30j</button>
+                    <button type="button" className="cyber-chip" onClick={() => handleApplyDatePreset(90)}>+3 mois</button>
+                  </div>
+                </div>
+                <input
+                  type="datetime-local"
+                  className="cyber-form-input"
+                  value={countdownFormData.targetDate}
+                  onChange={(e) => setCountdownFormData({ ...countdownFormData, targetDate: e.target.value })}
+                  required
+                  style={{ color: '#38bdf8', fontWeight: '800', fontFamily: 'Orbitron, monospace' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="dash-form-group">
+                  <label className="dash-form-label">Jeu / Roster</label>
+                  <input
+                    type="text"
+                    className="cyber-form-input"
+                    placeholder="ex: Valorant"
+                    value={countdownFormData.game}
+                    onChange={(e) => setCountdownFormData({ ...countdownFormData, game: e.target.value })}
+                  />
+                </div>
+
+                <div className="dash-form-group">
+                  <label className="dash-form-label">Badge</label>
+                  <input
+                    type="text"
+                    className="cyber-form-input"
+                    placeholder="ex: ÉVÉNEMENT MAJEUR"
+                    value={countdownFormData.badge}
+                    onChange={(e) => setCountdownFormData({ ...countdownFormData, badge: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="dash-form-group">
+                  <label className="dash-form-label">Bouton d'Action</label>
+                  <input
+                    type="text"
+                    className="cyber-form-input"
+                    placeholder="ex: Voir le Tournoi"
+                    value={countdownFormData.buttonText}
+                    onChange={(e) => setCountdownFormData({ ...countdownFormData, buttonText: e.target.value })}
+                  />
+                </div>
+
+                <div className="dash-form-group">
+                  <label className="dash-form-label">Lien Cible</label>
+                  <input
+                    type="text"
+                    className="cyber-form-input"
+                    placeholder="ex: #tournois"
+                    value={countdownFormData.buttonLink}
+                    onChange={(e) => setCountdownFormData({ ...countdownFormData, buttonLink: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="dash-form-group">
+                <label className="dash-form-label">Description</label>
+                <textarea
+                  className="cyber-form-textarea"
+                  rows={3}
+                  placeholder="Détails de l'événement..."
+                  value={countdownFormData.description}
+                  onChange={(e) => setCountdownFormData({ ...countdownFormData, description: e.target.value })}
+                />
+              </div>
+
+              <div 
+                className="cyber-switch-container"
+                style={{ padding: '12px 16px', margin: '14px 0' }}
+                onClick={() => setCountdownFormData({ ...countdownFormData, isActive: !countdownFormData.isActive })}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div className={`cyber-switch-track ${countdownFormData.isActive ? 'on' : ''}`} style={{ width: '44px', height: '24px' }}>
+                    <div className="cyber-switch-thumb" style={{ width: '18px', height: '18px' }} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>
+                      Activer sur la page d'accueil du site
+                    </div>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  background: countdownFormData.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                  color: countdownFormData.isActive ? '#22c55e' : '#f87171'
+                }}>
+                  {countdownFormData.isActive ? 'EN LIGNE' : 'MASQUÉ'}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                <button
+                  type="button"
+                  className="dash-subtab-btn"
+                  onClick={() => setShowCountdownModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="btn-rejoindre"
+                  disabled={savingCountdown}
+                  style={{ padding: '8px 24px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {savingCountdown ? <RefreshCw size={14} className="animate-spin" /> : <Check size={16} />}
+                  {editingCountdown ? 'Mettre à Jour' : 'Créer l\'Événement'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL AJOUT / MODIFICATION CODE PROMO (AVEC AUTORISATION ADMIN) */}
+      {showCouponModal && (
+        <div 
+          className="dash-modal-backdrop" 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(5, 8, 14, 0.88)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '20px',
+            margin: 0
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCouponModal(false); }}
+        >
+          <div 
+            className="dash-modal-box" 
+            style={{ 
+              maxWidth: '820px', 
+              width: '100%', 
+              maxHeight: '90vh', 
+              display: 'flex', 
+              flexDirection: 'column',
+              background: '#0d111a',
+              border: '1px solid rgba(230, 0, 0, 0.45)',
+              borderRadius: '16px',
+              boxShadow: '0 25px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(230, 0, 0, 0.15)',
+              overflow: 'hidden',
+              padding: 0,
+              position: 'relative'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '20px 24px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'linear-gradient(90deg, rgba(230,0,0,0.1) 0%, rgba(13,17,26,0.95) 100%)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'rgba(230, 0, 0, 0.15)',
+                  border: '1px solid var(--red-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--red-primary)'
+                }}>
+                  <Tag size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#fff', fontFamily: 'Orbitron, sans-serif' }}>
+                    {editingCoupon ? `Modifier le Code Promo : ${editingCoupon.code}` : 'Créer un Nouveau Code Promo'}
+                  </h3>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px' }}>
+                    Configurez la remise, attribuez aux joueurs et autorisez son utilisation
+                  </div>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                className="dash-more-btn" 
+                style={{ padding: '8px', cursor: 'pointer', borderRadius: '8px' }}
+                onClick={() => setShowCouponModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCoupon} style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+              {/* Presets rapides si nouveau code */}
+              {!editingCoupon && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="dash-form-label" style={{ marginBottom: '8px', display: 'block' }}>
+                    Suggestions de Codes Rapides :
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {[
+                      { code: 'WOLF10', type: 'percentage', val: 10, desc: '10% de réduction sur tout le shop' },
+                      { code: 'ALPHA20', type: 'percentage', val: 20, desc: '20% de remise spéciale Alpha' },
+                      { code: 'FREEDWT', type: 'fixed', val: 5, desc: '5 DT de réduction immédiate' },
+                      { code: 'MEUTE50', type: 'fixed', val: 15, desc: '15 DT offerts dès 100 DT d\'achat' }
+                    ].map((pre) => (
+                      <button
+                        key={pre.code}
+                        type="button"
+                        className="cyber-chip"
+                        onClick={() => {
+                          setCouponFormData({
+                            ...couponFormData,
+                            code: pre.code,
+                            discountType: pre.type,
+                            discountValue: pre.val,
+                            description: pre.desc
+                          });
+                        }}
+                      >
+                        +{pre.code} ({pre.type === 'percentage' ? `-${pre.val}%` : `-${pre.val} DT`})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Code et Description */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Code Promo *</label>
+                  <input
+                    type="text"
+                    required
+                    className="cyber-form-input"
+                    placeholder="ex: WOLF10"
+                    style={{ textTransform: 'uppercase', fontFamily: 'Orbitron, sans-serif', letterSpacing: '1px' }}
+                    value={couponFormData.code}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase().replace(/\s+/g, '') })}
+                  />
+                </div>
+
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Type de Remise *</label>
+                  <select
+                    className="dash-form-select"
+                    value={couponFormData.discountType}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, discountType: e.target.value })}
+                  >
+                    <option value="percentage">Pourcentage (%)</option>
+                    <option value="fixed">Montant Fixe (DT)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="dash-form-group">
+                <label className="dash-form-label">Description ou Message Client</label>
+                <input
+                  type="text"
+                  className="cyber-form-input"
+                  placeholder="ex: Réduction de bienvenue pour la communauté DWT"
+                  value={couponFormData.description}
+                  onChange={(e) => setCouponFormData({ ...couponFormData, description: e.target.value })}
+                />
+              </div>
+
+              {/* Valeur et Montant Minimum */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">
+                    Valeur de la Réduction * {couponFormData.discountType === 'percentage' ? '(%)' : '(DT)'}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0.1"
+                    step="0.1"
+                    className="cyber-form-input"
+                    placeholder={couponFormData.discountType === 'percentage' ? '15' : '10'}
+                    value={couponFormData.discountValue}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, discountValue: e.target.value })}
+                  />
+                </div>
+
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Montant Minimum d'Achat (DT)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="cyber-form-input"
+                    placeholder="0 = Pas de minimum"
+                    value={couponFormData.minOrderAmount}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, minOrderAmount: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Plafond Max et Limite d'utilisations */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Plafond Maximum de Remise (DT)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="cyber-form-input"
+                    placeholder="ex: 50 (facultatif)"
+                    value={couponFormData.maxDiscount}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, maxDiscount: e.target.value })}
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Plafonne la remise si gros panier</span>
+                </div>
+
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Nombre Max d'Utilisations</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="cyber-form-input"
+                    placeholder="ex: 100 (vide = illimité)"
+                    value={couponFormData.usageLimit}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: e.target.value })}
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Nombre total de commandes éligibles</span>
+                </div>
+              </div>
+
+              {/* Dates de début et fin de validité */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Date et Heure de Début (Optionnel)</label>
+                  <input
+                    type="datetime-local"
+                    className="cyber-form-input"
+                    value={couponFormData.startDate}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, startDate: e.target.value })}
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Actif dès la création si vide</span>
+                </div>
+
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Date et Heure d'Expiration (Optionnel)</label>
+                  <input
+                    type="datetime-local"
+                    className="cyber-form-input"
+                    value={couponFormData.endDate}
+                    onChange={(e) => setCouponFormData({ ...couponFormData, endDate: e.target.value })}
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Permanent si vide</span>
+                </div>
+              </div>
+
+              {/* SECTION ATTRIBUTION ET CIBLAGE JOUEURS */}
+              <div style={{
+                background: 'rgba(10, 15, 26, 0.7)',
+                border: couponFormData.isRestricted ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid #1e293b',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '18px',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Target size={18} color={couponFormData.isRestricted ? '#38bdf8' : '#94a3b8'} />
+                    <span style={{ fontSize: '14px', fontWeight: '800', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Attribution & Public Cible
+                    </span>
+                  </div>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: couponFormData.isRestricted ? '#38bdf8' : '#10b981',
+                    background: couponFormData.isRestricted ? 'rgba(56, 189, 248, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                    padding: '2px 8px',
+                    borderRadius: '8px',
+                    border: couponFormData.isRestricted ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)'
+                  }}>
+                    {couponFormData.isRestricted ? 'CIBLÉ (JOUEURS SÉLECTIONNÉS)' : 'ACCÈS UNIVERSEL (TOUS)'}
+                  </span>
+                </div>
+
+                {/* 2 boutons segmentés */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: couponFormData.isRestricted ? '16px' : '0' }}>
+                  <button
+                    type="button"
+                    onClick={() => setCouponFormData({ ...couponFormData, isRestricted: false })}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '8px',
+                      background: !couponFormData.isRestricted ? 'rgba(16, 185, 129, 0.12)' : '#111827',
+                      border: !couponFormData.isRestricted ? '1px solid #10b981' : '1px solid #1f293d',
+                      color: !couponFormData.isRestricted ? '#10b981' : '#94a3b8',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '800', fontSize: '13px' }}>
+                      <Globe size={16} />
+                      Tous les Clients (Public)
+                    </div>
+                    <span style={{ fontSize: '11px', opacity: 0.8 }}>Valable pour tous les visiteurs du site</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCouponFormData({ ...couponFormData, isRestricted: true })}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '8px',
+                      background: couponFormData.isRestricted ? 'rgba(56, 189, 248, 0.12)' : '#111827',
+                      border: couponFormData.isRestricted ? '1px solid #38bdf8' : '1px solid #1f293d',
+                      color: couponFormData.isRestricted ? '#38bdf8' : '#94a3b8',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '800', fontSize: '13px' }}>
+                      <Target size={16} />
+                      Joueurs Spécifiés Uniquement
+                    </div>
+                    <span style={{ fontSize: '11px', opacity: 0.8 }}>Attribution nominative exclusive</span>
+                  </button>
+                </div>
+
+                {/* Si ciblage actif : panneau de recherche et sélection des joueurs */}
+                {couponFormData.isRestricted && (() => {
+                  const rosterPlayers = (eligibleRecipients.players?.length > 0 ? eligibleRecipients.players : playersList) || [];
+                  const userMembers = (eligibleRecipients.users?.length > 0 ? eligibleRecipients.users : allUsersList) || [];
+
+                  // Jeux disponibles pour filtre
+                  const availableGames = Array.from(new Set(rosterPlayers.map(p => p.game).filter(Boolean)));
+
+                  // Filtrage
+                  const searchLower = couponPlayerSearch.toLowerCase().trim();
+
+                  const filteredRoster = rosterPlayers.filter(p => {
+                    const matchSearch = !searchLower ||
+                      (p.gamertag && p.gamertag.toLowerCase().includes(searchLower)) ||
+                      (p.realName && p.realName.toLowerCase().includes(searchLower)) ||
+                      (p.game && p.game.toLowerCase().includes(searchLower));
+                    const matchGame = couponPlayerGameFilter === 'all' || (p.game && p.game.toLowerCase() === couponPlayerGameFilter.toLowerCase());
+                    return matchSearch && matchGame;
+                  });
+
+                  const filteredUsers = userMembers.filter(u => {
+                    if (couponPlayerGameFilter !== 'all') return false;
+                    const matchSearch = !searchLower ||
+                      (u.gamertag && u.gamertag.toLowerCase().includes(searchLower)) ||
+                      (u.email && u.email.toLowerCase().includes(searchLower));
+                    return matchSearch;
+                  });
+
+                  const totalSelected = couponFormData.assignedPlayers.length + couponFormData.assignedUsers.length;
+
+                  return (
+                    <div style={{ marginTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '14px' }}>
+                      {/* Barre d'outils : recherche, filtres de type et boutons rapides */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        {/* Recherche */}
+                        <div style={{ position: 'relative', flex: '1 1 200px' }}>
+                          <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                          <input
+                            type="text"
+                            className="cyber-form-input"
+                            style={{ paddingLeft: '32px', height: '36px', fontSize: '12px' }}
+                            placeholder="Rechercher par pseudo, nom ou jeu..."
+                            value={couponPlayerSearch}
+                            onChange={(e) => setCouponPlayerSearch(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Type Tabs */}
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className={`chat-filter-chip ${couponRecipientType === 'all' ? 'active' : ''}`}
+                            style={{ fontSize: '11px', padding: '5px 10px' }}
+                            onClick={() => setCouponRecipientType('all')}
+                          >
+                            Tous ({filteredRoster.length + filteredUsers.length})
+                          </button>
+                          <button
+                            type="button"
+                            className={`chat-filter-chip ${couponRecipientType === 'players' ? 'active' : ''}`}
+                            style={{ fontSize: '11px', padding: '5px 10px' }}
+                            onClick={() => setCouponRecipientType('players')}
+                          >
+                            Roster ({filteredRoster.length})
+                          </button>
+                          <button
+                            type="button"
+                            className={`chat-filter-chip ${couponRecipientType === 'users' ? 'active' : ''}`}
+                            style={{ fontSize: '11px', padding: '5px 10px' }}
+                            onClick={() => setCouponRecipientType('users')}
+                          >
+                            Membres ({filteredUsers.length})
+                          </button>
+                        </div>
+
+                        {/* Actions Rapides */}
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className="cyber-chip"
+                            style={{ fontSize: '11px', padding: '4px 8px' }}
+                            onClick={() => handleSelectAllVisibleRecipients(
+                              couponRecipientType === 'users' ? [] : filteredRoster,
+                              couponRecipientType === 'players' ? [] : filteredUsers
+                            )}
+                          >
+                            + Tout Sélectionner
+                          </button>
+                          <button
+                            type="button"
+                            className="cyber-chip"
+                            style={{ fontSize: '11px', padding: '4px 8px', color: '#f87171' }}
+                            onClick={handleDeselectAllRecipients}
+                          >
+                            ✕ Désélectionner
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Filtres par jeu si Roster ou Tous */}
+                      {availableGames.length > 0 && couponRecipientType !== 'users' && (
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                          <button
+                            type="button"
+                            className={`cyber-chip ${couponPlayerGameFilter === 'all' ? 'active' : ''}`}
+                            style={{
+                              fontSize: '10px',
+                              padding: '3px 8px',
+                              background: couponPlayerGameFilter === 'all' ? 'rgba(56,189,248,0.2)' : undefined,
+                              color: couponPlayerGameFilter === 'all' ? '#38bdf8' : undefined
+                            }}
+                            onClick={() => setCouponPlayerGameFilter('all')}
+                          >
+                            Tous les Jeux
+                          </button>
+                          {availableGames.map(g => (
+                            <button
+                              key={g}
+                              type="button"
+                              className={`cyber-chip ${couponPlayerGameFilter.toLowerCase() === g.toLowerCase() ? 'active' : ''}`}
+                              style={{
+                                fontSize: '10px',
+                                padding: '3px 8px',
+                                background: couponPlayerGameFilter.toLowerCase() === g.toLowerCase() ? 'rgba(56,189,248,0.2)' : undefined,
+                                color: couponPlayerGameFilter.toLowerCase() === g.toLowerCase() ? '#38bdf8' : undefined
+                              }}
+                              onClick={() => setCouponPlayerGameFilter(g)}
+                            >
+                              {g}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Résumé des joueurs sélectionnés */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 12px',
+                        background: 'rgba(56, 189, 248, 0.08)',
+                        borderRadius: '8px',
+                        marginBottom: '10px',
+                        fontSize: '12px'
+                      }}>
+                        <span style={{ color: '#38bdf8', fontWeight: '700' }}>
+                          {totalSelected} joueur(s) ou membre(s) sélectionné(s)
+                        </span>
+                        {totalSelected > 0 && (
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                            Ces comptes recevront l'autorisation d'utiliser ce code.
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Chips des joueurs sélectionnés */}
+                      {totalSelected > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', maxHeight: '70px', overflowY: 'auto' }}>
+                          {couponFormData.assignedPlayers.map(pId => {
+                            const pDoc = rosterPlayers.find(p => p._id === pId);
+                            if (!pDoc) return null;
+                            return (
+                              <span
+                                key={pId}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  fontSize: '11px',
+                                  background: 'rgba(56, 189, 248, 0.15)',
+                                  border: '1px solid rgba(56, 189, 248, 0.4)',
+                                  color: '#38bdf8',
+                                  padding: '2px 8px 2px 4px',
+                                  borderRadius: '12px'
+                                }}
+                              >
+                                <img
+                                  src={getImageUrl(pDoc.avatar)}
+                                  alt={pDoc.gamertag}
+                                  style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }}
+                                />
+                                {pDoc.gamertag}
+                                <X
+                                  size={12}
+                                  style={{ cursor: 'pointer', opacity: 0.8 }}
+                                  onClick={() => handleTogglePlayerSelection(pId)}
+                                />
+                              </span>
+                            );
+                          })}
+                          {couponFormData.assignedUsers.map(uId => {
+                            const uDoc = userMembers.find(u => u._id === uId);
+                            if (!uDoc) return null;
+                            return (
+                              <span
+                                key={uId}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  fontSize: '11px',
+                                  background: 'rgba(168, 85, 247, 0.15)',
+                                  border: '1px solid rgba(168, 85, 247, 0.4)',
+                                  color: '#c084fc',
+                                  padding: '2px 8px 2px 4px',
+                                  borderRadius: '12px'
+                                }}
+                              >
+                                <img
+                                  src={getImageUrl(uDoc.avatar)}
+                                  alt={uDoc.gamertag}
+                                  style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }}
+                                />
+                                {uDoc.gamertag}
+                                <X
+                                  size={12}
+                                  style={{ cursor: 'pointer', opacity: 0.8 }}
+                                  onClick={() => handleToggleUserSelection(uId)}
+                                />
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Liste Déroulante / Grille des Joueurs Sélectionnables */}
+                      <div style={{
+                        maxHeight: '220px',
+                        overflowY: 'auto',
+                        border: '1px solid #1f293d',
+                        borderRadius: '8px',
+                        background: '#0a0e17',
+                        padding: '6px'
+                      }}>
+                        {/* Section 1 : Joueurs du Roster */}
+                        {couponRecipientType !== 'users' && filteredRoster.length > 0 && (
+                          <div style={{ marginBottom: '8px' }}>
+                            <div style={{ fontSize: '10px', textTransform: 'uppercase', color: '#64748b', fontWeight: '800', padding: '4px 8px' }}>
+                              Joueurs du Roster Officiel ({filteredRoster.length})
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '6px' }}>
+                              {filteredRoster.map(p => {
+                                const isSelected = couponFormData.assignedPlayers.includes(p._id);
+                                return (
+                                  <div
+                                    key={p._id}
+                                    onClick={() => handleTogglePlayerSelection(p._id)}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      background: isSelected ? 'rgba(56, 189, 248, 0.15)' : '#101623',
+                                      border: isSelected ? '1px solid #38bdf8' : '1px solid #1c2436',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.15s ease'
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => {}}
+                                      style={{ accentColor: '#38bdf8', cursor: 'pointer' }}
+                                    />
+                                    <img
+                                      src={getImageUrl(p.avatar)}
+                                      alt={p.gamertag}
+                                      style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
+                                      onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=100&q=80'; }}
+                                    />
+                                    <div style={{ overflow: 'hidden' }}>
+                                      <div style={{ fontSize: '12px', fontWeight: '700', color: isSelected ? '#38bdf8' : '#e2e8f0', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                        {p.gamertag}
+                                      </div>
+                                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                                        {p.game} • {p.role || 'Joueur'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Section 2 : Membres & Utilisateurs */}
+                        {couponRecipientType !== 'players' && filteredUsers.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: '10px', textTransform: 'uppercase', color: '#64748b', fontWeight: '800', padding: '4px 8px' }}>
+                              Membres Inscrits ({filteredUsers.length})
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '6px' }}>
+                              {filteredUsers.map(u => {
+                                const isSelected = couponFormData.assignedUsers.includes(u._id);
+                                return (
+                                  <div
+                                    key={u._id}
+                                    onClick={() => handleToggleUserSelection(u._id)}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      background: isSelected ? 'rgba(168, 85, 247, 0.15)' : '#101623',
+                                      border: isSelected ? '1px solid #c084fc' : '1px solid #1c2436',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.15s ease'
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => {}}
+                                      style={{ accentColor: '#c084fc', cursor: 'pointer' }}
+                                    />
+                                    <img
+                                      src={getImageUrl(u.avatar)}
+                                      alt={u.gamertag}
+                                      style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
+                                      onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=100&q=80'; }}
+                                    />
+                                    <div style={{ overflow: 'hidden' }}>
+                                      <div style={{ fontSize: '12px', fontWeight: '700', color: isSelected ? '#c084fc' : '#e2e8f0', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                        {u.gamertag}
+                                      </div>
+                                      <div style={{ fontSize: '10px', color: '#94a3b8', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                        {u.email || u.role}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {filteredRoster.length === 0 && filteredUsers.length === 0 && (
+                          <div style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+                            Aucun joueur ou membre correspondant à la recherche.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* AUTORISATION ADMINISTRATEUR DANS LE DASHBOARD */}
+              <div 
+                className="cyber-switch-container"
+                style={{ padding: '14px 18px', margin: '18px 0', border: couponFormData.isActive ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid #202b3f' }}
+                onClick={() => setCouponFormData({ ...couponFormData, isActive: !couponFormData.isActive })}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div className={`cyber-switch-track ${couponFormData.isActive ? 'on green' : ''}`} style={{ width: '48px', height: '26px' }}>
+                    <div className="cyber-switch-thumb" style={{ width: '20px', height: '20px' }} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#fff', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Shield size={14} color={couponFormData.isActive ? '#10b981' : '#f87171'} />
+                      Autorisation Administrateur
+                    </div>
+                    <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '2px' }}>
+                      {couponFormData.isActive 
+                        ? 'Ce code est approuvé par l\'admin et peut être utilisé immédiatement au panier' 
+                        : 'Code désactivé / en pause. Les clients ne pourront pas l\'appliquer au paiement.'}
+                    </div>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  padding: '3px 10px',
+                  borderRadius: '10px',
+                  background: couponFormData.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                  color: couponFormData.isActive ? '#10b981' : '#f87171',
+                  border: couponFormData.isActive ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(239,68,68,0.3)'
+                }}>
+                  {couponFormData.isActive ? 'AUTORISÉ' : 'DÉSACTIVÉ'}
+                </span>
+              </div>
+
+              {/* Boutons d'action */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                <button
+                  type="button"
+                  className="dash-subtab-btn"
+                  onClick={() => setShowCouponModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="btn-rejoindre"
+                  disabled={savingCoupon}
+                  style={{ padding: '8px 24px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {savingCoupon ? <RefreshCw size={14} className="animate-spin" /> : <Check size={16} />}
+                  {editingCoupon ? 'Enregistrer les Modifications' : 'Créer & Autoriser le Code'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ATELIER CUSTOM TESTABLE DIRECTEMENT EN MODE ADMIN */}
+      <CustomizerModal
+        isOpen={previewStudioModal}
+        onClose={() => setPreviewStudioModal(false)}
+        onOpenCart={() => {
+          setPreviewStudioModal(false);
+          setActiveNav('Boutique & Ventes');
+          setShopSubTab('orders');
+        }}
+      />
 
     </div>
   );

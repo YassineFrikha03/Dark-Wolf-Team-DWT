@@ -43,7 +43,7 @@ const TeamSection = () => {
       <div className="section-container">
         <div className="section-header">
           <div className="about-badge" style={{ alignSelf: 'center', margin: '0 auto 12px' }}>
-            🐺 LA MEUTE OFFICIELLE
+             LA MEUTE OFFICIELLE
           </div>
           <h2 className="section-title">NOS JOUEURS ÉLITES</h2>
           <p className="section-subtitle">
@@ -76,7 +76,7 @@ const TeamSection = () => {
                 {/* Badge spécial Capitaine */}
                 {isCaptain && (
                   <div className="player-captain-badge">
-                    ⭐ CAPITAINE DE LA MEUTE
+                     CAPITAINE DE LA MEUTE
                   </div>
                 )}
 
@@ -89,7 +89,7 @@ const TeamSection = () => {
                   />
                   {player.nationality && (
                     <span className="player-flag-badge">
-                      {player.nationality === 'TN' ? '🇹🇳' : player.nationality === 'FR' ? '🇫🇷' : player.nationality}
+                      {player.nationality === 'TN' ? '' : player.nationality === 'FR' ? '' : player.nationality}
                     </span>
                   )}
                 </div>

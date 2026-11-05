@@ -222,7 +222,7 @@ const NewsSection = ({ news = [], matches = [], onOpenPredictions }) => {
                     boxShadow: isLive ? '0 0 15px rgba(230, 0, 0, 0.25)' : undefined,
                     position: 'relative',
                   }}
-                  title={isLive ? 'Regarder le match en direct 🔴' : 'Voir les détails du match'}
+                  title={isLive ? 'Regarder le match en direct ' : 'Voir les détails du match'}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="mgame">{m.game}</div>
@@ -260,7 +260,7 @@ const NewsSection = ({ news = [], matches = [], onOpenPredictions }) => {
                   </div>
                   <div className="mtime" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {isLive ? (
-                      <span className="mlive">● REGARDER EN DIRECT 🔴</span>
+                      <span className="mlive">● REGARDER EN DIRECT </span>
                     ) : (
                       <span>{dateText}</span>
                     )}
@@ -292,7 +292,7 @@ const NewsSection = ({ news = [], matches = [], onOpenPredictions }) => {
                         }}
                         title="Pronostiquer ce match pour gagner jusqu'à 130 pts"
                       >
-                        🎯 Prono (+130 pts)
+                         Prono (+130 pts)
                       </button>
                     )}
                   </div>

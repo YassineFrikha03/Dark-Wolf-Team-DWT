@@ -6,7 +6,7 @@ const achievementsList = [
     title: 'Tunisia Cup CS2 — Champions Nationaux',
     game: 'Counter-Strike 2',
     date: '12 Octobre 2026',
-    place: '1ère Place 🏆',
+    place: '1ère Place ',
     cashPrize: '15,000 TND',
     desc: 'Victoire 3-0 en grande finale sans concéder une seule carte face aux meilleures structures nord-africaines.',
     badge: 'GOLD',
@@ -16,7 +16,7 @@ const achievementsList = [
     title: 'North Africa Valorant Masters — Finalistes',
     game: 'Valorant',
     date: 'Août 2026',
-    place: 'Vice-Champions 🥈',
+    place: 'Vice-Champions ',
     cashPrize: '8,000 TND',
     desc: 'Parcours historique du roster DWT Radiant jusqu’à l’ultime overtime de la manche 5.',
     badge: 'SILVER',
@@ -26,7 +26,7 @@ const achievementsList = [
     title: 'Maghreb League of Legends Circuit — Champions',
     game: 'League of Legends',
     date: 'Mai 2026',
-    place: '1ère Place 🏆',
+    place: '1ère Place ',
     cashPrize: '12,000 TND',
     desc: 'Domination totale de la faille de l’invocateur avec un KDA record pour notre midlaner.',
     badge: 'GOLD',
@@ -36,7 +36,7 @@ const achievementsList = [
     title: 'FC 25 Red Bull Pro Series — Vainqueurs',
     game: 'EA Sports FC 25',
     date: 'Mars 2026',
-    place: '1ère Place 🏆',
+    place: '1ère Place ',
     cashPrize: '6,000 TND',
     desc: 'Trophée individuel et par équipe décroché avec un sans-faute en phase éliminatoire.',
     badge: 'GOLD',
@@ -46,7 +46,7 @@ const achievementsList = [
     title: 'Arab Esports Rocket League Open — Top 3',
     game: 'Rocket League',
     date: 'Janvier 2026',
-    place: '3ème Place 🥉',
+    place: '3ème Place ',
     cashPrize: '4,500 TND',
     desc: 'Podium arabe face à des équipes de calibre international sur le serveur MENA.',
     badge: 'BRONZE',
@@ -182,9 +182,9 @@ const AchievementsModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                  <span>🎮 {ach.game}</span>
-                  <span>📅 {ach.date}</span>
-                  <span style={{ color: '#22c55e', fontWeight: '700' }}>💰 {ach.cashPrize}</span>
+                  <span> {ach.game}</span>
+                  <span> {ach.date}</span>
+                  <span style={{ color: '#22c55e', fontWeight: '700' }}> {ach.cashPrize}</span>
                 </div>
               </div>
             </div>

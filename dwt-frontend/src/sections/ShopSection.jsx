@@ -94,7 +94,7 @@ const ShopSection = () => {
             margin: '0 auto 40px'
           }}>
             <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '800', marginBottom: '10px' }}>
-              Aucun produit dans cette catégorie pour le moment 🐺🛍️
+              Aucun produit dans cette catégorie pour le moment 
             </h3>
             <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6' }}>
               Les nouveaux maillots et équipements sont en cours de réapprovisionnement.

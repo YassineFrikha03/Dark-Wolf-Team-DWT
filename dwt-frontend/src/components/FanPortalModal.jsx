@@ -166,7 +166,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
       });
 
       if (res.data?.success) {
-        showFeedback(res.data.message || 'Pronostic enregistré avec succès ! 🐺🎯');
+        showFeedback(res.data.message || 'Pronostic enregistré avec succès ! ');
         // Refresh my predictions and weekly missions
         const [myPredRes, missRes, profRes] = await Promise.all([
           API.get('/predictions/my'),
@@ -224,7 +224,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
     try {
       const res = await API.post('/missions/claim-bonus');
       if (res.data?.success) {
-        showFeedback(res.data.message || 'Bonus réclamé avec succès ! 🐺👑');
+        showFeedback(res.data.message || 'Bonus réclamé avec succès ! ');
         const [missRes, profRes] = await Promise.all([
           API.get('/missions/weekly'),
           API.get('/wolfpack/profile').catch(() => null)
@@ -344,7 +344,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
               animation: 'fadeIn 0.3s'
             }}
           >
-            {actionMessage.type === 'error' ? '⚠️' : '🐺✨'} {actionMessage.text}
+            {actionMessage.type === 'error' ? '' : ''} {actionMessage.text}
           </div>
         )}
 
@@ -388,7 +388,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
           <div>
             <div className="slbl" style={{ color: '#94a3b8' }}>DWT Wolf Pack ID • Système de Rangs & Réputation</div>
             <h2 className="stitle" style={{ fontSize: '24px', marginBottom: '16px' }}>
-              IDENTITÉ DE LA MEUTE 🐺
+              IDENTITÉ DE LA MEUTE 
             </h2>
 
             {user ? (
@@ -439,7 +439,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                       {user.avatar && user.avatar.startsWith('http') ? (
                         <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        '🐺'
+                        ''
                       )}
                     </div>
                   </div>
@@ -451,10 +451,10 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                         {user.gamertag || user.email?.split('@')[0]}
                       </span>
                       <span className={`rank-pill ${currentRankName}`}>
-                        {currentRankName === 'Cub' && '🐾 Cub'}
-                        {currentRankName === 'Scout' && '🏹 Scout'}
-                        {currentRankName === 'Hunter' && '⚔️ Hunter'}
-                        {currentRankName === 'Alpha' && '👑 Alpha'}
+                        {currentRankName === 'Cub' && ' Cub'}
+                        {currentRankName === 'Scout' && ' Scout'}
+                        {currentRankName === 'Hunter' && ' Hunter'}
+                        {currentRankName === 'Alpha' && ' Alpha'}
                       </span>
                     </div>
                     <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
@@ -470,7 +470,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                             {progressPercent}% vers {nextRank} ({xpForNext} XP restants)
                           </span>
                         ) : (
-                          <span style={{ color: '#ff4d4d' }}>RANG MAXIMUM ALPHA ATTEINT 👑</span>
+                          <span style={{ color: '#ff4d4d' }}>RANG MAXIMUM ALPHA ATTEINT </span>
                         )}
                       </div>
                       <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -521,25 +521,25 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
                     <div style={{ background: currentRankName === 'Cub' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(255,255,255,0.02)', border: currentRankName === 'Cub' ? '1px solid #94a3b8' : '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '12px' }}>
-                      <div style={{ fontWeight: '800', color: '#94a3b8', fontSize: '13px' }}>🐾 CUB (شبل)</div>
+                      <div style={{ fontWeight: '800', color: '#94a3b8', fontSize: '13px' }}> CUB (شبل)</div>
                       <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>0 - 299 XP</div>
                       <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '6px' }}>5% sur le Shop + Accès aux pronostics</div>
                     </div>
 
                     <div style={{ background: currentRankName === 'Scout' ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255,255,255,0.02)', border: currentRankName === 'Scout' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '12px' }}>
-                      <div style={{ fontWeight: '800', color: '#38bdf8', fontSize: '13px' }}>🏹 SCOUT (كشّاف)</div>
+                      <div style={{ fontWeight: '800', color: '#38bdf8', fontSize: '13px' }}> SCOUT (كشّاف)</div>
                       <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>300 - 799 XP</div>
                       <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '6px' }}>Cadre Argent + 10% Shop + Badges exclusifs</div>
                     </div>
 
                     <div style={{ background: currentRankName === 'Hunter' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(255,255,255,0.02)', border: currentRankName === 'Hunter' ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '12px' }}>
-                      <div style={{ fontWeight: '800', color: '#f59e0b', fontSize: '13px' }}>⚔️ HUNTER (صياد)</div>
+                      <div style={{ fontWeight: '800', color: '#f59e0b', fontSize: '13px' }}> HUNTER (صياد)</div>
                       <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>800 - 1799 XP</div>
                       <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '6px' }}>Cadre Or + 15% Shop + Tirages maillots signés</div>
                     </div>
 
                     <div style={{ background: currentRankName === 'Alpha' ? 'rgba(230, 0, 0, 0.15)' : 'rgba(255,255,255,0.02)', border: currentRankName === 'Alpha' ? '1px solid #e60000' : '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '12px' }}>
-                      <div style={{ fontWeight: '800', color: '#ff4d4d', fontSize: '13px' }}>👑 ALPHA (ألفا)</div>
+                      <div style={{ fontWeight: '800', color: '#ff4d4d', fontSize: '13px' }}> ALPHA (ألفا)</div>
                       <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>1800+ XP</div>
                       <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '6px' }}>Aura Feu Alpha + VIP Lounge Discord + Drops rares</div>
                     </div>
@@ -572,7 +572,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                         }}
                       >
                         <div className={`avatar-frame-wrapper avatar-frame-${f.id}`} style={{ width: '42px', height: '42px', margin: '0 auto 8px' }}>
-                          <span style={{ fontSize: '18px' }}>🐺</span>
+                          <span style={{ fontSize: '18px' }}></span>
                         </div>
                         <div style={{ fontSize: '11px', fontWeight: '700', color: '#fff' }}>{f.name}</div>
                         {f.unlocked ? (
@@ -600,7 +600,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                           )
                         ) : (
                           <span style={{ fontSize: '9px', color: '#64748b', marginTop: '6px', display: 'block' }}>
-                            Verrouillé 🔒
+                            Verrouillé 
                           </span>
                         )}
                       </div>
@@ -693,7 +693,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: '42px', display: 'block', marginBottom: '12px' }}>🐺</span>
+                <span style={{ fontSize: '42px', display: 'block', marginBottom: '12px' }}></span>
                 <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: '800' }}>Rejoignez la Meute Dark Wolf</h3>
                 <p style={{ color: '#94a3b8', fontSize: '13px', maxWidth: '420px', margin: '8px auto 20px' }}>
                   Connectez-vous pour débloquer votre profil de fan, accumuler des points Wolf, débloquer des cadres légendaires et grimper au classement.
@@ -729,7 +729,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
           <div>
             <div className="slbl" style={{ color: '#94a3b8' }}>Esports Predictor • 100% Points de Meute (Zéro Pari d'Argent)</div>
             <h2 className="stitle" style={{ fontSize: '24px', marginBottom: '8px' }}>
-              PRONOSTICS DES MATCHS 🎯
+              PRONOSTICS DES MATCHS 
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
               Votez pour le vainqueur (+50 pts), le score exact (+50 pts) et le MVP du match (+30 pts). Gagnez jusqu'à <strong>+130 Points & XP</strong> par match !
@@ -894,7 +894,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                       {/* Submit / Status Button */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ fontSize: '11px', color: '#22c55e', fontWeight: '700' }}>
-                          ⚡ Gains max : +130 Points & XP
+                           Gains max : +130 Points & XP
                         </div>
                         <button
                           onClick={() => handleSavePrediction(m._id)}
@@ -913,7 +913,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                             gap: '6px'
                           }}
                         >
-                          {isSubmitting ? 'Validation...' : existingUserPred ? 'Mettre à Jour Mon Prono ✓' : 'Valider Mon Pronostic 🎯'}
+                          {isSubmitting ? 'Validation...' : existingUserPred ? 'Mettre à Jour Mon Prono ✓' : 'Valider Mon Pronostic '}
                         </button>
                       </div>
                     </div>
@@ -961,17 +961,17 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                         )}
                         {p.status === 'won' && (
                           <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '12px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.4)', fontWeight: '800' }}>
-                            🏆 Victoire (+{p.pointsEarned} pts)
+                             Victoire (+{p.pointsEarned} pts)
                           </span>
                         )}
                         {p.status === 'partial' && (
                           <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', fontWeight: '800' }}>
-                            🎯 Partiel (+{p.pointsEarned} pts)
+                             Partiel (+{p.pointsEarned} pts)
                           </span>
                         )}
                         {p.status === 'lost' && (
                           <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.4)', fontWeight: '700' }}>
-                            ❌ Non validé (0 pt)
+                             Non validé (0 pt)
                           </span>
                         )}
                       </div>
@@ -990,7 +990,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
           <div>
             <div className="slbl" style={{ color: '#94a3b8' }}>Hall of Fame • Les Meilleurs Stratèges de la Meute</div>
             <h2 className="stitle" style={{ fontSize: '24px', marginBottom: '8px' }}>
-              CLASSEMENT DE LA SAISON 🏆
+              CLASSEMENT DE LA SAISON 
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '24px' }}>
               Accumulez des points en faisant des pronostics corrects et en validant vos quêtes hebdomadaires.
@@ -1002,10 +1002,10 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                 {/* 2nd Place */}
                 <div className="wp-podium-card wp-podium-2nd">
                   <div style={{ position: 'absolute', top: '-12px', background: '#94a3b8', color: '#000', fontWeight: '900', padding: '2px 8px', borderRadius: '12px', fontSize: '11px' }}>
-                    #2 ARGENT 🥈
+                    #2 ARGENT 
                   </div>
                   <div className={`avatar-frame-wrapper avatar-frame-${leaderboard[1]?.avatarFrame || 'scout_silver'}`} style={{ width: '54px', height: '54px', marginTop: '10px' }}>
-                    <span style={{ fontSize: '24px' }}>🐺</span>
+                    <span style={{ fontSize: '24px' }}></span>
                   </div>
                   <div style={{ fontWeight: '800', color: '#fff', fontSize: '14px', marginTop: '8px' }}>
                     {leaderboard[1]?.gamertag}
@@ -1024,10 +1024,10 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                 {/* 1st Place (Champion) */}
                 <div className="wp-podium-card wp-podium-1st">
                   <div style={{ position: 'absolute', top: '-14px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#000', fontWeight: '900', padding: '3px 12px', borderRadius: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Crown size={13} /> #1 OR 🥇
+                    <Crown size={13} /> #1 OR 
                   </div>
                   <div className={`avatar-frame-wrapper avatar-frame-${leaderboard[0]?.avatarFrame || 'alpha_fire'}`} style={{ width: '66px', height: '66px', marginTop: '10px' }}>
-                    <span style={{ fontSize: '30px' }}>👑</span>
+                    <span style={{ fontSize: '30px' }}></span>
                   </div>
                   <div style={{ fontWeight: '900', color: '#fff', fontSize: '16px', marginTop: '8px' }}>
                     {leaderboard[0]?.gamertag}
@@ -1046,10 +1046,10 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                 {/* 3rd Place */}
                 <div className="wp-podium-card wp-podium-3rd">
                   <div style={{ position: 'absolute', top: '-12px', background: '#cd7f32', color: '#fff', fontWeight: '900', padding: '2px 8px', borderRadius: '12px', fontSize: '11px' }}>
-                    #3 BRONZE 🥉
+                    #3 BRONZE 
                   </div>
                   <div className={`avatar-frame-wrapper avatar-frame-${leaderboard[2]?.avatarFrame || 'cub_bronze'}`} style={{ width: '54px', height: '54px', marginTop: '10px' }}>
-                    <span style={{ fontSize: '24px' }}>🐺</span>
+                    <span style={{ fontSize: '24px' }}></span>
                   </div>
                   <div style={{ fontWeight: '800', color: '#fff', fontSize: '14px', marginTop: '8px' }}>
                     {leaderboard[2]?.gamertag}
@@ -1096,7 +1096,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                         #{item.position || idx + 1}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>🐺</span>
+                        <span></span>
                         <span style={{ color: '#fff', fontSize: '13px' }}>{item.gamertag}</span>
                         {isCurrentUser && (
                           <span style={{ fontSize: '9px', background: '#e60000', color: '#fff', padding: '1px 5px', borderRadius: '6px' }}>MOI</span>
@@ -1125,7 +1125,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
           <div>
             <div className="slbl" style={{ color: '#94a3b8' }}>Weekly Pack Quests • Remise à zéro chaque Lundi 00:00</div>
             <h2 className="stitle" style={{ fontSize: '24px', marginBottom: '8px' }}>
-              MISSIONS DE LA MEUTE 📋
+              MISSIONS DE LA MEUTE 
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '20px' }}>
               Complétez les missions hebdomadaires pour faire grimper votre rang et débloquer le <strong>Pack Bonus Alpha (+100 XP / Points)</strong>.
@@ -1208,7 +1208,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
                       boxShadow: '0 0 15px rgba(230, 0, 0, 0.5)'
                     }}
                   >
-                    Réclamer le Bonus (+100 XP) 🐺👑
+                    Réclamer le Bonus (+100 XP) 
                   </button>
                 ) : (
                   <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700' }}>
@@ -1319,7 +1319,7 @@ const FanPortalModal = ({ isOpen, onClose, mode = 'PROFILE', defaultMatchId = nu
             {missionsData?.missions?.find((m) => m.code === 'vote_mvp' && !m.isCompleted) && (
               <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px' }}>
                 <div style={{ fontSize: '12px', fontWeight: '800', color: '#f59e0b', marginBottom: '8px' }}>
-                  🗳️ Vote Rapide pour le MVP du Match
+                   Vote Rapide pour le MVP du Match
                 </div>
                 <form onSubmit={handleVoteMvp} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <select

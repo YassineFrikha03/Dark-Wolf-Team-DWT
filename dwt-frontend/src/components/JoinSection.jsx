@@ -78,12 +78,12 @@ const JoinSection = () => {
 
       {status.msg === 'success' && (
         <div style={{ marginTop: '18px', color: '#10b981', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          <span>✓</span> Bienvenue dans la Meute ! Tu es désormais inscrit aux drops & actualités DWT. 🐺
+          <span>✓</span> Bienvenue dans la Meute ! Tu es désormais inscrit aux drops & actualités DWT. 
         </div>
       )}
       {status.msg === 'error' && (
         <div style={{ marginTop: '18px', color: '#ef4444', fontWeight: '700', fontSize: '14px' }}>
-          ⚠️ Veuillez entrer une adresse email valide.
+           Veuillez entrer une adresse email valide.
         </div>
       )}
     </section>

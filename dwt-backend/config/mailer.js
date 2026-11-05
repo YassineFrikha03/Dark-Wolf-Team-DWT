@@ -16,14 +16,20 @@ let transporter = null;
 const getTransporter = async () => {
   if (transporter) return transporter;
 
+  const emailUser = (process.env.EMAIL_USER || '').replace(/['"]/g, '').trim();
+  const emailPass = (process.env.EMAIL_PASS || '').replace(/['"]/g, '').trim();
+
   // Si des identifiants SMTP ou Gmail sont fournis dans le .env
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  if (emailUser && emailPass) {
     if (process.env.EMAIL_SERVICE) {
       transporter = nodemailer.createTransport({
         service: process.env.EMAIL_SERVICE,
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
+          user: emailUser,
+          pass: emailPass
+        },
+        tls: {
+          rejectUnauthorized: false
         }
       });
     } else {
@@ -32,48 +38,36 @@ const getTransporter = async () => {
         port: parseInt(process.env.EMAIL_PORT, 10) || 587,
         secure: process.env.EMAIL_SECURE === 'true',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
+          user: emailUser,
+          pass: emailPass
+        },
+        tls: {
+          rejectUnauthorized: false
         }
       });
     }
-    console.log('📧 Service Mailer initialisé avec succès (SMTP configuré).');
+    console.log(`📧 Service Mailer initialisé avec succès (SMTP configuré avec ${emailUser}).`);
     return transporter;
   }
 
-  // Mode Dev / Démonstration : Ethereal ou Logger
-  console.log('⚠️ Aucune configuration EMAIL_USER trouvée dans .env. Création d\'un compte de test Ethereal...');
-  try {
-    const testAccount = await nodemailer.createTestAccount();
-    transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
-      }
-    });
-    console.log(`📧 Mailer de test Ethereal actif : ${testAccount.user}`);
-  } catch (err) {
-    console.warn('Impossible de créer un compte Ethereal, mode simulateur activé :', err.message);
-    transporter = {
-      sendMail: async (options) => {
-        console.log('📨 [EMAIL SIMULÉ] Destinataire :', options.to);
-        console.log('📨 [EMAIL SIMULÉ] Sujet :', options.subject);
-        return { messageId: 'simulated-' + Date.now() };
-      }
-    };
-  }
-
-  return transporter;
+  // Identifiants SMTP manquants
+  console.warn('⚠️ [MAILER] Aucune configuration EMAIL_USER / EMAIL_PASS trouvée dans dwt-backend/.env.');
+  return null;
 };
 
 // Fonction générique d'envoi d'email
 const sendEmail = async ({ to, subject, html, text }) => {
   try {
     const client = await getTransporter();
-    const fromAddress = process.env.EMAIL_FROM || '"Dark Wolf Team" <no-reply@darkwolfteam.gg>';
+
+    if (!client) {
+      const errDetail = "Le service d'email n'est pas encore configuré sur le serveur (EMAIL_USER et EMAIL_PASS manquants dans dwt-backend/.env). Veuillez configurer votre adresse email et mot de passe d'application pour recevoir les emails.";
+      console.warn(`⚠️ [MAILER] Impossible d'acheminer l'email à ${to} : EMAIL_USER ou EMAIL_PASS manquant.`);
+      return { success: false, notConfigured: true, error: errDetail };
+    }
+
+    const emailUser = (process.env.EMAIL_USER || '').replace(/['"]/g, '').trim();
+    const fromAddress = process.env.EMAIL_FROM || (emailUser ? `"Dark Wolf Team" <${emailUser}>` : '"Dark Wolf Team" <no-reply@darkwolfteam.gg>');
 
     const info = await client.sendMail({
       from: fromAddress,
@@ -83,18 +77,11 @@ const sendEmail = async ({ to, subject, html, text }) => {
       text: text || ''
     });
 
-    console.log(`✉️ Email envoyé à ${to} [ID: ${info.messageId || 'ok'}]`);
-    
-    // Si compte ethereal, afficher le lien de prévisualisation
-    const previewUrl = nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
-    if (previewUrl) {
-      console.log(`🔗 Lien de prévisualisation de l'email : ${previewUrl}`);
-    }
-
-    return { success: true, messageId: info.messageId, previewUrl };
+    console.log(`✉️ Email envoyé avec succès à ${to} [ID: ${info.messageId || 'ok'}]`);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error(`❌ Erreur lors de l'envoi de l'email à ${to} :`, error.message);
-    return { success: false, error: error.message };
+    return { success: false, error: `Erreur d'envoi d'email : ${error.message}` };
   }
 };
 
@@ -122,15 +109,16 @@ const sendAdminNewUserAlert = async (user) => {
 };
 
 // 3. Envoyer le code de sécurité pour mot de passe oublié
-const sendPasswordResetCodeEmail = async (email, gamertag, code) => {
-  const html = passwordResetCodeTemplate(gamertag, code);
+const sendPasswordResetCodeEmail = async (email, gamertag, code, resetLink = '') => {
+  const html = passwordResetCodeTemplate(gamertag, code, resetLink);
   return await sendEmail({
     to: email,
     subject: `🔑 ${code} est ton code de sécurité Dark Wolf Team`,
     html,
-    text: `Bonjour ${gamertag}, ton code de réinitialisation est : ${code}. Il expire dans 15 minutes.`
+    text: `Bonjour ${gamertag}, ton code de réinitialisation est : ${code}. Il expire dans 15 minutes.${resetLink ? `\nLien direct de modification : ${resetLink}` : ''}`
   });
 };
+
 
 // 4. Alerte de connexion (optionnelle)
 const sendLoginAlertEmail = async (user, ipAddress, userAgent) => {

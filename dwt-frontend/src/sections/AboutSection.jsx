@@ -54,7 +54,7 @@ const AboutSection = () => {
         <div className="about-hero-card">
           <div className="about-hero-left">
             <div className="about-badge">
-              🐺 Fondée le 23 avril 2020 • Territoire Officiel DWT
+               Fondée le 23 avril 2020 • Territoire Officiel DWT
             </div>
             <h1 className="about-main-title">
               BIENVENUE SUR LE TERRITOIRE DE LA <span className="text-red-glow">DARK WOLF TEAM</span>

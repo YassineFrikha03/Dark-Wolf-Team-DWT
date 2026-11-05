@@ -30,7 +30,7 @@ export const getCleanEmbedUrl = (url = '') => {
 
   // Si c'est un fichier vidéo uploadé sur le serveur backend (ex: /uploads/video-123.mp4)
   if (clean.startsWith('/uploads/') || clean.startsWith('uploads/')) {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
     return `${backendUrl}${clean.startsWith('/') ? '' : '/'}${clean}`;
   }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import API from './services/api';
@@ -29,17 +30,36 @@ import BrandGuidelinesModal from './components/BrandGuidelinesModal';
 import LegalModal from './components/LegalModal';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import PlayerDashboardPage from './pages/PlayerDashboardPage';
+import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ShopPage from './pages/ShopPage';
+import CustomizerModal from './customizer/CustomizerModal';
 
 function AppContent() {
   const { user, loading, logout } = useAuth();
+  const location = useLocation();
   const [currentView, setCurrentView] = useState(() => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     if (path === '/admin' || hash === '#admin') return 'admin';
     if (path === '/espace-joueur' || hash === '#espace-joueur' || path === '/player' || hash === '#player') return 'player';
+    if (path === '/login') return 'login';
+    if (path === '/forgot-password' || path === '/reset-password') return 'forgot-password';
+    if (path === '/shop' || path === '/boutique' || hash === '#shop-page' || path === '/custom' || path === '/studio') return 'shop';
     return 'site';
   });
   const [playerTab, setPlayerTab] = useState('Mon Profil');
+  const [hasSeenIntro, setHasSeenIntro] = useState(false);
+
+  const handleIntroFinish = () => {
+    setHasSeenIntro(true);
+  };
+
+  useEffect(() => {
+    window.__DWT_REPLAY_INTRO__ = () => {
+      setHasSeenIntro(false);
+    };
+  }, []);
 
   const [products, setProducts] = useState([]);
   const [players, setPlayers] = useState([]);
@@ -61,6 +81,16 @@ function AppContent() {
   const [isBrandGuidelinesOpen, setIsBrandGuidelinesOpen] = useState(false);
   const [legalModal, setLegalModal] = useState({ isOpen: false, tab: 'privacy' });
   const [shopCategoryFilter, setShopCategoryFilter] = useState('All');
+  const [isCustomStudioOpen, setIsCustomStudioOpen] = useState(() => {
+    try {
+      const path = window.location.pathname;
+      const search = window.location.search;
+      const hash = window.location.hash;
+      return path === '/custom' || path === '/studio' || search.includes('custom=1') || search.includes('debug=1') || hash.includes('custom');
+    } catch {
+      return false;
+    }
+  });
 
   // Protection automatique des vues privées (Admin et Joueur)
   useEffect(() => {
@@ -115,38 +145,77 @@ function AppContent() {
     fetchData();
   }, []);
 
-  // Listen to popstate for browser back/forward buttons
+  // Synchronisation dynamique du chemin URL avec la vue courante (React Router location)
   useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      const hash = window.location.hash;
-      if (path === '/admin' || hash === '#admin') {
-        if (user && (user.role === 'admin' || user.role === 'moderator')) {
-          setCurrentView('admin');
-        } else {
-          setCurrentView('site');
-          window.history.replaceState(null, '', '/');
-          if (!user) setAuthModal({ isOpen: true, tab: 'login' });
-        }
-      } else if (path === '/espace-joueur' || hash === '#espace-joueur' || path === '/player' || hash === '#player') {
-        if (!user) {
-          setCurrentView('site');
-          window.history.replaceState(null, '', '/');
-          setAuthModal({ isOpen: true, tab: 'login' });
-        } else if (user.role === 'admin' || user.role === 'moderator') {
-          setCurrentView('admin');
-        } else {
-          setCurrentView('player');
-        }
-      } else {
+    const path = location.pathname;
+    const hash = location.hash;
+    if (path === '/admin' || hash === '#admin') {
+      if (user && (user.role === 'admin' || user.role === 'moderator')) {
+        setCurrentView('admin');
+      } else if (!loading) {
         setCurrentView('site');
+        window.history.replaceState(null, '', '/');
+        if (!user) setAuthModal({ isOpen: true, tab: 'login' });
       }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [user]);
+    } else if (path === '/espace-joueur' || hash === '#espace-joueur' || path === '/player' || hash === '#player') {
+      if (!user && !loading) {
+        setCurrentView('site');
+        window.history.replaceState(null, '', '/');
+        setAuthModal({ isOpen: true, tab: 'login' });
+      } else if (user?.role === 'admin' || user?.role === 'moderator') {
+        setCurrentView('admin');
+      } else if (user) {
+        setCurrentView('player');
+      }
+    } else if (path === '/login') {
+      setCurrentView('login');
+    } else if (path === '/forgot-password' || path === '/reset-password') {
+      setCurrentView('forgot-password');
+    } else if (path === '/custom' || path === '/studio') {
+      try {
+        sessionStorage.setItem('dwt_intro_seen', 'true');
+      } catch {}
+      setHasSeenIntro(true);
+      setCurrentView('shop');
+      setIsCustomStudioOpen(true);
+    } else if (path === '/shop' || path === '/boutique' || hash === '#shop-page') {
+      try {
+        sessionStorage.setItem('dwt_intro_seen', 'true');
+      } catch {}
+      setHasSeenIntro(true);
+      setCurrentView('shop');
+      if (location.search.includes('custom=1') || location.search.includes('debug=1') || hash.includes('custom')) {
+        setIsCustomStudioOpen(true);
+      }
+    } else if (path === '/') {
+      setCurrentView('site');
+      if (location.search.includes('custom=1') || location.search.includes('debug=1') || hash.includes('custom')) {
+        setIsCustomStudioOpen(true);
+      }
+    }
+  }, [location.pathname, location.search, location.hash, user, loading]);
+
+  const handleOpenCustomStudio = () => {
+    try {
+      sessionStorage.setItem('dwt_intro_seen', 'true');
+    } catch {}
+    setHasSeenIntro(true);
+    setIsCustomStudioOpen(true);
+    window.history.pushState(null, '', '/custom');
+  };
+
+  const handleCloseCustomStudio = () => {
+    setIsCustomStudioOpen(false);
+    if (window.location.pathname === '/custom' || window.location.pathname === '/studio') {
+      window.history.pushState(null, '', currentView === 'shop' ? '/shop' : '/');
+    }
+  };
 
   const goToAdmin = () => {
+    try {
+      sessionStorage.setItem('dwt_intro_seen', 'true');
+    } catch {}
+    setHasSeenIntro(true);
     if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
       setAuthModal({ isOpen: true, tab: 'login' });
       return;
@@ -157,6 +226,10 @@ function AppContent() {
   };
 
   const goToPlayer = (tab = 'Mon Profil') => {
+    try {
+      sessionStorage.setItem('dwt_intro_seen', 'true');
+    } catch {}
+    setHasSeenIntro(true);
     if (!user) {
       setAuthModal({ isOpen: true, tab: 'login' });
       return;
@@ -171,7 +244,25 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const goToShop = (category = 'All') => {
+    try {
+      sessionStorage.setItem('dwt_intro_seen', 'true');
+    } catch {}
+    setHasSeenIntro(true);
+    setShopCategoryFilter(category);
+    setCurrentView('shop');
+    window.history.pushState(null, '', '/shop');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (category === 'Custom' || category === 'Custom Gear') {
+      setIsCustomStudioOpen(true);
+    }
+  };
+
   const goToSite = () => {
+    try {
+      sessionStorage.setItem('dwt_intro_seen', 'true');
+    } catch {}
+    setHasSeenIntro(true);
     setCurrentView('site');
     window.history.pushState(null, '', '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -192,6 +283,7 @@ function AppContent() {
         setIsPartnersOpen(false);
         setIsBrandGuidelinesOpen(false);
         setLegalModal({ isOpen: false, tab: 'privacy' });
+        setIsCustomStudioOpen(false);
         document.body.style.overflow = '';
       }
     };
@@ -280,15 +372,7 @@ function AppContent() {
 
   const handleSelectShopCategory = (cat) => {
     setShopCategoryFilter(cat);
-    const shopEl = document.querySelector('#shop');
-    if (shopEl) {
-      shopEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      shopEl.style.transition = 'box-shadow 0.6s ease';
-      shopEl.style.boxShadow = '0 0 50px rgba(230, 0, 0, 0.45)';
-      setTimeout(() => {
-        shopEl.style.boxShadow = '';
-      }, 2000);
-    }
+    goToShop(cat);
   };
 
   // Gestionnaire de navigation dynamique intelligent pour les boutons des affiches cinématiques (Hero Slider)
@@ -473,25 +557,21 @@ function AppContent() {
       return;
     }
 
-    // 17. Boutique avec filtres
+    // 17. Boutique officielle (Redirection vers la page individuelle Shop)
     if (tLower.includes('pro-kit') || txtLower.includes('pro kit') || txtLower.includes('maillot')) {
-      handleSelectShopCategory('Pro Kit');
-      return;
-    }
-    if (tLower.includes('collab') || txtLower.includes('collab')) {
-      handleSelectShopCategory('Collabs');
+      goToShop('Pro Kit');
       return;
     }
     if (tLower.includes('best') || txtLower.includes('best seller')) {
-      handleSelectShopCategory('Best Sellers');
-      return;
-    }
-    if (tLower.includes('accessoire') || txtLower.includes('accessoire')) {
-      handleSelectShopCategory('Accessories');
+      goToShop('Best Sellers');
       return;
     }
     if (tLower.includes('new') || txtLower.includes('nouveauté')) {
-      handleSelectShopCategory('New Collection');
+      goToShop('New Collection');
+      return;
+    }
+    if (tLower.includes('custom') || txtLower.includes('custom') || txtLower.includes('personnalis')) {
+      setIsCustomStudioOpen(true);
       return;
     }
     if (
@@ -504,7 +584,7 @@ function AppContent() {
       txtLower.includes('acheter') || 
       txtLower.includes('collection')
     ) {
-      handleSelectShopCategory('All');
+      goToShop('All');
       return;
     }
 
@@ -512,90 +592,220 @@ function AppContent() {
     if (rawTarget.startsWith('#')) {
       scrollToSection(rawTarget.split(':')[0]);
     } else {
-      scrollToSection('#shop');
+      goToShop('All');
     }
   };
 
-  if (currentView === 'admin') {
-    if (loading) {
-      return (
-        <div style={{ minHeight: '100vh', background: '#07080c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: '"Orbitron", sans-serif' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div className="animate-spin" style={{ display: 'inline-block', width: '36px', height: '36px', border: '3px solid #1e2436', borderTopColor: '#e60000', borderRadius: '50%', marginBottom: '16px' }}></div>
-            <div style={{ fontSize: '12px', letterSpacing: '1px', color: '#94a3b8' }}>VÉRIFICATION DE SÉCURITÉ DWT...</div>
-          </div>
-        </div>
-      );
-    }
-    const isAdminUser = user && (user.role === 'admin' || user.role === 'moderator');
-    if (!isAdminUser) {
-      return null;
-    }
-    return (
-      <div className="admin-view-wrapper" style={{ minHeight: '100vh', background: '#07080c' }}>
-        <AdminDashboardPage 
-          onBackToSite={goToSite} 
-          onLogout={() => {
-            logout();
-            goToSite();
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (currentView === 'player') {
-    if (loading) {
-      return (
-        <div style={{ minHeight: '100vh', background: '#07080c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: '"Orbitron", sans-serif' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div className="animate-spin" style={{ display: 'inline-block', width: '36px', height: '36px', border: '3px solid #1e2436', borderTopColor: '#e60000', borderRadius: '50%', marginBottom: '16px' }}></div>
-            <div style={{ fontSize: '12px', letterSpacing: '1px', color: '#94a3b8' }}>CHARGEMENT ESPACE JOUEUR...</div>
-          </div>
-        </div>
-      );
-    }
-    if (!user) {
-      return null;
-    }
-    if (user?.role === 'admin' || user?.role === 'moderator') {
-      return (
-        <div className="admin-view-wrapper" style={{ minHeight: '100vh', background: '#07080c' }}>
-          <AdminDashboardPage 
-            onBackToSite={goToSite}
-            onLogout={() => {
-              logout();
-              goToSite();
-            }}
-          />
-        </div>
-      );
-    }
-    return (
-      <div className="player-view-wrapper" style={{ minHeight: '100vh', background: '#07080c' }}>
-        <PlayerDashboardPage 
-          onBackToSite={goToSite}
-          onGoToAdmin={goToAdmin}
-          onLogout={() => {
-            logout();
-            goToSite();
-          }}
-          initialTab={playerTab} 
-        />
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* Cinematic Intro */}
-      <IntroCinematic />
-
-      {/* Cyber Cursor, Particle Trails & Scrollbar */}
+      {/* Universal Cyber Cursor across the entire website */}
       <CustomCursor />
 
-      {/* Header */}
-      <Navbar
+      {/* Cinematic Intro - Display on initial visit */}
+      {!hasSeenIntro && currentView !== 'admin' && (
+        <IntroCinematic onFinish={handleIntroFinish} />
+      )}
+
+      {/* DWT Custom Studio 3D Modal (Configurateur Three.js officiel Dark Wolf Team) */}
+      <CustomizerModal
+        isOpen={isCustomStudioOpen}
+        onClose={handleCloseCustomStudio}
+        onOpenCart={() => setIsCartOpen(true)}
+      />
+
+      {currentView === 'admin' && (
+        loading ? (
+          <div style={{ minHeight: '100vh', background: '#07080c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: '"Orbitron", sans-serif' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div className="animate-spin" style={{ display: 'inline-block', width: '36px', height: '36px', border: '3px solid #1e2436', borderTopColor: '#e60000', borderRadius: '50%', marginBottom: '16px' }}></div>
+              <div style={{ fontSize: '12px', letterSpacing: '1px', color: '#94a3b8' }}>VÉRIFICATION DE SÉCURITÉ DWT...</div>
+            </div>
+          </div>
+        ) : (!user || (user.role !== 'admin' && user.role !== 'moderator')) ? null : (
+          <div className="admin-view-wrapper" style={{ minHeight: '100vh', background: '#07080c' }}>
+            <AdminDashboardPage 
+              onBackToSite={goToSite} 
+              onLogout={() => {
+                logout();
+                goToSite();
+              }}
+            />
+          </div>
+        )
+      )}
+
+      {currentView === 'player' && (
+        loading ? (
+          <div style={{ minHeight: '100vh', background: '#07080c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: '"Orbitron", sans-serif' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div className="animate-spin" style={{ display: 'inline-block', width: '36px', height: '36px', border: '3px solid #1e2436', borderTopColor: '#e60000', borderRadius: '50%', marginBottom: '16px' }}></div>
+              <div style={{ fontSize: '12px', letterSpacing: '1px', color: '#94a3b8' }}>CHARGEMENT ESPACE JOUEUR...</div>
+            </div>
+          </div>
+        ) : !user ? null : (user.role === 'admin' || user.role === 'moderator') ? (
+          <div className="admin-view-wrapper" style={{ minHeight: '100vh', background: '#07080c' }}>
+            <AdminDashboardPage 
+              onBackToSite={goToSite}
+              onLogout={() => {
+                logout();
+                goToSite();
+              }}
+            />
+          </div>
+        ) : (
+          <div className="player-view-wrapper" style={{ minHeight: '100vh', background: '#07080c' }}>
+            <PlayerDashboardPage 
+              onBackToSite={goToSite}
+              onGoToAdmin={goToAdmin}
+              onLogout={() => {
+                logout();
+                goToSite();
+              }}
+              initialTab={playerTab} 
+            />
+          </div>
+        )
+      )}
+
+      {currentView === 'shop' && (
+        <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', flexDirection: 'column' }}>
+          <Navbar
+            onOpenAuth={openAuth}
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onToggleCart={() => setIsCartOpen(!isCartOpen)}
+            onOpenFanPortal={openFanPortal}
+            onOpenPlayer={goToPlayer}
+            onOpenAdmin={goToAdmin}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
+          />
+          <main style={{ flex: 1, paddingTop: '80px' }}>
+            <ShopPage
+              products={products}
+              initialCategory={shopCategoryFilter}
+              onSelectProduct={openProductDetail}
+              onOpenMuseum={openMuseum}
+              onOpenCustomStudio={handleOpenCustomStudio}
+              onBackToSite={goToSite}
+            />
+          </main>
+          <Footer
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onOpenAdmin={goToAdmin}
+            onOpenPlayer={goToPlayer}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
+            onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+          />
+          <OrderPanel
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            onOpenAuth={openAuth}
+          />
+          <ProductDetailModal
+            product={selectedProduct}
+            isOpen={Boolean(selectedProduct)}
+            onClose={closeProductDetail}
+          />
+          <MuseumModal isOpen={isMuseumOpen} onClose={closeMuseum} />
+          <AuthModal
+            isOpen={authModal.isOpen}
+            initialTab={authModal.tab}
+            onClose={closeAuth}
+          />
+          <WolfChatbot />
+        </div>
+      )}
+
+      {currentView === 'login' && (
+        <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', flexDirection: 'column' }}>
+          <Navbar
+            onOpenAuth={openAuth}
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onToggleCart={() => setIsCartOpen(!isCartOpen)}
+            onOpenFanPortal={openFanPortal}
+            onOpenPlayer={goToPlayer}
+            onOpenAdmin={goToAdmin}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
+          />
+          <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 60px' }}>
+            <LoginPage />
+          </main>
+          <Footer
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onOpenAdmin={goToAdmin}
+            onOpenPlayer={goToPlayer}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
+            onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+          />
+        </div>
+      )}
+
+      {currentView === 'forgot-password' && (
+        <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', flexDirection: 'column' }}>
+          <Navbar
+            onOpenAuth={openAuth}
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onToggleCart={() => setIsCartOpen(!isCartOpen)}
+            onOpenFanPortal={openFanPortal}
+            onOpenPlayer={goToPlayer}
+            onOpenAdmin={goToAdmin}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
+          />
+          <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 60px' }}>
+            <ForgotPasswordPage />
+          </main>
+          <Footer
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onOpenAdmin={goToAdmin}
+            onOpenPlayer={goToPlayer}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
+            onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+          />
+        </div>
+      )}
+
+      {currentView === 'site' && (
+        <>
+          {/* Header */}
+          <Navbar
         onOpenAuth={openAuth}
         onOpenMuseum={openMuseum}
         onOpenMembers={openMembers}
@@ -607,6 +817,9 @@ function AppContent() {
         onOpenPartners={() => setIsPartnersOpen(true)}
         onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
         onSelectShopCategory={handleSelectShopCategory}
+        onOpenShop={goToShop}
+        onOpenCustomStudio={handleOpenCustomStudio}
+        onBackToSite={goToSite}
       />
 
       <main>
@@ -619,6 +832,8 @@ function AppContent() {
           onSelectProduct={openProductDetail}
           onOpenMuseum={openMuseum}
           initialCategory={shopCategoryFilter}
+          onOpenShop={goToShop}
+          onOpenCustomStudio={handleOpenCustomStudio}
         />
 
         {/* News & Matches */}
@@ -658,6 +873,8 @@ function AppContent() {
         onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
         onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
         onSelectShopCategory={handleSelectShopCategory}
+        onOpenShop={goToShop}
+        onOpenCustomStudio={() => setIsCustomStudioOpen(true)}
       />
 
       {/* Slide-out Order Panel (Cart) */}
@@ -730,6 +947,8 @@ function AppContent() {
 
       {/* Floating Wolf Bot AI Chatbot */}
       <WolfChatbot />
+        </>
+      )}
     </>
   );
 }

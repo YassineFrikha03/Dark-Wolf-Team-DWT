@@ -43,12 +43,18 @@ const Footer = ({
   onOpenBrandGuidelines,
   onOpenLegal,
   onSelectShopCategory,
+  onOpenShop,
+  onOpenCustomStudio,
 }) => {
   const scrollTo = (sel) => {
     document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleShopCat = (cat) => {
+    if (onOpenShop) {
+      onOpenShop(cat);
+      return;
+    }
     if (onSelectShopCategory) onSelectShopCategory(cat);
     scrollTo('#shop');
   };
@@ -104,12 +110,24 @@ const Footer = ({
         </div>
 
         <div>
-          <div className="fctitle">Shop</div>
+          <div className="fctitle">Shop Officiel</div>
           <ul className="flinks">
+            <li>
+              <a 
+                href="/shop" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  handleShopCat('All'); 
+                }}
+                style={{ color: '#fff', fontWeight: '700' }}
+              >
+                Boutique Complète
+              </a>
+            </li>
             <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('Best Sellers'); }}>Best Sellers</a></li>
             <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('Pro Kit'); }}>Pro Kit</a></li>
             <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('New Collection'); }}>New Collection</a></li>
-            <li><a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCat('Collabs'); }}>Collabs</a></li>
+            <li><a href="#custom" onClick={(e) => { e.preventDefault(); if (onOpenCustomStudio) onOpenCustomStudio(); else handleShopCat('Custom'); }} style={{ color: '#ff4444', fontWeight: '700' }}>Custom (Studio)</a></li>
             <li><a href="#museum" onClick={(e) => { e.preventDefault(); onOpenMuseum(); }}>Museum (Archive)</a></li>
           </ul>
         </div>
@@ -127,7 +145,7 @@ const Footer = ({
                   if (onOpenAchievements) onOpenAchievements();
                 }}
               >
-                Achievements 🏆
+                Achievements
               </a>
             </li>
             <li>
@@ -139,7 +157,7 @@ const Footer = ({
                 }}
                 style={{ color: '#ff4d4d', fontWeight: '700' }}
               >
-                🐺 Espace Joueur & Meute
+                Espace Joueur & Meute
               </a>
             </li>
             <li><a href="#media" onClick={(e) => { e.preventDefault(); scrollTo('#media'); }}>Media</a></li>

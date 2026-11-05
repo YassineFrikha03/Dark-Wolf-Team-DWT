@@ -1,0 +1,1442 @@
+/* ==========================================================================
+   DWT CUSTOM GEAR STUDIO - 3D DESIGN STUDIO CAD ESPORTS (360° SANS BACKGROUND)
+   Conception vestimentaire broadcast professionnelle - Thème 100% Esport
+   ========================================================================== */
+
+.custom-studio-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(3, 4, 7, 0.95);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  opacity: 0;
+  animation: csFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes csFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.custom-studio-modal {
+  width: 100%;
+  max-width: 1360px;
+  max-height: 94vh;
+  height: 875px;
+  background: #080a0f;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 30px 90px -15px rgba(0, 0, 0, 0.95), 0 0 50px rgba(230, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   1. HEADER MAQUETTE ESPORT
+   -------------------------------------------------------------------------- */
+.cs-header {
+  position: relative;
+  padding: 18px 32px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #07080c;
+  flex-shrink: 0;
+}
+
+.cs-header-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background-image: url('/backgrounds/bg-alpha-eyes.png');
+  background-size: cover;
+  background-position: center right;
+  opacity: 0.35;
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 1) 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 1) 100%);
+  pointer-events: none;
+}
+
+.cs-header-content {
+  position: relative;
+  z-index: 2;
+  max-width: 650px;
+}
+
+.cs-header-badge {
+  display: inline-block;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #e60000;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.cs-header-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 25px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.cs-header-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.cs-header-right {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.cs-script-logo {
+  text-align: right;
+  font-family: 'Orbitron', cursive, sans-serif;
+  color: #ffffff;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: 1px;
+}
+
+.cs-script-logo span {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #e60000;
+}
+
+.cs-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cs-close-btn:hover {
+  background: #e60000;
+  border-color: #e60000;
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+/* --------------------------------------------------------------------------
+   2. CORPS PRINCIPAL
+   -------------------------------------------------------------------------- */
+.cs-body-grid {
+  display: grid;
+  grid-template-columns: 230px 1fr 370px;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Colonne Gauche */
+.cs-left-col {
+  background: #090b10;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+}
+
+.cs-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cs-category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.cs-category-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(2px);
+}
+
+.cs-category-item.active {
+  background: #141722;
+  border-color: #e60000;
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 #e60000, 0 4px 14px rgba(230, 0, 0, 0.2);
+}
+
+.cs-category-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cs-section-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #64748b;
+  text-transform: uppercase;
+  margin: 18px 0 6px 4px;
+}
+
+.cs-shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.cs-shortcut-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.cs-graffiti-box {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cs-graffiti-slogan {
+  font-family: 'Permanent Marker', cursive, sans-serif;
+  font-size: 13px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+  margin-top: 6px;
+  transform: rotate(-3deg);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   COLONNE CENTRALE: STUDIO 360° SANS FOND (ALPHA CUTOUT CAD STAGE)
+   -------------------------------------------------------------------------- */
+.cs-center-canvas {
+  background: radial-gradient(circle at 50% 40%, #151a2d 0%, #06070a 80%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* Vignettes Vues à Gauche */
+.cs-views-column {
+  position: absolute;
+  left: 20px;
+  top: 45%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  z-index: 10;
+}
+
+.cs-view-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  background: #0b0d14;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px;
+  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.cs-view-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.cs-view-thumb.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.35);
+  background: #151a28;
+}
+
+/* Outils Flottants à Droite */
+.cs-tools-column {
+  position: absolute;
+  right: 20px;
+  top: 45%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+}
+
+.cs-tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 10px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cs-tool-btn .cs-tool-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.cs-tool-btn:hover {
+  color: #ffffff;
+}
+
+.cs-tool-btn:hover .cs-tool-icon-wrap {
+  background: rgba(230, 0, 0, 0.2);
+  border-color: #e60000;
+  transform: scale(1.08);
+}
+
+.cs-tool-btn.active .cs-tool-icon-wrap {
+  background: #e60000;
+  border-color: #e60000;
+  box-shadow: 0 0 15px rgba(230, 0, 0, 0.5);
+}
+
+/* Zone du Mannequin 3D */
+.cs-stage-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   MOTEUR DU STUDIO 3D SANS FOND (CustomGarmentRenderer)
+   -------------------------------------------------------------------------- */
+.cgr-studio-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.cgr-studio-stage.dragging {
+  cursor: grabbing;
+}
+
+/* Spot Lumineux de Studio zénithal */
+.cgr-studio-spotlight {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 440px;
+  height: 400px;
+  background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.12) 0%, rgba(230, 0, 0, 0.05) 45%, transparent 75%);
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+/* Nœud 3D du Vêtement */
+.cgr-garment-3d-node {
+  position: relative;
+  width: 360px;
+  height: 430px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease-out;
+  transform-style: preserve-3d;
+}
+
+/* Image découpée transparente SANS AUCUN FOND */
+.cgr-garment-alpha-cutout {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+}
+
+/* Filtres de teinte couleur préservant les ombres */
+.cgr-garment-tint-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cgr-garment-tint-overlay.tint-red {
+  background-color: rgba(220, 20, 40, 0.38);
+  mix-blend-mode: color-burn;
+}
+
+.cgr-garment-tint-overlay.tint-cyan {
+  background-color: rgba(0, 215, 255, 0.42);
+  mix-blend-mode: color;
+}
+
+.cgr-garment-tint-overlay.tint-white {
+  background-color: rgba(255, 255, 255, 0.32);
+  mix-blend-mode: screen;
+}
+
+.cgr-garment-tint-overlay.tint-carbon {
+  background-color: rgba(60, 75, 100, 0.32);
+  mix-blend-mode: overlay;
+}
+
+/* --------------------------------------------------------------------------
+   IMPRESSION SUBLIMATION DANS LA FIBRE DU MAILLOT ESPORT
+   -------------------------------------------------------------------------- */
+.cgr-sublimated-print {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+  transform-style: preserve-3d;
+}
+
+/* Micro-texture mesh qui se superpose sur le print pour donner l'effet imprimé dans le tissu */
+.cgr-mesh-fabric-sublimation {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.28;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* Bande Sponsors Col VCT Esports */
+.cgr-esport-sponsor-collar {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  text-align: center;
+  pointer-events: none;
+}
+
+.cgr-sponsor-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 6.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.65);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  padding: 2px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.cgr-strip-sep {
+  color: #e60000;
+  font-size: 5px;
+}
+
+/* Décalcomanie Face Avant (Logo Club ou Design Client) */
+.cgr-decal-front {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+}
+
+.cgr-team-crest-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cgr-crest-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cgr-uploaded-imprint-wrap {
+  position: relative;
+  max-width: 140px;
+  max-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cgr-client-uploaded-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: contrast(105%) brightness(96%);
+}
+
+.cgr-decal-brand-text {
+  margin-top: 2px;
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+.cgr-decal-front-tag {
+  position: absolute;
+  bottom: 23%;
+  left: 36%;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.cgr-front-gamertag-prefix {
+  font-family: 'Orbitron', monospace;
+  font-size: 6px;
+  font-weight: 800;
+  color: #e60000;
+  letter-spacing: 1px;
+}
+
+.cgr-front-gamertag-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+}
+
+/* Étiquette Holographique Fédérale d'Authenticité */
+.cgr-esport-hologram-tag {
+  position: absolute;
+  bottom: 8%;
+  left: 28%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(14, 18, 27, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.cgr-holo-icon {
+  color: #22c55e;
+}
+
+.cgr-holo-text {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Orbitron', monospace;
+}
+
+.cgr-holo-text span {
+  font-size: 5.5px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.cgr-holo-text small {
+  font-size: 4.5px;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+/* Flocage Dos Joueur Esport Officiel */
+.cgr-decal-back {
+  position: absolute;
+  top: 24%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  pointer-events: none;
+  width: 80%;
+  transition: opacity 0.15s ease-out;
+}
+
+.cgr-back-gamertag-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cgr-back-gamertag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #ffffff;
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.95), 0 0 10px rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+.cgr-back-player-role {
+  font-family: 'Orbitron', monospace;
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #e60000;
+  margin-top: 2px;
+}
+
+.cgr-back-number-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.cgr-back-number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 58px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: 2px;
+  text-shadow: 0 6px 22px rgba(0, 0, 0, 0.95), 0 0 25px rgba(230, 0, 0, 0.5);
+  margin: 4px 0;
+  display: block;
+}
+
+.cgr-back-subteam {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cgr-subteam-col {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.cgr-subteam-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffffff;
+}
+
+.cgr-subteam-slogan {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 8px;
+  color: #cbd5e1;
+  letter-spacing: 0.5px;
+}
+
+/* Podium / Socle 3D au Sol */
+.cgr-podium-container {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cgr-floor-shadow {
+  position: absolute;
+  width: 220px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 55%, transparent 75%);
+  filter: blur(8px);
+}
+
+.cgr-podium-ring {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 15px rgba(230, 0, 0, 0.25), inset 0 0 15px rgba(230, 0, 0, 0.2);
+  transition: transform 0.08s ease-out;
+}
+
+.cgr-ring-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px dashed rgba(230, 0, 0, 0.4);
+}
+
+/* Guide d'interaction 360° */
+.cgr-drag-hint-pill {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(11, 14, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 4px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.cgr-compass-icon {
+  color: #e60000;
+  animation: csCompassSpin 4s linear infinite;
+}
+
+@keyframes csCompassSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.cgr-auto-tag {
+  background: #e60000;
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+/* Barre de Contrôle 360° Inférieure */
+.cs-360-control-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 90%;
+  max-width: 440px;
+  z-index: 10;
+}
+
+.cs-360-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  color: #cbd5e1;
+  letter-spacing: 1px;
+}
+
+.cs-360-slider {
+  width: 100%;
+  height: 5px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cs-360-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #e60000;
+  box-shadow: 0 0 10px rgba(230, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.cs-quick-angles-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cs-angle-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cs-angle-pill:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cs-angle-pill.active {
+  background: #ffffff;
+  color: #080a0f;
+  border-color: #ffffff;
+  font-weight: 900;
+}
+
+/* --------------------------------------------------------------------------
+   COLONNE DROITE: PANNEAU ESPORT AVEC IMPORT DE DESIGN
+   -------------------------------------------------------------------------- */
+.cs-right-col {
+  background: #090b10;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 12px;
+}
+
+.cs-step-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+  letter-spacing: 0.5px;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cs-step-accent-name {
+  font-size: 9.5px;
+  color: #94a3b8;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.cs-models-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.cs-model-card {
+  aspect-ratio: 1;
+  background: #0e111a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px;
+}
+
+.cs-model-card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.cs-model-card.active {
+  border-color: #ffffff;
+  background: #171c2b;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+}
+
+.cs-model-card-label {
+  font-size: 8px;
+  color: #94a3b8;
+  margin-top: 3px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+}
+
+.cs-tabs-row-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cs-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cs-tab-btn:hover {
+  color: #ffffff;
+}
+
+.cs-tab-btn.active {
+  background: #161a26;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Zone d'importation de design */
+.cs-design-import-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cs-upload-dropzone {
+  border: 1.5px dashed rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cs-upload-dropzone:hover {
+  border-color: #e60000;
+  background: rgba(230, 0, 0, 0.06);
+}
+
+.cs-upload-icon-pulse {
+  color: #e60000;
+  flex-shrink: 0;
+}
+
+.cs-upload-prompt-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-upload-prompt-text strong {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.cs-upload-prompt-text small {
+  font-size: 9px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.cs-uploaded-badge-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #121622;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.cs-uploaded-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.cs-uploaded-thumb-preview {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  background: #080a0f;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-uploaded-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cs-uploaded-filename {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.cs-uploaded-status {
+  font-size: 9px;
+  color: #4ade80;
+  font-family: 'Orbitron', monospace;
+}
+
+.cs-remove-upload-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cs-remove-upload-btn:hover {
+  background: #e60000;
+  border-color: #e60000;
+  color: #ffffff;
+}
+
+.cs-upload-tips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  color: #94a3b8;
+  padding: 0 2px;
+}
+
+.cs-select-input {
+  cursor: pointer;
+}
+
+.cs-colors-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.cs-color-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.18s ease;
+}
+
+.cs-color-circle:hover {
+  transform: scale(1.15);
+}
+
+.cs-color-circle.active {
+  box-shadow: 0 0 0 2px #080a0f, 0 0 0 4px #ffffff;
+  transform: scale(1.1);
+}
+
+.cs-active-color-label {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+.cs-active-color-label strong {
+  color: #ffffff;
+}
+
+.cs-input-group {
+  position: relative;
+}
+
+.cs-text-input {
+  width: 100%;
+  background: #0e111a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 36px 10px 12px;
+  color: #ffffff;
+  font-size: 12px;
+  outline: none;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+}
+
+.cs-text-input:focus {
+  border-color: #e60000;
+  box-shadow: 0 0 12px rgba(230, 0, 0, 0.35);
+}
+
+.cs-input-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.cs-positions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.cs-position-card {
+  aspect-ratio: 1;
+  background: #0e111a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px;
+}
+
+.cs-position-card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.cs-position-card.active {
+  border-color: #ffffff;
+  background: #171c2b;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+}
+
+.cs-position-label {
+  font-size: 8px;
+  color: #94a3b8;
+  margin-top: 3px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+}
+
+.cs-sizes-row {
+  display: flex;
+  gap: 5px;
+}
+
+.cs-size-btn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 6px;
+  background: #0e111a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cs-size-btn:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cs-size-btn.active {
+  background: #ffffff;
+  color: #07080c;
+  border-color: #ffffff;
+}
+
+.cs-add-cart-btn {
+  margin-top: auto;
+  width: 100%;
+  background: #ffffff;
+  color: #07080c;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+}
+
+.cs-add-cart-btn:hover {
+  background: #e60000;
+  color: #ffffff;
+  box-shadow: 0 6px 25px rgba(230, 0, 0, 0.45);
+  transform: translateY(-2px);
+}
+
+.cs-cart-price-tag {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* --------------------------------------------------------------------------
+   3. PIED DE PAGE: "AUTRES ÉQUIPEMENTS ESPORT OFFICIELS"
+   -------------------------------------------------------------------------- */
+.cs-footer-bar {
+  background: #07080c;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 24px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cs-footer-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.cs-other-products-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cs-other-products-grid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.cs-other-item-card {
+  min-width: 175px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #0d1017;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cs-other-item-card:hover {
+  background: #141824;
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.cs-other-item-card.active {
+  border-color: #e60000;
+  box-shadow: 0 0 14px rgba(230, 0, 0, 0.3);
+  background: #141824;
+}
+
+.cs-other-thumb-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #050608;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-other-info {
+  flex: 1;
+}
+
+.cs-other-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.cs-other-price {
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.cs-brand-footer-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.cs-brand-footer-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-brand-name-dark {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+.cs-brand-slogan-cursive {
+  font-family: 'Permanent Marker', cursive, sans-serif;
+  font-size: 9px;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE DESIGN
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .cs-body-grid {
+    grid-template-columns: 200px 1fr 320px;
+  }
+}
+
+@media (max-width: 900px) {
+  .custom-studio-modal {
+    height: 96vh;
+    max-height: 96vh;
+  }
+  .cs-body-grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .cs-left-col, .cs-right-col {
+    border: none;
+  }
+  .cs-center-canvas {
+    min-height: 420px;
+  }
+  .cs-other-products-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

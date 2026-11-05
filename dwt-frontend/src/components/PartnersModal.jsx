@@ -281,7 +281,7 @@ const PartnersModal = ({ isOpen, onClose, onOpenContact }) => {
               boxShadow: '0 0 15px rgba(230,0,0,0.4)',
             }}
           >
-            Nous Contacter ✉️
+            Nous Contacter 
           </button>
         </div>
       </div>

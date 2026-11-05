@@ -1,5 +1,8 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Coupon = require('../models/Coupon');
+const User = require('../models/User');
+const Player = require('../models/Player');
 const Notification = require('../models/Notification');
 const {
   sendOrderConfirmationEmail,
@@ -18,7 +21,8 @@ const createOrder = async (req, res, next) => {
       paymentMethod,
       itemsPrice,
       shippingPrice,
-      totalPrice
+      totalPrice,
+      couponCode
     } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
@@ -61,8 +65,88 @@ const createOrder = async (req, res, next) => {
       await product.save({ validateBeforeSave: false });
     }
 
+    // Gestion et validation sécurisée du code promo (Autorisation Admin obligatoire)
+    let appliedDiscount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode && typeof couponCode === 'string' && couponCode.trim()) {
+      const cleanCode = couponCode.trim().toUpperCase();
+      const foundCoupon = await Coupon.findOne({ code: cleanCode });
+
+      // Le code promo doit impérativement être autorisé (isActive: true) par l'administrateur
+      if (foundCoupon && foundCoupon.isActive) {
+        const now = new Date();
+        const isExpired = foundCoupon.endDate && new Date(foundCoupon.endDate) < now;
+        const isNotStarted = foundCoupon.startDate && new Date(foundCoupon.startDate) > now;
+        const limitReached = foundCoupon.usageLimit && foundCoupon.usedCount >= foundCoupon.usageLimit;
+        const meetsMinOrder = !foundCoupon.minOrderAmount || calculatedItemsPrice >= foundCoupon.minOrderAmount;
+
+        // Vérification de restriction à des joueurs spécifiques
+        let isEligible = true;
+        const hasPlayers = foundCoupon.assignedPlayers && foundCoupon.assignedPlayers.length > 0;
+        const hasUsers = foundCoupon.assignedUsers && foundCoupon.assignedUsers.length > 0;
+
+        if (foundCoupon.isRestricted && (hasPlayers || hasUsers)) {
+          isEligible = false;
+
+          // 1. Utilisateur connecté
+          if (req.user) {
+            const userId = req.user._id ? req.user._id.toString() : req.user.toString();
+            const uGamertag = req.user.gamertag ? req.user.gamertag.toLowerCase().trim() : '';
+
+            if (hasUsers && foundCoupon.assignedUsers.some((u) => (u._id ? u._id.toString() : u.toString()) === userId)) {
+              isEligible = true;
+            } else if (hasPlayers) {
+              const assignedPlayerDocs = await Player.find({ _id: { $in: foundCoupon.assignedPlayers } });
+              if (assignedPlayerDocs.some((p) => p.gamertag && p.gamertag.toLowerCase().trim() === uGamertag)) {
+                isEligible = true;
+              }
+            }
+          }
+
+          // 2. Par email ou nom renseigné à la livraison
+          if (!isEligible && shippingAddress) {
+            const shipEmail = shippingAddress.email ? shippingAddress.email.toLowerCase().trim() : '';
+            const shipName = shippingAddress.fullName ? shippingAddress.fullName.toLowerCase().trim() : '';
+
+            if (shipEmail && hasUsers) {
+              const userByEmail = await User.findOne({ email: shipEmail });
+              if (userByEmail && foundCoupon.assignedUsers.some((u) => (u._id ? u._id.toString() : u.toString()) === userByEmail._id.toString())) {
+                isEligible = true;
+              }
+            }
+
+            if (!isEligible && shipName && hasPlayers) {
+              const assignedPlayerDocs = await Player.find({ _id: { $in: foundCoupon.assignedPlayers } });
+              if (assignedPlayerDocs.some((p) => p.gamertag && p.gamertag.toLowerCase().trim() === shipName)) {
+                isEligible = true;
+              }
+            }
+          }
+        }
+
+        if (!isExpired && !isNotStarted && !limitReached && meetsMinOrder && isEligible) {
+          if (foundCoupon.discountType === 'percentage') {
+            let disc = (calculatedItemsPrice * foundCoupon.discountValue) / 100;
+            if (foundCoupon.maxDiscount && disc > foundCoupon.maxDiscount) {
+              disc = foundCoupon.maxDiscount;
+            }
+            appliedDiscount = disc;
+          } else {
+            appliedDiscount = Math.min(foundCoupon.discountValue, calculatedItemsPrice);
+          }
+          appliedDiscount = Number(appliedDiscount.toFixed(2));
+          appliedCoupon = foundCoupon;
+
+          // Incrémenter le compteur d'utilisation
+          foundCoupon.usedCount += 1;
+          await foundCoupon.save();
+        }
+      }
+    }
+
     const finalShippingPrice = shippingPrice !== undefined ? Number(shippingPrice) : (calculatedItemsPrice > 50 ? 0 : 4.99);
-    const finalTotalPrice = totalPrice !== undefined ? Number(totalPrice) : (calculatedItemsPrice + finalShippingPrice);
+    const finalTotalPrice = Math.max(0, Number((calculatedItemsPrice - appliedDiscount + finalShippingPrice).toFixed(2)));
 
     const orderData = {
       orderItems,
@@ -70,6 +154,9 @@ const createOrder = async (req, res, next) => {
       paymentMethod: paymentMethod || 'Carte Bancaire',
       itemsPrice: itemsPrice !== undefined ? Number(itemsPrice) : calculatedItemsPrice,
       shippingPrice: finalShippingPrice,
+      discountAmount: appliedDiscount,
+      couponCode: appliedCoupon ? appliedCoupon.code : '',
+      coupon: appliedCoupon ? appliedCoupon._id : null,
       totalPrice: finalTotalPrice,
       isPaid: true,
       paidAt: new Date(),
@@ -84,11 +171,12 @@ const createOrder = async (req, res, next) => {
 
     // Notification système pour l'administrateur (visiteur ou joueur)
     const clientType = req.user ? `Joueur (${req.user.gamertag || 'Inscrit'})` : 'Visiteur';
+    const promoInfo = appliedCoupon ? ` (🎟️ Code ${appliedCoupon.code} : -${appliedDiscount.toFixed(2)} DT)` : '';
     Notification.create({
       recipientRole: 'admin',
       type: 'order',
       title: '🛍️ Nouvelle Commande Boutique !',
-      message: `${order.shippingAddress.fullName} (${order.shippingAddress.email} - ${clientType}) a validé une commande de ${order.totalPrice} DT (${order.orderItems.length} article(s)).`,
+      message: `${order.shippingAddress.fullName} (${order.shippingAddress.email} - ${clientType}) a validé une commande de ${order.totalPrice} DT (${order.orderItems.length} article(s))${promoInfo}.`,
       orderId: order._id,
       metadata: {
         customerName: order.shippingAddress.fullName,
@@ -96,6 +184,8 @@ const createOrder = async (req, res, next) => {
         phone: order.shippingAddress.phone,
         totalPrice: order.totalPrice,
         itemsCount: order.orderItems.length,
+        discountAmount: order.discountAmount,
+        couponCode: order.couponCode,
         isPlayer: Boolean(req.user),
         gamertag: req.user?.gamertag || null
       }

@@ -130,7 +130,7 @@ const MatchesSection = () => {
                   <span className="status-badge-pill status-upcoming">À venir</span>
                 )}
                 {match.status === 'live' && (
-                  <span className="status-badge-pill status-live" style={{ animation: 'pulse-slow 2s infinite' }}>🔴 EN DIRECT</span>
+                  <span className="status-badge-pill status-live" style={{ animation: 'pulse-slow 2s infinite' }}> EN DIRECT</span>
                 )}
                 {match.status === 'finished' && (
                   <span className="status-badge-pill status-finished">Terminé</span>
@@ -145,7 +145,7 @@ const MatchesSection = () => {
                   if (match.streamUrl) window.open(match.streamUrl, '_blank');
                 }}
               >
-                {match.status === 'live' ? 'Regarder le Live 📺' : 'Détails match'} <ChevronRight size={14} />
+                {match.status === 'live' ? 'Regarder le Live ' : 'Détails match'} <ChevronRight size={14} />
               </button>
             </div>
           ))}

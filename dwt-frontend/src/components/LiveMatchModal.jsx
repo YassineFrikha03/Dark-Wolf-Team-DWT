@@ -276,7 +276,7 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
                     boxShadow: '0 0 10px rgba(230,0,0,0.3)'
                   }}
                 >
-                  🎯 Faire un Pronostic (+130 pts)
+                   Faire un Pronostic (+130 pts)
                 </button>
               )}
               {isLive && (
@@ -569,7 +569,7 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => triggerReaction('🐺', 'AOUUUUH')}
+                  onClick={() => triggerReaction('', 'AOUUUUH')}
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.15)',
@@ -584,11 +584,11 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
                     gap: '6px',
                   }}
                 >
-                  🐺 AOUUUUH !
+                   AOUUUUH !
                 </button>
                 <button
                   type="button"
-                  onClick={() => triggerReaction('🔥', 'LETS GO')}
+                  onClick={() => triggerReaction('', 'LETS GO')}
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.15)',
@@ -603,11 +603,11 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
                     gap: '6px',
                   }}
                 >
-                  🔥 LET'S GO
+                   LET'S GO
                 </button>
                 <button
                   type="button"
-                  onClick={() => triggerReaction('⚡', 'CLUTCH')}
+                  onClick={() => triggerReaction('', 'CLUTCH')}
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.15)',
@@ -622,11 +622,11 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
                     gap: '6px',
                   }}
                 >
-                  ⚡ CLUTCH
+                   CLUTCH
                 </button>
                 <button
                   type="button"
-                  onClick={() => triggerReaction('🎯', 'GG')}
+                  onClick={() => triggerReaction('', 'GG')}
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.15)',
@@ -641,7 +641,7 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
                     gap: '6px',
                   }}
                 >
-                  🎯 GG
+                   GG
                 </button>
               </div>
             </div>
@@ -668,11 +668,11 @@ const LiveMatchModal = ({ match, isOpen, onClose, onOpenFanPortal }) => {
                   title="Afficher ou masquer le chat Twitch en direct"
                 >
                   <MessageSquare size={14} color={showChat ? '#c084fc' : '#94a3b8'} />
-                  <span>{showChat ? 'Plein Écran' : '💬 Chat Twitch'}</span>
+                  <span>{showChat ? 'Plein Écran' : ' Chat Twitch'}</span>
                 </button>
               )}
               <div style={{ fontSize: '13px', color: '#22c55e', fontWeight: '800', fontFamily: '"Orbitron", monospace' }}>
-                {cheerCount.toLocaleString()} Cris de Loup 🐺
+                {cheerCount.toLocaleString()} Cris de Loup 
               </div>
               <button
                 type="button"

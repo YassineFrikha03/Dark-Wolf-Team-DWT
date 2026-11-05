@@ -331,7 +331,7 @@ const ContactPage = () => {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', color: '#94a3b8' }}>Discord Officiel DWT</div>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>Rejoindre le Discord DWT 🐺</div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>Rejoindre le Discord DWT </div>
                     </div>
                     <ExternalLink size={14} color="#818cf8" style={{ marginRight: '6px' }} />
                   </a>

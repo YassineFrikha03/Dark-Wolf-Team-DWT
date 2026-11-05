@@ -251,7 +251,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
               }}
             >
               {addedToast ? <Check size={18} /> : <ShoppingBag size={18} />}
-              <span>{addedToast ? 'Ajouté au Panier ! 🐺' : 'Ajouter au Panier'}</span>
+              <span>{addedToast ? 'Ajouté au Panier ! ' : 'Ajouter au Panier'}</span>
             </button>
           </div>
         </div>

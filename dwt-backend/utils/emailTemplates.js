@@ -29,10 +29,10 @@ const baseEmailWrapper = (title, content) => {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
       }
       .header {
-        background: linear-gradient(90deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        background: linear-gradient(90deg, #140505 0%, #1f0808 50%, #2a0b0b 100%);
         padding: 30px 20px;
         text-align: center;
-        border-bottom: 2px solid #6366f1;
+        border-bottom: 2px solid #cc2222;
       }
       .logo-title {
         margin: 0;
@@ -43,7 +43,7 @@ const baseEmailWrapper = (title, content) => {
         text-transform: uppercase;
       }
       .logo-tag {
-        color: #a5b4fc;
+        color: #ff6666;
         font-size: 13px;
         letter-spacing: 3px;
         margin-top: 5px;
@@ -64,9 +64,9 @@ const baseEmailWrapper = (title, content) => {
       }
       .code-badge {
         display: inline-block;
-        background: #1e1b4b;
-        border: 2px dashed #6366f1;
-        color: #a5b4fc;
+        background: #141824;
+        border: 2px dashed #cc2222;
+        color: #ffffff;
         font-size: 32px;
         font-weight: 800;
         letter-spacing: 8px;
@@ -74,24 +74,26 @@ const baseEmailWrapper = (title, content) => {
         border-radius: 12px;
         margin: 25px 0;
         text-align: center;
+        text-shadow: 0 0 10px rgba(204, 34, 34, 0.4);
       }
       .btn {
         display: inline-block;
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        background: #cc2222;
+        border: 1px solid #ff3333;
         color: #ffffff !important;
         text-decoration: none;
-        padding: 12px 28px;
-        border-radius: 8px;
-        font-weight: 600;
+        padding: 14px 28px;
+        border-radius: 6px;
+        font-weight: 700;
         font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-top: 20px;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        box-shadow: 0 4px 15px rgba(204, 34, 34, 0.4);
       }
       .info-box {
-        background-color: #1a1e2e;
-        border-left: 4px solid #6366f1;
+        background-color: #141824;
+        border-left: 4px solid #cc2222;
         padding: 15px;
         border-radius: 0 8px 8px 0;
         margin: 20px 0;
@@ -101,7 +103,7 @@ const baseEmailWrapper = (title, content) => {
   <body>
     <div class="container">
       <div class="header">
-        <h1 class="logo-title">🐺 DARK WOLF TEAM</h1>
+        <h1 class="logo-title">DARK WOLF TEAM</h1>
         <div class="logo-tag">Esports Gaming Community</div>
       </div>
       <div class="content">
@@ -154,22 +156,37 @@ const adminNewUserAlertTemplate = (newUser) => {
 };
 
 // 3. Email Code de Sécurité (Mot de passe oublié)
-const passwordResetCodeTemplate = (gamertag, code) => {
+const passwordResetCodeTemplate = (gamertag, code, resetLink) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">Réinitialisation de ton mot de passe 🔒</h2>
+    <h2 style="color: #ffffff; margin-top: 0; font-size: 22px;">Réinitialisation de ton mot de passe 🔒</h2>
     <p>Bonjour <strong>${gamertag}</strong>,</p>
-    <p>Nous avons reçu une demande de réinitialisation de mot de passe pour ton compte Dark Wolf Team.</p>
-    <p>Voici ton <strong>code de sécurité temporaire</strong> :</p>
-    <div style="text-align: center;">
+    <p>Nous avons reçu une demande de réinitialisation de mot de passe pour ton compte <strong>Dark Wolf Team</strong>.</p>
+    <p>Tu peux modifier ton mot de passe en utilisant soit ton <strong>code de sécurité à 6 chiffres</strong>, soit en cliquant directement sur le <strong>bouton d'accès immédiat</strong> :</p>
+    
+    <div style="text-align: center; margin: 25px 0;">
       <div class="code-badge">${code}</div>
     </div>
-    <div class="info-box">
-      <p style="margin: 0; color: #f87171;">⚠️ <strong>Attention :</strong> Ce code expire dans <strong>15 minutes</strong>.</p>
-      <p style="margin: 6px 0 0 0;">Si tu n'es pas à l'origine de cette demande, ignore simplement cet email, ton compte reste sécurisé.</p>
+
+    ${resetLink ? `
+    <div style="text-align: center; margin: 25px 0 15px 0;">
+      <a href="${resetLink}" class="btn" style="background: #cc2222; border: 1px solid #ff3333; color: #ffffff !important; padding: 14px 28px; border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none; display: inline-block; letter-spacing: 1px;">
+        MODIFIER MON MOT DE PASSE EN 1 CLIC 🔑
+      </a>
+    </div>
+    <p style="font-size: 11px; color: #94a3b8; text-align: center; word-break: break-all; margin-top: 10px;">
+      Ou clique directement sur ce lien sécurisé :<br/>
+      <a href="${resetLink}" style="color: #ff6666; text-decoration: underline;">${resetLink}</a>
+    </p>
+    ` : ''}
+
+    <div class="info-box" style="border-left-color: #cc2222; background-color: #141824;">
+      <p style="margin: 0; color: #ff6666;">⚠️ <strong>Attention :</strong> Ce code et ce lien expirent dans <strong>15 minutes</strong>.</p>
+      <p style="margin: 6px 0 0 0; color: #94a3b8;">Si tu n'es pas à l'origine de cette demande, ignore simplement cet email, ton compte reste sécurisé.</p>
     </div>
   `;
   return baseEmailWrapper('Code de sécurité - Dark Wolf Team', content);
 };
+
 
 // 4. Email Notification de Connexion (Login Alert)
 const loginAlertTemplate = (gamertag, ipAddress, userAgent) => {

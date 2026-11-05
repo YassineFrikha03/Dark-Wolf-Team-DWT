@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
+import { WolfLogo } from './WolfLogo';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { WolfLogo } from './WolfLogo';
 
 const Navbar = ({
   onOpenAuth,
@@ -16,6 +16,9 @@ const Navbar = ({
   onOpenPartners,
   onOpenBrandGuidelines,
   onSelectShopCategory,
+  onOpenShop,
+  onOpenCustomStudio,
+  onBackToSite,
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useAuth();
@@ -37,13 +40,28 @@ const Navbar = ({
   };
 
   const handleShopCategory = (cat) => {
+    if (onOpenShop) {
+      onOpenShop(cat);
+      return;
+    }
     if (onSelectShopCategory) onSelectShopCategory(cat);
     scrollTo('#shop');
   };
 
   return (
     <header id="hdr" className={scrolled ? 'scrolled' : 'top'}>
-      <a href="#" className="hlogo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+      <a 
+        href="/" 
+        className="hlogo" 
+        onClick={(e) => { 
+          e.preventDefault(); 
+          if (onBackToSite) {
+            onBackToSite();
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+          }
+        }}
+      >
         <img
           src="/logo-dwt.png"
           alt="Dark Wolf Team Logo"
@@ -51,26 +69,85 @@ const Navbar = ({
         />
         <div className="htxt">
           <span className="tn">Dark Wolf Team</span>
-          <span className="bn">Dark Lab</span>
         </div>
       </a>
 
       <nav>
-        {/* Shop Dropdown */}
+        {/* Shop Dropdown - Exposé des collections officielles sans COLAB ni ACCESSOIRE */}
         <div className="ng">
-          <button className="nb" onClick={() => scrollTo('#shop')}>
+          <button 
+            className="nb" 
+            onClick={() => {
+              if (onOpenShop) {
+                onOpenShop('All');
+              } else {
+                scrollTo('#shop');
+              }
+            }}
+          >
             Shop
             <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M2 3.5l3 3 3-3" />
             </svg>
           </button>
           <div className="dd">
-            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Best Sellers'); }}>Best Sellers</a>
-            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Pro Kit'); }}>Pro Kit</a>
-            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('New Collection'); }}>New Collection</a>
-            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Collabs'); }}>Collabs</a>
-            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Accessories'); }}>Accessories</a>
-            <a href="#shop" onClick={(e) => { e.preventDefault(); handleShopCategory('Pro Kit'); }}>Custom Gear</a>
+            <a 
+              href="/shop" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                if (onOpenShop) onOpenShop('All'); 
+                else handleShopCategory('All'); 
+              }}
+              style={{ color: '#ffffff', fontWeight: '700', borderBottom: '1px solid rgba(230,0,0,0.3)' }}
+            >
+              Boutique Complète
+            </a>
+            <a 
+              href="/shop" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                if (onOpenShop) onOpenShop('Best Sellers'); 
+                else handleShopCategory('Best Sellers'); 
+              }}
+            >
+              Best Sellers
+            </a>
+            <a 
+              href="/shop" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                if (onOpenShop) onOpenShop('Pro Kit'); 
+                else handleShopCategory('Pro Kit'); 
+              }}
+            >
+              Pro Kit
+            </a>
+            <a 
+              href="/shop" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                if (onOpenShop) onOpenShop('New Collection'); 
+                else handleShopCategory('New Collection'); 
+              }}
+            >
+              New Collection
+            </a>
+            <a 
+              href="/custom" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                if (onOpenCustomStudio) {
+                  onOpenCustomStudio();
+                } else if (onOpenShop) {
+                  onOpenShop('Custom'); 
+                } else {
+                  handleShopCategory('Custom'); 
+                }
+              }}
+              style={{ color: '#ff4444', fontWeight: '700' }}
+            >
+              Custom
+            </a>
             <a
               href="#museum"
               onClick={(e) => { e.preventDefault(); onOpenMuseum(); }}
@@ -122,9 +199,13 @@ const Navbar = ({
                 borderRadius: '10px', 
                 padding: '1px 6px', 
                 fontWeight: '800',
-                letterSpacing: '0.05em'
+                letterSpacing: '0.05em',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
               }}>
-                🔴 LIVE
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ff4d4d', display: 'inline-block' }}></span>
+                LIVE
               </span>
             </a>
             <a
@@ -134,7 +215,7 @@ const Navbar = ({
                 if (onOpenAchievements) onOpenAchievements();
               }}
             >
-              Achievements & Trophées 🏆
+              Achievements & Palmarès
             </a>
           </div>
         </div>
@@ -189,22 +270,22 @@ const Navbar = ({
             </button>
             <div className="dd">
               <a href="#wolfpack" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Mon Profil') : (onOpenFanPortal && onOpenFanPortal('PROFILE')); }} className="hl">
-                🐺 Identité Wolf Pack (Profil & Rangs)
+                Identité Wolf Pack (Profil & Rangs)
               </a>
               <a href="#predictions" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Pronostics') : (onOpenFanPortal && onOpenFanPortal('PRED')); }} className="hl">
-                🎯 Pronostics de Matchs
+                Pronostics de Matchs
               </a>
               <a href="#leaderboard" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Classement') : (onOpenFanPortal && onOpenFanPortal('LEADERBOARD')); }} className="hl">
-                🏆 Classement de la Saison
+                Classement de la Saison
               </a>
               <a href="#missions" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Quêtes') : (onOpenFanPortal && onOpenFanPortal('MISSIONS')); }} className="hl">
-                📋 Quêtes Hebdomadaires
+                Quêtes Hebdomadaires
               </a>
               <a href="#chat" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Messagerie Staff') : (onOpenFanPortal && onOpenFanPortal('PROFILE')); }} className="hl">
-                💬 Messagerie Directe Staff
+                Messagerie Directe Staff
               </a>
               <a href="#orders" onClick={(e) => { e.preventDefault(); onOpenPlayer ? onOpenPlayer('Ma Boutique') : (onOpenFanPortal && onOpenFanPortal('PROFILE')); }} className="hl">
-                🛍️ Mes Commandes Boutique
+                Mes Commandes Boutique
               </a>
             </div>
           </div>

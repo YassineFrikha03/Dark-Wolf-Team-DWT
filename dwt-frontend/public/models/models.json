@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "2.1.0",
+  "organization": "Dark Wolf Team Esports",
+  "models": {
+    "tshirt": {
+      "id": "t-shirt",
+      "category": "t-shirt",
+      "name": "T-Shirt Athlétique Dark Wolf Team",
+      "file": "/models/tshirt.glb",
+      "isAvailable": true,
+      "basePrice": 49.99,
+      "currency": "TND",
+      "targetHeight": 0.70,
+      "bbox": {
+        "width": 0.59,
+        "height": 0.71,
+        "depth": 0.41
+      },
+      "camera": {
+        "fov": 38,
+        "position": [0, 0, 1.70],
+        "target": [0, 0, 0],
+        "minDistance": 0.9,
+        "maxDistance": 2.8
+      },
+      "meshes": [
+        "Object_0",
+        "Object_1",
+        "Object_2",
+        "Object_3",
+        "Object_4",
+        "Object_5",
+        "Object_6",
+        "Object_7",
+        "Object_8",
+        "Object_9"
+      ],
+      "materials": {
+        "body": "Body_FRONT_2664",
+        "sleeves": "Sleeves_FRONT_2669"
+      },
+      "zones": {
+        "body": { "label": "Corps (Devant & Dos)", "material": "Body_FRONT_2664" },
+        "sleeves": { "label": "Manches", "material": "Sleeves_FRONT_2669" }
+      },
+      "printZones": {
+        "center": {
+          "label": "Torse Centre",
+          "u": 0.50,
+          "v": 0.65,
+          "width": 0.28,
+          "height": 0.28,
+          "maxDimensionsCm": { "width": 28, "height": 28 },
+          "decalPosition": [0, 0.08, 0.16],
+          "decalNormal": [0, 0, 1]
+        },
+        "heart": {
+          "label": "Cœur Gauche",
+          "u": 0.62,
+          "v": 0.70,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 12, "height": 12 },
+          "decalPosition": [0.08, 0.12, 0.15],
+          "decalNormal": [0.2, 0, 0.98]
+        },
+        "collar": {
+          "label": "Sous le Col",
+          "u": 0.50,
+          "v": 0.82,
+          "width": 0.20,
+          "height": 0.10,
+          "maxDimensionsCm": { "width": 15, "height": 8 },
+          "decalPosition": [0, 0.22, 0.13],
+          "decalNormal": [0, 0.2, 0.98]
+        },
+        "large": {
+          "label": "Grand Format Torse",
+          "u": 0.50,
+          "v": 0.58,
+          "width": 0.42,
+          "height": 0.42,
+          "maxDimensionsCm": { "width": 35, "height": 45 },
+          "decalPosition": [0, 0.02, 0.16],
+          "decalNormal": [0, 0, 1]
+        },
+        "sleeve_left": {
+          "label": "Manche Gauche",
+          "u": 0.15,
+          "v": 0.70,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 10, "height": 10 },
+          "decalPosition": [-0.25, 0.08, 0.02],
+          "decalNormal": [-0.98, 0, 0.2]
+        },
+        "sleeve_right": {
+          "label": "Manche Droite",
+          "u": 0.85,
+          "v": 0.70,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 10, "height": 10 },
+          "decalPosition": [0.25, 0.08, 0.02],
+          "decalNormal": [0.98, 0, 0.2]
+        }
+      },
+      "backZones": {
+        "gamertag": { "u": 0.50, "v": 0.78, "maxWidth": 0.40, "maxDimensionsCm": { "width": 32, "height": 8 }, "decalPosition": [0, 0.18, -0.15], "decalNormal": [0, 0, -1] },
+        "role": { "u": 0.50, "v": 0.70, "maxWidth": 0.30, "maxDimensionsCm": { "width": 20, "height": 5 }, "decalPosition": [0, 0.12, -0.15], "decalNormal": [0, 0, -1] },
+        "number": { "u": 0.50, "v": 0.50, "maxWidth": 0.35, "maxDimensionsCm": { "width": 26, "height": 26 }, "decalPosition": [0, -0.02, -0.16], "decalNormal": [0, 0, -1] }
+      }
+    },
+    "maillots": {
+      "id": "maillots",
+      "category": "maillots",
+      "name": "Maillot Esport Pro 2026 Dark Wolf",
+      "file": "/models/tshirt.glb",
+      "isAvailable": true,
+      "basePrice": 69.99,
+      "currency": "TND",
+      "isSublimatedJersey": true,
+      "targetHeight": 0.70,
+      "bbox": {
+        "width": 0.59,
+        "height": 0.71,
+        "depth": 0.41
+      },
+      "camera": {
+        "fov": 38,
+        "position": [0, 0, 1.70],
+        "target": [0, 0, 0],
+        "minDistance": 0.9,
+        "maxDistance": 2.8
+      },
+      "meshes": [
+        "Object_0",
+        "Object_1",
+        "Object_2",
+        "Object_3",
+        "Object_4",
+        "Object_5",
+        "Object_6",
+        "Object_7",
+        "Object_8",
+        "Object_9"
+      ],
+      "materials": {
+        "body": "Body_FRONT_2664",
+        "sleeves": "Sleeves_FRONT_2669"
+      },
+      "zones": {
+        "body": { "label": "Corps Esport (Sublimé)", "material": "Body_FRONT_2664" },
+        "sleeves": { "label": "Manches Contrastées", "material": "Sleeves_FRONT_2669" }
+      },
+      "printZones": {
+        "center": {
+          "label": "Torse Centre",
+          "u": 0.50,
+          "v": 0.65,
+          "width": 0.28,
+          "height": 0.28,
+          "maxDimensionsCm": { "width": 28, "height": 28 },
+          "decalPosition": [0, 0.08, 0.16],
+          "decalNormal": [0, 0, 1]
+        },
+        "heart": {
+          "label": "Cœur Gauche",
+          "u": 0.62,
+          "v": 0.70,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 12, "height": 12 },
+          "decalPosition": [0.08, 0.12, 0.15],
+          "decalNormal": [0.2, 0, 0.98]
+        },
+        "collar": {
+          "label": "Sous le Col",
+          "u": 0.50,
+          "v": 0.82,
+          "width": 0.20,
+          "height": 0.10,
+          "maxDimensionsCm": { "width": 15, "height": 8 },
+          "decalPosition": [0, 0.22, 0.13],
+          "decalNormal": [0, 0.2, 0.98]
+        },
+        "large": {
+          "label": "Grand Format Torse",
+          "u": 0.50,
+          "v": 0.58,
+          "width": 0.42,
+          "height": 0.42,
+          "maxDimensionsCm": { "width": 35, "height": 45 },
+          "decalPosition": [0, 0.02, 0.16],
+          "decalNormal": [0, 0, 1]
+        },
+        "sleeve_left": {
+          "label": "Manche Gauche",
+          "u": 0.15,
+          "v": 0.70,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 10, "height": 10 },
+          "decalPosition": [-0.25, 0.08, 0.02],
+          "decalNormal": [-0.98, 0, 0.2]
+        },
+        "sleeve_right": {
+          "label": "Manche Droite",
+          "u": 0.85,
+          "v": 0.70,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 10, "height": 10 },
+          "decalPosition": [0.25, 0.08, 0.02],
+          "decalNormal": [0.98, 0, 0.2]
+        }
+      },
+      "backZones": {
+        "gamertag": { "u": 0.50, "v": 0.78, "maxWidth": 0.40, "maxDimensionsCm": { "width": 32, "height": 8 }, "decalPosition": [0, 0.18, -0.15], "decalNormal": [0, 0, -1] },
+        "role": { "u": 0.50, "v": 0.70, "maxWidth": 0.30, "maxDimensionsCm": { "width": 20, "height": 5 }, "decalPosition": [0, 0.12, -0.15], "decalNormal": [0, 0, -1] },
+        "number": { "u": 0.50, "v": 0.50, "maxWidth": 0.35, "maxDimensionsCm": { "width": 26, "height": 26 }, "decalPosition": [0, -0.02, -0.16], "decalNormal": [0, 0, -1] }
+      }
+    },
+    "hoodie": {
+      "id": "hoodies",
+      "category": "hoodies",
+      "name": "Hoodie Techwear Pro Dark Wolf",
+      "file": "/models/hoodie.glb",
+      "isAvailable": true,
+      "basePrice": 89.99,
+      "currency": "TND",
+      "targetHeight": 0.70,
+      "bbox": {
+        "width": 0.80,
+        "height": 0.67,
+        "depth": 0.39
+      },
+      "camera": {
+        "fov": 38,
+        "position": [0, 0, 1.70],
+        "target": [0, 0, 0],
+        "minDistance": 0.9,
+        "maxDistance": 2.8
+      },
+      "meshes": [
+        "test_lambert1_0"
+      ],
+      "materials": {
+        "body": "lambert1"
+      },
+      "zones": {
+        "body": { "label": "Sweat Complet", "material": "lambert1" }
+      },
+      "printZones": {
+        "center": {
+          "label": "Torse Centre",
+          "u": 0.50,
+          "v": 0.62,
+          "width": 0.30,
+          "height": 0.30,
+          "maxDimensionsCm": { "width": 28, "height": 28 },
+          "decalPosition": [0, 0.08, 0.16],
+          "decalNormal": [0, 0, 1]
+        },
+        "heart": {
+          "label": "Cœur Gauche",
+          "u": 0.64,
+          "v": 0.68,
+          "width": 0.14,
+          "height": 0.14,
+          "maxDimensionsCm": { "width": 12, "height": 12 },
+          "decalPosition": [0.10, 0.12, 0.15],
+          "decalNormal": [0.2, 0, 0.98]
+        },
+        "collar": {
+          "label": "Sous la Capuche",
+          "u": 0.50,
+          "v": 0.78,
+          "width": 0.20,
+          "height": 0.10,
+          "maxDimensionsCm": { "width": 16, "height": 8 },
+          "decalPosition": [0, 0.22, 0.13],
+          "decalNormal": [0, 0.2, 0.98]
+        },
+        "large": {
+          "label": "Grand Format Torse",
+          "u": 0.50,
+          "v": 0.56,
+          "width": 0.42,
+          "height": 0.42,
+          "maxDimensionsCm": { "width": 35, "height": 45 },
+          "decalPosition": [0, 0.02, 0.16],
+          "decalNormal": [0, 0, 1]
+        }
+      },
+      "backZones": {
+        "gamertag": { "u": 0.50, "v": 0.78, "maxWidth": 0.40, "maxDimensionsCm": { "width": 32, "height": 8 }, "decalPosition": [0, 0.18, -0.16], "decalNormal": [0, 0, -1] },
+        "role": { "u": 0.50, "v": 0.70, "maxWidth": 0.30, "maxDimensionsCm": { "width": 20, "height": 5 }, "decalPosition": [0, 0.12, -0.16], "decalNormal": [0, 0, -1] },
+        "number": { "u": 0.50, "v": 0.50, "maxWidth": 0.35, "maxDimensionsCm": { "width": 26, "height": 26 }, "decalPosition": [0, -0.02, -0.17], "decalNormal": [0, 0, -1] }
+      }
+    },
+    "casquettes": {
+      "id": "casquettes",
+      "category": "casquettes",
+      "name": "Casquette Snapback Dark Wolf",
+      "isAvailable": false,
+      "basePrice": 34.99,
+      "currency": "TND",
+      "status": "Modèle bientôt disponible"
+    },
+    "tote-bags": {
+      "id": "tote-bags",
+      "category": "tote-bags",
+      "name": "Tote Bag Toile Écologique Dark Wolf",
+      "isAvailable": false,
+      "basePrice": 24.99,
+      "currency": "TND",
+      "status": "Modèle bientôt disponible"
+    }
+  }
+}

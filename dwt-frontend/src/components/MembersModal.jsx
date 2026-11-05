@@ -173,7 +173,7 @@ const MembersModal = ({ isOpen, onClose, selectedGame = 'All', players = [] }) =
                         KDA {m.stats?.kda || m.kd || '1.45'}
                       </div>
                       <div style={{ color: 'var(--wolf)', fontSize: '12px' }}>
-                        {m.rating || '★★★★★'}
+                        {m.rating || ''}
                       </div>
                     </div>
                   </div>

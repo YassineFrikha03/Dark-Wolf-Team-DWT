@@ -12,13 +12,20 @@ const orderSchema = new mongoose.Schema(
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Product',
-          required: true
+          required: false
         },
         name: { type: String, required: true },
         qty: { type: Number, required: true, min: 1 },
         image: { type: String, required: true },
         price: { type: Number, required: true },
-        size: { type: String, default: '' }
+        size: { type: String, default: '' },
+        customDetails: {
+          gamertag: { type: String, default: '' },
+          model: { type: String, default: '' },
+          color: { type: String, default: '' },
+          position: { type: String, default: '' },
+          style: { type: String, default: '' }
+        }
       }
     ],
     shippingAddress: {
@@ -49,6 +56,19 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0.0
+    },
+    discountAmount: {
+      type: Number,
+      default: 0.0
+    },
+    couponCode: {
+      type: String,
+      default: ''
+    },
+    coupon: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Coupon',
+      required: false
     },
     totalPrice: {
       type: Number,

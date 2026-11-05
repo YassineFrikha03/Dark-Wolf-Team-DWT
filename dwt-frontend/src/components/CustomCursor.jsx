@@ -7,10 +7,31 @@ const CustomCursor = () => {
   const scrollbarRef = useRef(null);
 
   useEffect(() => {
-    let rx = 0, ry = 0, mx = 0, my = 0, lmx = 0, lmy = 0;
+    let rx = window.innerWidth / 2;
+    let ry = window.innerHeight / 2;
+    let mx = rx;
+    let my = ry;
+    let lmx = mx;
+    let lmy = my;
     let animId;
+    let isVisible = false;
+
+    const showCursor = () => {
+      if (!isVisible) {
+        isVisible = true;
+        if (dotRef.current) dotRef.current.style.opacity = '1';
+        if (ringRef.current) ringRef.current.style.opacity = '1';
+      }
+    };
+
+    const hideCursor = () => {
+      isVisible = false;
+      if (dotRef.current) dotRef.current.style.opacity = '0';
+      if (ringRef.current) ringRef.current.style.opacity = '0';
+    };
 
     const onMouseMove = (e) => {
+      showCursor();
       mx = e.clientX;
       my = e.clientY;
       if (dotRef.current) {
@@ -38,17 +59,24 @@ const CustomCursor = () => {
       if (!particlesRef.current) return;
       const p = document.createElement('div');
       p.className = 'spark';
-      p.style.cssText = `left:${Math.random() * window.innerWidth}px;top:${Math.random() * window.innerHeight}px;--tx:${(Math.random() - 0.5) * 28}px;--ty:${(Math.random() - 0.3) * -22}px;background:rgba(184,184,200,.45)`;
+      p.style.cssText = `left:${Math.random() * window.innerWidth}px;top:${Math.random() * window.innerHeight}px;--tx:${(Math.random() - 0.5) * 28}px;--ty:${(Math.random() - 0.3) * -22}px;background:rgba(255,42,42,.65)`;
       particlesRef.current.appendChild(p);
       setTimeout(() => p.remove(), 700);
     };
 
-    const onMouseDown = () => ringRef.current?.classList.add('click');
-    const onMouseUp = () => ringRef.current?.classList.remove('click');
+    const onMouseDown = () => {
+      ringRef.current?.classList.add('click');
+      dotRef.current?.classList.add('click');
+    };
+
+    const onMouseUp = () => {
+      ringRef.current?.classList.remove('click');
+      dotRef.current?.classList.remove('click');
+    };
 
     const animRing = () => {
-      rx += (mx - rx) * 0.13;
-      ry += (my - ry) * 0.13;
+      rx += (mx - rx) * 0.16;
+      ry += (my - ry) * 0.16;
       if (ringRef.current) {
         ringRef.current.style.left = rx + 'px';
         ringRef.current.style.top = ry + 'px';
@@ -66,36 +94,45 @@ const CustomCursor = () => {
       lsy = sy;
 
       if (scrollbarRef.current) {
-        const total = document.body.scrollHeight - window.innerHeight;
+        const total = document.documentElement.scrollHeight - window.innerHeight;
         const pct = total > 0 ? (sy / total) * 100 : 0;
         scrollbarRef.current.style.width = pct + '%';
       }
     };
 
-    const updateHoverListeners = () => {
-      const interactiveEls = document.querySelectorAll(
-        'button, a, .pcard, .gcard, .ncard, .ysitem, .soclink, .mcard, .memcard, .pdthumb, .chatSug'
+    // Instant, delegated hover detection across all interactive elements
+    const onMouseOver = (e) => {
+      const target = e.target;
+      if (!target) return;
+      const isInteractive = target.closest(
+        'button, a, input, select, textarea, label, [role="button"], [tabindex], .pcard, .gcard, .ncard, .ysitem, .soclink, .mcard, .memcard, .pdthumb, .chatSug, .nb, .bsi, .bjn, .bcart, .pqv, .bva, .filter-btn, .shop-tab-btn, .clickable'
       );
-      interactiveEls.forEach((el) => {
-        el.onmouseenter = () => ringRef.current?.classList.add('h');
-        el.onmouseleave = () => ringRef.current?.classList.remove('h');
-      });
+      if (isInteractive) {
+        ringRef.current?.classList.add('h');
+        dotRef.current?.classList.add('h');
+      } else {
+        ringRef.current?.classList.remove('h');
+        dotRef.current?.classList.remove('h');
+      }
     };
 
-    const hoverTimer = setInterval(updateHoverListeners, 1500);
-
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('mouseover', onMouseOver, { passive: true });
+    document.addEventListener('mouseleave', hideCursor);
+    document.addEventListener('mouseenter', showCursor);
 
     return () => {
       cancelAnimationFrame(animId);
-      clearInterval(hoverTimer);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('mouseover', onMouseOver);
+      document.removeEventListener('mouseleave', hideCursor);
+      document.removeEventListener('mouseenter', showCursor);
     };
   }, []);
 

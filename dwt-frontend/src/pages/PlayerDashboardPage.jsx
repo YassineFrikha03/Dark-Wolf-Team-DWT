@@ -280,7 +280,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
       await API.put('/notifications/read-all');
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadNotifCount(0);
-      showToast('Toutes tes notifications ont été marquées comme lues ! 🐺✓', 'success');
+      showToast('Toutes tes notifications ont été marquées comme lues ! ✓', 'success');
     } catch (err) {
       console.error('Erreur lecture notifications :', err);
     }
@@ -351,7 +351,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
       });
 
       if (res.data?.success) {
-        showToast(res.data.message || 'Pronostic enregistré avec succès ! 🐺🎯');
+        showToast(res.data.message || 'Pronostic enregistré avec succès ! ');
         const [myPredRes, missRes, profRes] = await Promise.all([
           API.get('/predictions/my'),
           API.get('/missions/weekly'),
@@ -382,7 +382,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
     try {
       const res = await API.post(`/missions/${code}/complete`);
       if (res.data?.success) {
-        showToast(res.data.message || 'Mission validée ! ⚡');
+        showToast(res.data.message || 'Mission validée ! ');
         const [missRes, profRes] = await Promise.all([
           API.get('/missions/weekly'),
           API.get('/wolfpack/profile').catch(() => null)
@@ -400,7 +400,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
     try {
       const res = await API.post('/missions/claim-bonus');
       if (res.data?.success) {
-        showToast(res.data.message || 'Bonus Alpha réclamé avec succès ! 🐺👑');
+        showToast(res.data.message || 'Bonus Alpha réclamé avec succès ! ');
         const [missRes, profRes] = await Promise.all([
           API.get('/missions/weekly'),
           API.get('/wolfpack/profile').catch(() => null)
@@ -512,10 +512,10 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
         {/* User Badges in Top Bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span className={`rank-pill ${currentRankName}`}>
-            {currentRankName === 'Cub' && '🐾 Cub'}
-            {currentRankName === 'Scout' && '🏹 Scout'}
-            {currentRankName === 'Hunter' && '⚔️ Hunter'}
-            {currentRankName === 'Alpha' && '👑 Alpha'}
+            {currentRankName === 'Cub' && ' Cub'}
+            {currentRankName === 'Scout' && ' Scout'}
+            {currentRankName === 'Hunter' && ' Hunter'}
+            {currentRankName === 'Alpha' && ' Alpha'}
           </span>
 
           <span
@@ -658,7 +658,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                           Aucune notification pour le moment
                         </div>
                         <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                          Tu es parfaitement à jour sur tes alertes et actualités ! 🐺✨
+                          Tu es parfaitement à jour sur tes alertes et actualités ! 
                         </div>
                       </div>
                     ) : (
@@ -766,7 +766,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                       {progressPercent}% vers {nextRank} ({xpForNext} XP restants)
                     </span>
                   ) : (
-                    <span style={{ color: '#ff4d4d' }}>RANG MAXIMAL ALPHA 👑</span>
+                    <span style={{ color: '#ff4d4d' }}>RANG MAXIMAL ALPHA </span>
                   )}
                 </div>
                 <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
@@ -833,14 +833,14 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button className="btn-rejoindre" onClick={() => handleJoinMatch(upcomingMatch)}>
-                        {upcomingMatch.status === 'live' ? 'Regarder le Live 🔴' : 'Rejoindre'}
+                        {upcomingMatch.status === 'live' ? 'Regarder le Live ' : 'Rejoindre'}
                       </button>
                       <button
                         className="btn-mark-read"
                         style={{ padding: '6px 14px' }}
                         onClick={() => setActiveNav('Pronostics')}
                       >
-                        🎯 Pronostiquer
+                         Pronostiquer
                       </button>
                     </div>
                   </div>
@@ -883,7 +883,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     <div className="inventory-item-info">
                       <span className="inventory-item-name">{latestOrderItem?.name || 'Wolf Jersey Pro'}</span>
                       <span className="inventory-item-tag">
-                        <Star size={12} fill="var(--red-primary)" color="var(--red-primary)" /> {latestOrderItem ? 'Reçu' : '★ Officiel DWT'}
+                        <Star size={12} fill="var(--red-primary)" color="var(--red-primary)" /> {latestOrderItem ? 'Reçu' : ' Officiel DWT'}
                       </span>
                     </div>
                   </div>
@@ -916,7 +916,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                       }}
                     >
                       <div className={`avatar-frame-wrapper avatar-frame-${f.id}`} style={{ width: '40px', height: '40px', margin: '0 auto 8px' }}>
-                        <span style={{ fontSize: '18px' }}>🐺</span>
+                        <span style={{ fontSize: '18px' }}></span>
                       </div>
                       <div style={{ fontSize: '11px', fontWeight: '700', color: '#fff' }}>{f.name}</div>
                       {f.unlocked ? (
@@ -944,7 +944,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                         )
                       ) : (
                         <span style={{ fontSize: '9px', color: '#64748b', marginTop: '6px', display: 'block' }}>
-                          Verrouillé 🔒
+                          Verrouillé 
                         </span>
                       )}
                     </div>
@@ -1146,7 +1146,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                               className="btn-rejoindre"
                               style={{ padding: '8px 18px', fontSize: '12px' }}
                             >
-                              {isSubmitting ? 'Validation...' : existingUserPred ? 'Mettre à jour mon prono ✓' : 'Valider mon pronostic 🎯'}
+                              {isSubmitting ? 'Validation...' : existingUserPred ? 'Mettre à jour mon prono ✓' : 'Valider mon pronostic '}
                             </button>
                           </div>
                         </div>
@@ -1180,9 +1180,9 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                         </div>
                         <div>
                           {p.status === 'pending' && <span style={{ fontSize: '11px', color: '#eab308', fontWeight: '700' }}>⏳ En attente</span>}
-                          {p.status === 'won' && <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: '800' }}>🏆 Victoire (+{p.pointsEarned} pts)</span>}
-                          {p.status === 'partial' && <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '800' }}>🎯 Partiel (+{p.pointsEarned} pts)</span>}
-                          {p.status === 'lost' && <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '700' }}>❌ Manqué (0 pt)</span>}
+                          {p.status === 'won' && <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: '800' }}> Victoire (+{p.pointsEarned} pts)</span>}
+                          {p.status === 'partial' && <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '800' }}> Partiel (+{p.pointsEarned} pts)</span>}
+                          {p.status === 'lost' && <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '700' }}> Manqué (0 pt)</span>}
                         </div>
                       </div>
                     ))}
@@ -1209,10 +1209,10 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     {/* 2nd Place */}
                     <div className="wp-podium-card wp-podium-2nd">
                       <div style={{ position: 'absolute', top: '-10px', background: '#94a3b8', color: '#000', fontWeight: '900', padding: '2px 8px', borderRadius: '10px', fontSize: '10px' }}>
-                        #2 ARGENT 🥈
+                        #2 ARGENT 
                       </div>
                       <div className={`avatar-frame-wrapper avatar-frame-${leaderboard[1]?.avatarFrame || 'scout_silver'}`} style={{ width: '50px', height: '50px', marginTop: '8px' }}>
-                        <span style={{ fontSize: '22px' }}>🐺</span>
+                        <span style={{ fontSize: '22px' }}></span>
                       </div>
                       <div style={{ fontWeight: '800', color: '#fff', fontSize: '13px', marginTop: '6px' }}>{leaderboard[1]?.gamertag}</div>
                       <span className={`rank-pill ${leaderboard[1]?.wolfRank || 'Hunter'}`} style={{ marginTop: '2px', fontSize: '9px' }}>
@@ -1226,10 +1226,10 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     {/* 1st Place */}
                     <div className="wp-podium-card wp-podium-1st">
                       <div style={{ position: 'absolute', top: '-12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#000', fontWeight: '900', padding: '3px 10px', borderRadius: '12px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Crown size={12} /> #1 OR 🥇
+                        <Crown size={12} /> #1 OR 
                       </div>
                       <div className={`avatar-frame-wrapper avatar-frame-${leaderboard[0]?.avatarFrame || 'alpha_fire'}`} style={{ width: '60px', height: '60px', marginTop: '8px' }}>
-                        <span style={{ fontSize: '26px' }}>👑</span>
+                        <span style={{ fontSize: '26px' }}></span>
                       </div>
                       <div style={{ fontWeight: '900', color: '#fff', fontSize: '15px', marginTop: '6px' }}>{leaderboard[0]?.gamertag}</div>
                       <span className={`rank-pill ${leaderboard[0]?.wolfRank || 'Alpha'}`} style={{ marginTop: '2px', fontSize: '9px' }}>
@@ -1243,10 +1243,10 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     {/* 3rd Place */}
                     <div className="wp-podium-card wp-podium-3rd">
                       <div style={{ position: 'absolute', top: '-10px', background: '#cd7f32', color: '#fff', fontWeight: '900', padding: '2px 8px', borderRadius: '10px', fontSize: '10px' }}>
-                        #3 BRONZE 🥉
+                        #3 BRONZE 
                       </div>
                       <div className={`avatar-frame-wrapper avatar-frame-${leaderboard[2]?.avatarFrame || 'cub_bronze'}`} style={{ width: '50px', height: '50px', marginTop: '8px' }}>
-                        <span style={{ fontSize: '22px' }}>🐺</span>
+                        <span style={{ fontSize: '22px' }}></span>
                       </div>
                       <div style={{ fontWeight: '800', color: '#fff', fontSize: '13px', marginTop: '6px' }}>{leaderboard[2]?.gamertag}</div>
                       <span className={`rank-pill ${leaderboard[2]?.wolfRank || 'Scout'}`} style={{ marginTop: '2px', fontSize: '9px' }}>
@@ -1285,7 +1285,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                           #{item.position || idx + 1}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>🐺</span>
+                          <span></span>
                           <span style={{ color: '#fff', fontSize: '13px', fontWeight: isCurrentUser ? '800' : '500' }}>{item.gamertag}</span>
                           {isCurrentUser && <span style={{ fontSize: '9px', background: '#e60000', color: '#fff', padding: '1px 5px', borderRadius: '6px' }}>MOI</span>}
                         </div>
@@ -1355,7 +1355,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     <span style={{ fontSize: '11px', fontWeight: '800', color: '#22c55e' }}>✓ Bonus Réclamé cette semaine</span>
                   ) : missionsData?.canClaimBonus ? (
                     <button className="btn-rejoindre" onClick={handleClaimWeeklyBonus}>
-                      Réclamer le Bonus Alpha 🐺👑
+                      Réclamer le Bonus Alpha 
                     </button>
                   ) : (
                     <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700' }}>En cours de complétion</span>
@@ -1436,7 +1436,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                           style={{ padding: '6px 16px', fontSize: '13px' }}
                           onClick={() => handleJoinMatch(m)}
                         >
-                          {m.status === 'live' ? 'Regarder 🔴' : 'Rejoindre'}
+                          {m.status === 'live' ? 'Regarder ' : 'Rejoindre'}
                         </button>
                         {m.status === 'upcoming' && (
                           <button
@@ -1444,7 +1444,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                             style={{ padding: '6px 12px', fontSize: '12px' }}
                             onClick={() => setActiveNav('Pronostics')}
                           >
-                            🎯 Pronostiquer
+                             Pronostiquer
                           </button>
                         )}
                       </div>
@@ -1495,7 +1495,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                         </div>
                       </div>
                       <span className="inventory-badge-recu">
-                        {ord.orderStatus === 'delivered' ? 'Livré ✓' : 'En cours 📦'}
+                        {ord.orderStatus === 'delivered' ? 'Livré ✓' : 'En cours '}
                       </span>
                     </div>
                   ))
@@ -1550,7 +1550,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
               <div className="chat-user-list">
                 <div className="chat-user-header">
                   <div className="chat-user-title">
-                    <span>🐺 Direction Staff DWT</span>
+                    <span> Direction Staff DWT</span>
                     <span style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1599,7 +1599,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     color: '#94a3b8'
                   }}>
                     <div style={{ fontWeight: '700', color: '#fff', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      🎯 Sujets de Discussion
+                       Sujets de Discussion
                     </div>
                     <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <li>Horaires & plannings des entraînements</li>
@@ -1619,7 +1619,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     color: '#64748b',
                     textAlign: 'center'
                   }}>
-                    🔒 Canal officiel sécurisé Dark Wolf Team
+                     Canal officiel sécurisé Dark Wolf Team
                   </div>
                 </div>
               </div>
@@ -1662,7 +1662,7 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                     <div className="dash-empty-state" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
                       <WolfLogo size={42} />
                       <div style={{ marginTop: '14px', fontWeight: '800', color: '#fff', fontSize: '16px' }}>
-                        Bienvenue dans ton canal de discussion officiel ! 🐺💬
+                        Bienvenue dans ton canal de discussion officiel ! 
                       </div>
                       <div style={{ marginTop: '6px', fontSize: '13px', color: '#94a3b8', maxWidth: '440px' }}>
                         Cet espace privé te relie directement au staff et aux coachs Dark Wolf Team. Pose toutes tes questions ci-dessous.
@@ -1691,23 +1691,23 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
                   <button
                     type="button"
                     className="chat-prompt-pill"
-                    onClick={() => setChatInput('Bonjour, quand a lieu la prochaine session de scrims ? 🐺')}
+                    onClick={() => setChatInput('Bonjour, quand a lieu la prochaine session de scrims ? ')}
                   >
                     ⏰ Horaires des scrims
                   </button>
                   <button
                     type="button"
                     className="chat-prompt-pill"
-                    onClick={() => setChatInput('Bonjour, pouvez-vous me donner des nouvelles de ma commande de maillot ? 👕')}
+                    onClick={() => setChatInput('Bonjour, pouvez-vous me donner des nouvelles de ma commande de maillot ? ')}
                   >
-                    👕 Info maillot / boutique
+                     Info maillot / boutique
                   </button>
                   <button
                     type="button"
                     className="chat-prompt-pill"
-                    onClick={() => setChatInput('Je confirme ma disponibilité pour le prochain tournoi ! 🏆')}
+                    onClick={() => setChatInput('Je confirme ma disponibilité pour le prochain tournoi ! ')}
                   >
-                    🏆 Confirmation tournoi
+                     Confirmation tournoi
                   </button>
                 </div>
 

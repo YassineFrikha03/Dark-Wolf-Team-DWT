@@ -10,7 +10,7 @@ export const getImageUrl = (img) => {
   if (img.startsWith('/backgrounds/') || img.startsWith('/logo-dwt.png') || img.startsWith('/favicon.')) {
     return img;
   }
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
   return `${backendUrl}${img.startsWith('/') ? '' : '/'}${img}`;
 };
 

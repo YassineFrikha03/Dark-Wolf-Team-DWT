@@ -1,0 +1,3478 @@
+/* ==========================================================================
+   CONFIGURATEUR OFFICIEL DARK WOLF TEAM - STUDIO POD 3D CAD ESPORT
+   Thème : Fond #07080B | Surfaces #0E1118 & #12151C | Accent Rouge #E10613
+   Polices : Orbitron (Titres & Chiffres), Inter & Rajdhani (UI & Saisie)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap');
+
+:root {
+  --dwt-bg-base: #07080b;
+  --dwt-bg-surface: #0e1118;
+  --dwt-bg-card: #12151c;
+  --dwt-bg-hover: #181c26;
+  --dwt-bg-active: #202534;
+  --dwt-border: rgba(255, 255, 255, 0.08);
+  --dwt-border-hover: rgba(255, 255, 255, 0.18);
+  --dwt-border-focus: rgba(225, 6, 19, 0.6);
+  --dwt-red: #e10613;
+  --dwt-red-hover: #ff1a27;
+  --dwt-red-glow: rgba(225, 6, 19, 0.35);
+  --dwt-cyan: #00e5ff;
+  --dwt-gold: #ffb703;
+  --dwt-text-primary: #f5f6f8;
+  --dwt-text-secondary: #9aa1ad;
+  --dwt-text-muted: #5e6676;
+  --dwt-radius-sm: 6px;
+  --dwt-radius-md: 10px;
+  --dwt-radius-lg: 14px;
+  --dwt-transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   1. CONTENEUR FENÊTRE & MODALE DU STUDIO
+   -------------------------------------------------------------------------- */
+.dwt-customizer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(4, 5, 8, 0.92);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--dwt-text-primary);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.dwt-customizer-overlay * {
+  box-sizing: border-box;
+}
+
+.dwt-customizer-window {
+  width: 100%;
+  max-width: 1680px;
+  height: 96vh;
+  max-height: 1020px;
+  background: var(--dwt-bg-base);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-lg);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), 0 0 40px rgba(225, 6, 19, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   2. EN-TÊTE DU STUDIO (HAUTEUR : 56px)
+   -------------------------------------------------------------------------- */
+.dwt-header {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  height: 56px;
+  background: var(--dwt-bg-surface);
+  border-bottom: 1px solid var(--dwt-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  z-index: 30;
+}
+
+.dwt-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dwt-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dwt-header-tag {
+  align-self: flex-start;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--dwt-red);
+  background: rgba(225, 6, 19, 0.12);
+  border: 1px solid rgba(225, 6, 19, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dwt-header-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  color: var(--dwt-text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.dwt-header-subtitle {
+  font-size: 11px;
+  color: var(--dwt-text-secondary);
+}
+
+.dwt-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dwt-header-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dwt-border);
+  color: var(--dwt-text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--dwt-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-header-btn:hover {
+  background: var(--dwt-bg-hover);
+  color: var(--dwt-text-primary);
+  border-color: var(--dwt-border-hover);
+}
+
+.dwt-header-close-btn {
+  background: rgba(225, 6, 19, 0.12);
+  border: 1px solid rgba(225, 6, 19, 0.35);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--dwt-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  margin-left: 6px;
+}
+
+.dwt-header-close-btn:hover {
+  background: var(--dwt-red);
+  box-shadow: 0 0 16px var(--dwt-red-glow);
+}
+
+/* --------------------------------------------------------------------------
+   3. CORPS DU STUDIO (4 COLONNES : NAV STRIP + TIROIR + PATRON 2D + 3D)
+   -------------------------------------------------------------------------- */
+.dwt-customizer-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+  background: var(--dwt-bg-base);
+}
+
+/* ==========================================================================
+   COLONNE 1 : BANDEAU D'ICÔNES VERTICAL GAUCHE (68px)
+   ========================================================================== */
+.dwt-vertical-nav-strip {
+  width: 68px;
+  flex-shrink: 0;
+  background: #090a0f;
+  border-right: 1px solid var(--dwt-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 6px;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.dwt-nav-tool-btn {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-secondary);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  padding: 4px;
+  position: relative;
+}
+
+.dwt-nav-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dwt-text-primary);
+}
+
+.dwt-nav-tool-btn.active {
+  background: rgba(225, 6, 19, 0.12);
+  color: #ffffff;
+  border-color: rgba(225, 6, 19, 0.4);
+}
+
+.dwt-nav-tool-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  background: var(--dwt-red);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px var(--dwt-red);
+}
+
+.dwt-nav-tool-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* ==========================================================================
+   COLONNE 2 : TIROIR CONTEXTUEL D'OUTILS (270px)
+   ========================================================================== */
+.dwt-tool-drawer {
+  width: 270px;
+  flex-shrink: 0;
+  background: var(--dwt-bg-surface);
+  border-right: 1px solid var(--dwt-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 15;
+}
+
+.dwt-drawer-section {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dwt-drawer-header {
+  border-bottom: 1px solid var(--dwt-border);
+  padding-bottom: 10px;
+}
+
+.dwt-drawer-header h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--dwt-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.dwt-drawer-header p {
+  font-size: 11px;
+  color: var(--dwt-text-secondary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dwt-drawer-subheader {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--dwt-text-muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Carte de Dropzone moderne */
+.dwt-dropzone-box {
+  border: 2px dashed rgba(255, 255, 255, 0.16);
+  border-radius: var(--dwt-radius-md);
+  padding: 20px 14px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dwt-dropzone-box:hover {
+  border-color: var(--dwt-red);
+  background: rgba(225, 6, 19, 0.04);
+}
+
+.dwt-dropzone-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dwt-red);
+}
+
+.dwt-dropzone-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.dwt-dropzone-subtitle {
+  font-size: 10px;
+  color: var(--dwt-text-secondary);
+  line-height: 1.3;
+}
+
+/* Barre de recherche dans le tiroir */
+.dwt-drawer-search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.dwt-drawer-search-input {
+  width: 100%;
+  padding: 8px 30px 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  transition: var(--dwt-transition);
+}
+
+.dwt-drawer-search-input:focus {
+  border-color: var(--dwt-red);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dwt-drawer-search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--dwt-text-muted);
+  pointer-events: none;
+}
+
+/* Grille d'assets */
+.dwt-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.dwt-asset-thumb-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: center;
+}
+
+.dwt-asset-thumb-btn:hover {
+  background: var(--dwt-bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.dwt-asset-thumb-btn img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.dwt-asset-name {
+  font-size: 10px;
+  color: var(--dwt-text-secondary);
+  font-weight: 600;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dwt-empty-assets-tip {
+  padding: 18px 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--dwt-radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.dwt-empty-assets-tip .dwt-empty-icon {
+  color: var(--dwt-text-muted);
+  opacity: 0.6;
+}
+
+.dwt-empty-assets-tip p {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.dwt-empty-assets-tip span {
+  font-size: 10px;
+  color: var(--dwt-text-muted);
+  line-height: 1.35;
+}
+
+/* Grille Produits */
+.dwt-products-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dwt-product-choice-card {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: left;
+}
+
+.dwt-product-choice-card:hover:not(.disabled) {
+  background: var(--dwt-bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(2px);
+}
+
+.dwt-product-choice-card.active {
+  background: rgba(225, 6, 19, 0.12);
+  border-color: var(--dwt-red);
+}
+
+.dwt-product-choice-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dwt-prod-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dwt-prod-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--dwt-red);
+  background: rgba(225, 6, 19, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dwt-prod-badge.soon {
+  color: var(--dwt-text-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dwt-prod-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dwt-prod-card-price {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--dwt-red);
+  font-weight: 700;
+}
+
+.dwt-prod-soon-msg {
+  font-size: 10px;
+  color: var(--dwt-text-muted);
+  font-style: italic;
+}
+
+/* Sélecteur de zone de couleur */
+.dwt-zone-pill-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.dwt-zone-pill {
+  padding: 8px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: center;
+}
+
+.dwt-zone-pill:hover {
+  color: #fff;
+  background: var(--dwt-bg-hover);
+}
+
+.dwt-zone-pill.active {
+  background: var(--dwt-red);
+  color: #fff;
+  border-color: var(--dwt-red);
+}
+
+.dwt-color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.dwt-color-circle-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--dwt-transition);
+}
+
+.dwt-color-circle-btn:hover {
+  transform: scale(1.15);
+}
+
+.dwt-color-circle-btn.selected {
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.dwt-custom-hex-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--dwt-text-secondary);
+}
+
+.dwt-hex-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dwt-native-color-picker {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dwt-hex-code-display {
+  font-family: monospace;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 10px;
+  border-radius: var(--dwt-radius-sm);
+  border: 1px solid var(--dwt-border);
+}
+
+.dwt-apply-all-btn {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-primary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-apply-all-btn:hover {
+  background: var(--dwt-bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Polices & Flocage */
+.dwt-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dwt-field-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dwt-text-secondary);
+}
+
+.dwt-text-input {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  transition: var(--dwt-transition);
+}
+
+.dwt-text-input:focus {
+  border-color: var(--dwt-red);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dwt-fonts-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.dwt-font-option-btn {
+  padding: 8px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: center;
+}
+
+.dwt-font-option-btn.active {
+  background: rgba(225, 6, 19, 0.15);
+  border-color: var(--dwt-red);
+  color: #fff;
+}
+
+.dwt-primary-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--dwt-red);
+  border: none;
+  border-radius: var(--dwt-radius-sm);
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  box-shadow: 0 4px 14px var(--dwt-red-glow);
+}
+
+.dwt-primary-action-btn:hover:not(:disabled) {
+  background: var(--dwt-red-hover);
+  transform: translateY(-1px);
+}
+
+.dwt-primary-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ========================================================
+   OPTIONS DE FLOCAGE JOUEUR COMPÉTITION (DOS 2D & 3D)
+   ======================================================== */
+.dwt-switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.dwt-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.dwt-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dwt-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #ffffff;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.dwt-slider.round {
+  border-radius: 20px;
+}
+
+.dwt-slider.round:before {
+  border-radius: 50%;
+}
+
+.dwt-switch input:checked + .dwt-slider {
+  background-color: var(--dwt-red);
+  border-color: var(--dwt-red);
+  box-shadow: 0 0 10px rgba(225, 6, 19, 0.5);
+}
+
+.dwt-switch input:checked + .dwt-slider:before {
+  transform: translateX(18px);
+  background-color: #ffffff;
+}
+
+.dwt-flock-master-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(225, 6, 19, 0.08);
+  border: 1px solid rgba(225, 6, 19, 0.3);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+.dwt-flock-master-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dwt-flock-master-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.dwt-flock-master-desc {
+  font-size: 10px;
+  color: var(--dwt-text-muted);
+}
+
+.dwt-flock-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dwt-flock-option-box {
+  background: rgba(18, 21, 28, 0.7);
+  border: 1px solid var(--dwt-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.dwt-flock-option-box.active {
+  border-color: rgba(0, 229, 255, 0.4);
+  background: rgba(18, 24, 36, 0.85);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.dwt-flock-option-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dwt-flock-option-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dwt-flock-badge-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dwt-flock-option-box.active .dwt-flock-badge-num {
+  background: var(--dwt-red);
+  border-color: var(--dwt-red);
+  box-shadow: 0 0 8px rgba(225, 6, 19, 0.6);
+}
+
+.dwt-flock-option-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  display: block;
+}
+
+.dwt-flock-option-sub {
+  font-size: 9.5px;
+  color: var(--dwt-text-muted);
+  display: block;
+}
+
+.dwt-flock-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dwt-quick-gamertag-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dwt-mini-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dwt-mini-label {
+  font-size: 10px;
+  color: var(--dwt-text-muted);
+  font-weight: 600;
+}
+
+.dwt-flock-color-swatches {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.dwt-flock-color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dwt-flock-color-dot.active {
+  border: 2px solid #ffffff;
+  transform: scale(1.15);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+.dwt-quick-role-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dwt-role-pill-btn {
+  padding: 4px 8px;
+  font-size: 9.5px;
+  font-weight: 700;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ccd2e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dwt-role-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+}
+
+.dwt-role-pill-btn.active {
+  background: rgba(225, 6, 19, 0.20);
+  border-color: var(--dwt-red);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(225, 6, 19, 0.4);
+}
+
+/* Flocage Joueur Card */
+.dwt-player-preview-card {
+  background: #090a0f;
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.dwt-preview-tag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 2px;
+}
+
+.dwt-preview-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--dwt-red);
+  line-height: 1;
+}
+
+.dwt-preview-role {
+  font-size: 10px;
+  color: var(--dwt-cyan);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dwt-preview-team {
+  font-size: 9px;
+  color: var(--dwt-text-muted);
+  letter-spacing: 1.5px;
+  margin-top: 4px;
+}
+
+/* Calques Stack */
+.dwt-layers-stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dwt-layer-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-layer-row-item:hover {
+  background: var(--dwt-bg-hover);
+}
+
+.dwt-layer-row-item.selected {
+  border-color: var(--dwt-red);
+  background: rgba(225, 6, 19, 0.1);
+}
+
+.dwt-layer-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.dwt-layer-index {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--dwt-red);
+}
+
+.dwt-layer-name {
+  font-size: 11px;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dwt-layer-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dwt-layer-mini-btn {
+  background: transparent;
+  border: none;
+  color: var(--dwt-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--dwt-transition);
+}
+
+.dwt-layer-mini-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dwt-layer-mini-btn.dwt-delete:hover {
+  color: var(--dwt-red);
+}
+
+/* Matières & Finitions */
+.dwt-finishes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dwt-finish-card {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: left;
+}
+
+.dwt-finish-card:hover {
+  background: var(--dwt-bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dwt-finish-card.active {
+  border-color: var(--dwt-red);
+  background: rgba(225, 6, 19, 0.1);
+}
+
+.dwt-finish-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dwt-finish-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dwt-finish-extra {
+  font-size: 11px;
+  color: var(--dwt-red);
+  font-weight: 700;
+}
+
+.dwt-finish-desc {
+  font-size: 10px;
+  color: var(--dwt-text-secondary);
+}
+
+/* ==========================================================================
+   COLONNE 3 : PLAN DE TRAVAIL CENTRAL PATRON 2D (FLEX 1)
+   ========================================================================== */
+.dwt-pattern-workspace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0f121a;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 3.1 Barre d'outils supérieure du patron 2D */
+.dwt-pattern-toolbar {
+  height: 46px;
+  background: var(--dwt-bg-surface);
+  border-bottom: 1px solid var(--dwt-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  flex-shrink: 0;
+  z-index: 10;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dwt-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.dwt-tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  white-space: nowrap;
+}
+
+.dwt-tool-btn:hover:not(:disabled) {
+  background: var(--dwt-bg-hover);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dwt-tool-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.dwt-tool-btn.dwt-tool-delete:hover:not(:disabled) {
+  background: rgba(225, 6, 19, 0.15);
+  border-color: var(--dwt-red);
+  color: var(--dwt-red);
+}
+
+.dwt-tool-btn.dwt-icon-only {
+  padding: 6px 8px;
+}
+
+/* Dropdown Copier vers une autre pièce */
+.dwt-copy-dropdown-container {
+  position: relative;
+}
+
+.dwt-copy-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #12151f;
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.8);
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  z-index: 50;
+}
+
+.dwt-copy-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--dwt-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: left;
+}
+
+.dwt-copy-dropdown-item:hover {
+  background: rgba(225, 6, 19, 0.15);
+  color: #fff;
+}
+
+/* 3.2 Zone centrale de viewport du patron */
+.dwt-pattern-viewport-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  background: radial-gradient(circle at 50% 50%, #1e2434 0%, #0d1017 100%);
+}
+
+.dwt-pattern-canvas-stage {
+  width: 440px;
+  height: 540px;
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+  transform-origin: center center;
+  transition: transform 0.15s ease-out;
+}
+
+/* Grille technique de fond */
+.dwt-pattern-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.dwt-pattern-silhouette-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6));
+}
+
+.dwt-garment-cloth-path {
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.dwt-pattern-safebox-rect {
+  fill: rgba(225, 6, 19, 0.04);
+  stroke: #e10613;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  filter: drop-shadow(0 0 4px rgba(225, 6, 19, 0.35));
+}
+
+/* Conteneur des calques */
+.dwt-pattern-layers-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.dwt-canvas-layer-node {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dwt-canvas-layer-node:active {
+  cursor: grabbing;
+}
+
+.dwt-canvas-layer-node.locked {
+  cursor: default;
+}
+
+.dwt-layer-image-element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
+.dwt-layer-text-element {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 24px;
+  pointer-events: none;
+  white-space: nowrap;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
+}
+
+/* Boîte englobante de transformation active */
+.dwt-layer-bounding-box {
+  position: absolute;
+  inset: -4px;
+  border: 1.5px solid var(--dwt-red);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(225, 6, 19, 0.35);
+  pointer-events: none;
+}
+
+/* Poignées d'échelle aux 4 coins */
+.dwt-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 2px solid var(--dwt-red);
+  border-radius: 2px;
+  z-index: 10;
+}
+
+.handle-tl { top: -8px; left: -8px; cursor: nwse-resize; }
+.handle-tr { top: -8px; right: -8px; cursor: nesw-resize; }
+.handle-bl { bottom: -8px; left: -8px; cursor: nesw-resize; }
+.handle-br { bottom: -8px; right: -8px; cursor: nwse-resize; }
+.handle-tc { top: -8px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle-bc { bottom: -8px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle-ml { top: 50%; left: -8px; transform: translateY(-50%); cursor: ew-resize; }
+.handle-mr { top: 50%; right: -8px; transform: translateY(-50%); cursor: ew-resize; }
+
+/* Poignée de rotation avec tige */
+.dwt-rotate-stem {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  width: 1.5px;
+  height: 18px;
+  background: var(--dwt-red);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.handle-rot {
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--dwt-red);
+  border: 2px solid #fff;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.handle-rot:active {
+  cursor: grabbing;
+}
+
+/* Alerte DPI si image trop basse résolution */
+.dwt-dpi-warning-badge {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 5, 5, 0.9);
+  border: 1px solid var(--dwt-red);
+  color: #ff4d4d;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Tag de dimension de zone en bas */
+.dwt-pattern-dimension-tag {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(14, 17, 24, 0.85);
+  border: 1px solid var(--dwt-border);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: var(--dwt-text-secondary);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* 3.3 Colonne de sélection des pièces textiles (À droite du patron 2D) */
+.dwt-pattern-pieces-sidebar {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(14, 17, 24, 0.7);
+  border: 1px solid var(--dwt-border);
+  backdrop-filter: blur(10px);
+  padding: 8px;
+  border-radius: var(--dwt-radius-md);
+  z-index: 10;
+}
+
+.dwt-pieces-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--dwt-text-muted);
+  text-align: center;
+}
+
+.dwt-piece-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 58px;
+  padding: 8px 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-secondary);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  position: relative;
+}
+
+.dwt-piece-pill:hover {
+  background: var(--dwt-bg-hover);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dwt-piece-pill.active {
+  background: rgba(225, 6, 19, 0.15);
+  border-color: var(--dwt-red);
+  color: #fff;
+  box-shadow: 0 0 14px var(--dwt-red-glow);
+}
+
+.dwt-piece-thumb-svg {
+  width: 34px;
+  height: 38px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.dwt-piece-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1;
+}
+
+.dwt-piece-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--dwt-red);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3.4 Contrôles de zoom du canvas */
+.dwt-canvas-zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  background: rgba(14, 17, 24, 0.85);
+  border: 1px solid var(--dwt-border);
+  backdrop-filter: blur(8px);
+  border-radius: var(--dwt-radius-sm);
+  padding: 3px;
+  z-index: 10;
+}
+
+.dwt-zoom-btn {
+  background: transparent;
+  border: none;
+  color: var(--dwt-text-secondary);
+  padding: 4px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: var(--dwt-transition);
+}
+
+.dwt-zoom-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dwt-zoom-value {
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dwt-text-primary);
+  padding: 0 6px;
+}
+
+/* ==========================================================================
+   COLONNE 4 : APERÇU 3D EN DIRECT & COMMANDE (390px)
+   ========================================================================== */
+.dwt-viewport3d-column {
+  width: 390px;
+  flex-shrink: 0;
+  background: var(--dwt-bg-surface);
+  border-left: 1px solid var(--dwt-border);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  z-index: 15;
+}
+
+/* En-tête du panneau 3D */
+.dwt-viewport-header {
+  height: 48px;
+  background: #0b0d13;
+  border-bottom: 1px solid var(--dwt-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.dwt-viewport-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+.dwt-view-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dwt-view-pill {
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: 4px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--dwt-text-secondary);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-view-pill:hover {
+  background: var(--dwt-bg-hover);
+  color: #fff;
+}
+
+.dwt-view-pill.active {
+  background: var(--dwt-red);
+  color: #fff;
+  border-color: var(--dwt-red);
+  box-shadow: 0 0 10px var(--dwt-red-glow);
+}
+
+/* Scène 3D Canvas */
+.dwt-viewport-canvas-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: radial-gradient(circle at 50% 45%, #151a26 0%, #07080b 80%);
+  overflow: hidden;
+}
+
+.dwt-webgl-wrapper {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.dwt-webgl-wrapper:active {
+  cursor: grabbing;
+}
+
+/* Boutons flottants de caméra 3D */
+.dwt-viewport-float-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+}
+
+.dwt-float-btn {
+  width: 34px;
+  height: 34px;
+  background: rgba(14, 17, 24, 0.85);
+  border: 1px solid var(--dwt-border);
+  backdrop-filter: blur(6px);
+  border-radius: var(--dwt-radius-sm);
+  color: var(--dwt-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-float-btn:hover {
+  background: var(--dwt-bg-hover);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dwt-float-btn.active {
+  background: rgba(225, 6, 19, 0.15);
+  border-color: var(--dwt-red);
+  color: var(--dwt-red);
+}
+
+.dwt-btn-sub {
+  font-size: 7px;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+/* Slider de rotation 0-360° */
+.dwt-rotation-slider-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  right: 16px;
+  background: rgba(14, 17, 24, 0.85);
+  border: 1px solid var(--dwt-border);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.dwt-slider-label {
+  font-family: monospace;
+  font-size: 9px;
+  color: var(--dwt-text-muted);
+}
+
+.dwt-rotation-range {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  outline: none;
+}
+
+.dwt-rotation-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--dwt-red);
+  box-shadow: 0 0 8px var(--dwt-red);
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+.dwt-slider-deg-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--dwt-red);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* 3.5 Pied sticky récapitulatif & commande */
+.dwt-viewport-sticky-footer {
+  background: #0a0c12;
+  border-top: 1px solid var(--dwt-border);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.dwt-size-selector-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dwt-size-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--dwt-text-muted);
+}
+
+.dwt-size-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.dwt-size-pill {
+  width: 34px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  border-radius: 4px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--dwt-text-secondary);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dwt-size-pill:hover {
+  background: var(--dwt-bg-hover);
+  color: #fff;
+}
+
+.dwt-size-pill.active {
+  background: #ffffff;
+  color: #07080b;
+  border-color: #ffffff;
+}
+
+/* Rangée Prix & Quantité */
+.dwt-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.dwt-price-breakdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.dwt-price-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--dwt-text-muted);
+}
+
+.dwt-price-val {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--dwt-red);
+  line-height: 1.1;
+}
+
+.dwt-price-subtext {
+  font-size: 9px;
+  color: var(--dwt-text-secondary);
+}
+
+.dwt-qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  padding: 2px;
+}
+
+.dwt-qty-btn {
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: var(--dwt-transition);
+}
+
+.dwt-qty-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dwt-qty-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* Bouton CTA Commander */
+.dwt-add-cart-btn {
+  width: 100%;
+  padding: 13px 16px;
+  background: linear-gradient(135deg, #e10613 0%, #b8000b 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--dwt-radius-md);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  box-shadow: 0 4px 18px var(--dwt-red-glow);
+}
+
+.dwt-add-cart-btn:hover {
+  background: linear-gradient(135deg, #ff1a27 0%, #d1000d 100%);
+  box-shadow: 0 6px 24px rgba(225, 6, 19, 0.5);
+  transform: translateY(-1px);
+}
+
+.dwt-add-cart-btn.success {
+  background: #22c55e;
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+}
+
+/* Overlay modèle indisponible */
+.dwt-unavailable-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  background: rgba(7, 8, 11, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 24px;
+  text-align: center;
+  gap: 10px;
+}
+
+.dwt-unavailable-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.dwt-unavailable-desc {
+  font-size: 11px;
+  color: var(--dwt-text-secondary);
+  max-width: 260px;
+}
+
+/* Overlay Debug HUD (?debug=1) */
+.dwt-debug-hud-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(14, 17, 24, 0.92);
+  border: 1px solid rgba(225, 6, 19, 0.5);
+  backdrop-filter: blur(6px);
+  border-radius: var(--dwt-radius-sm);
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 10px;
+  color: #f5f6f8;
+  z-index: 25;
+  max-width: 300px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.dwt-debug-hud-title {
+  color: var(--dwt-red);
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT (Studio adapté Desktop, Tablette, Mobile)
+   ========================================================================== */
+@media (max-width: 1280px) {
+  .dwt-tool-drawer {
+    width: 240px;
+  }
+  .dwt-viewport3d-column {
+    width: 340px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dwt-customizer-window {
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+  }
+  .dwt-customizer-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .dwt-vertical-nav-strip {
+    width: 100%;
+    height: 58px;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--dwt-border);
+    padding: 0 10px;
+  }
+  .dwt-tool-drawer {
+    width: 100%;
+    max-height: 220px;
+    border-right: none;
+    border-bottom: 1px solid var(--dwt-border);
+  }
+  .dwt-pattern-workspace {
+    min-height: 480px;
+  }
+  .dwt-viewport3d-column {
+    width: 100%;
+    min-height: 460px;
+    border-left: none;
+    border-top: 1px solid var(--dwt-border);
+  }
+}
+
+/* ==========================================================================
+   STUDIO IA, CO-PILOTE EN DIRECT & MODAL DU RÉSULTAT FINAL IA
+   ========================================================================== */
+
+/* 1. Bouton nav IA avec pulsation cybernétique */
+.dwt-nav-tool-btn.ai-highlight {
+  position: relative;
+  color: #00e5ff;
+}
+
+.dwt-nav-tool-btn.ai-highlight::after {
+  content: 'IA';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: linear-gradient(135deg, #e10613, #00e5ff);
+  color: #ffffff;
+  font-size: 7px;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.dwt-nav-tool-btn.ai-highlight.active {
+  border-color: #00e5ff;
+  box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+/* 2. Bouton Header RÉSULTAT FINAL IA */
+.dwt-header-ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.12), rgba(225, 6, 19, 0.18));
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--dwt-radius-sm);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.15);
+}
+
+.dwt-header-ai-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(225, 6, 19, 0.3));
+  border-color: #00e5ff;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+/* 3. Liens et boutons d'accès rapide dans Viewport3D */
+.dwt-viewport-ai-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  color: #00e5ff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dwt-viewport-ai-link:hover {
+  background: rgba(0, 229, 255, 0.18);
+  border-color: #00e5ff;
+}
+
+.dwt-showcase-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(14, 17, 24, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: #00e5ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 9px 12px;
+  border-radius: var(--dwt-radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.dwt-showcase-btn:hover {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+}
+
+/* 4. Drawer IA & Prompt */
+.dwt-ai-drawer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: #00e5ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.dwt-ai-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: #e0f2fe;
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: var(--dwt-radius-sm);
+  margin-bottom: 12px;
+  animation: fadeIn 0.2s ease;
+}
+
+.dwt-ai-prompt-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-sm);
+  padding: 10px;
+}
+
+.dwt-ai-prompt-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.dwt-ai-input {
+  flex: 1;
+  font-size: 11px;
+  padding: 8px 10px;
+}
+
+.dwt-ai-send-btn {
+  background: linear-gradient(135deg, #e10613, #b8050f);
+  border: none;
+  color: #ffffff;
+  padding: 0 12px;
+  border-radius: var(--dwt-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.dwt-ai-send-btn:hover:not(:disabled) {
+  background: #ff1c2b;
+  box-shadow: 0 0 10px rgba(225, 6, 19, 0.5);
+}
+
+.dwt-ai-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dwt-ai-progress-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #00e5ff;
+}
+
+.dwt-ai-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+/* 5. Presets Esport */
+.dwt-ai-presets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 155px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.dwt-ai-preset-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 21, 31, 0.7);
+  border: 1px solid var(--dwt-border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.dwt-ai-preset-card:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.4);
+  transform: translateX(2px);
+}
+
+.dwt-ai-preset-icon {
+  font-size: 16px;
+}
+
+.dwt-ai-preset-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dwt-ai-preset-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.dwt-ai-preset-desc {
+  font-size: 9px;
+  color: var(--dwt-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dwt-ai-preset-arrow {
+  color: #00e5ff;
+  opacity: 0.7;
+}
+
+/* 6. Live Audit Card */
+.dwt-ai-live-audit-card {
+  background: rgba(0, 229, 255, 0.03);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: var(--dwt-radius-sm);
+  padding: 10px;
+  margin-top: 14px;
+}
+
+.dwt-ai-audit-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #00e5ff;
+  margin-bottom: 8px;
+}
+
+.dwt-ai-audit-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dwt-ai-audit-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.dwt-stat-lbl {
+  color: var(--dwt-text-muted);
+}
+
+.dwt-stat-val {
+  font-weight: 800;
+  color: #10b981;
+}
+
+.dwt-stat-val.cyan {
+  color: #00e5ff;
+}
+
+.dwt-ai-audit-tip {
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.35;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 8px;
+  border-radius: 4px;
+  border-left: 2px solid #00e5ff;
+}
+
+/* 7. Tuning Grid */
+.dwt-ai-tuning-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.dwt-ai-tune-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dwt-border);
+  color: #f1f5f9;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.dwt-ai-tune-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.dwt-ai-tune-btn.full {
+  grid-column: span 2;
+  background: rgba(255, 183, 3, 0.08);
+  border-color: rgba(255, 183, 3, 0.3);
+  color: #ffb703;
+}
+
+.dwt-ai-tune-btn.full:hover {
+  background: rgba(255, 183, 3, 0.16);
+  border-color: #ffb703;
+}
+
+/* 8. Bouton Rendu Final IA */
+.dwt-ai-final-result-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(225, 6, 19, 0.2), rgba(0, 229, 255, 0.15));
+  border: 1px solid #00e5ff;
+  color: #ffffff;
+  padding: 12px;
+  border-radius: var(--dwt-radius-md);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+}
+
+.dwt-ai-final-result-btn:hover {
+  background: linear-gradient(135deg, rgba(225, 6, 19, 0.35), rgba(0, 229, 255, 0.25));
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.dwt-btn-texts {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dwt-btn-texts strong {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.dwt-btn-texts span {
+  font-size: 9px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   MODAL RÉSULTAT FINAL IA (SHOWCASE HD & CERTIFICATION)
+   ========================================================================== */
+.dwt-ai-result-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 8, 11, 0.88);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dwt-ai-result-window {
+  width: 100%;
+  max-width: 960px;
+  max-height: 92vh;
+  background: #0e1118;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: var(--dwt-radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 229, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dwt-ai-header {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #12151f;
+  border-bottom: 1px solid var(--dwt-border);
+}
+
+.dwt-ai-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dwt-ai-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
+}
+
+.dwt-ai-title {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.dwt-ai-certif-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: #00e5ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+
+.dwt-ai-close-btn {
+  background: transparent;
+  border: 1px solid var(--dwt-border);
+  color: var(--dwt-text-secondary);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--dwt-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dwt-ai-close-btn:hover {
+  background: rgba(225, 6, 19, 0.15);
+  border-color: var(--dwt-red);
+  color: #ffffff;
+}
+
+.dwt-ai-body {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+.dwt-ai-preview-column {
+  background: radial-gradient(circle at center, #161b26 0%, #0a0b0e 100%);
+  border-right: 1px solid var(--dwt-border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dwt-ai-canvas-frame {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+}
+
+.dwt-ai-render-img {
+  max-width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.8));
+  transition: opacity 0.25s ease;
+}
+
+.dwt-ai-render-img.fading {
+  opacity: 0.4;
+}
+
+.dwt-ai-loading-render {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #00e5ff;
+  font-size: 12px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.dwt-ai-holo-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(14, 17, 24, 0.85);
+  border: 1px solid rgba(255, 183, 3, 0.4);
+  color: #ffb703;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(4px);
+}
+
+.dwt-ai-angle-selector {
+  margin-top: 14px;
+}
+
+.dwt-ai-angle-label {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--dwt-text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.dwt-ai-angle-pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.dwt-ai-angle-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dwt-border);
+  color: var(--dwt-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 7px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.dwt-ai-angle-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.dwt-ai-angle-pill.active {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.dwt-ai-details-column {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  gap: 16px;
+}
+
+.dwt-ai-score-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-md);
+  padding: 14px;
+}
+
+.dwt-ai-score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.dwt-ai-score-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.dwt-ai-score-sub {
+  font-size: 10px;
+  color: #00e5ff;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.dwt-ai-score-val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: #10b981;
+  line-height: 1;
+}
+
+.dwt-ai-score-max {
+  font-size: 12px;
+  color: var(--dwt-text-muted);
+}
+
+.dwt-ai-meters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dwt-ai-meter-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--dwt-text-secondary);
+  margin-bottom: 4px;
+}
+
+.dwt-ai-meter-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dwt-ai-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.dwt-ai-meter-fill.cyan {
+  background: linear-gradient(90deg, #00e5ff, #0284c7);
+}
+
+.dwt-ai-tips-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.dwt-ai-tip-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.dwt-ai-tip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00e5ff;
+}
+
+.dwt-ai-tech-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--dwt-border);
+  border-radius: var(--dwt-radius-md);
+  padding: 14px;
+}
+
+.dwt-ai-tech-title {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--dwt-red);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.dwt-ai-specs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dwt-ai-spec-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dwt-ai-spec-k {
+  color: var(--dwt-text-muted);
+}
+
+.dwt-ai-spec-v {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.dwt-ai-spec-v.highlight {
+  color: #ffb703;
+  font-weight: 700;
+}
+
+.dwt-ai-actions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--dwt-border);
+}
+
+.dwt-ai-price-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.dwt-ai-price-sub {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dwt-text-muted);
+}
+
+.dwt-ai-price-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--dwt-red);
+  text-shadow: 0 0 10px rgba(225, 6, 19, 0.35);
+}
+
+.dwt-ai-btns-row {
+  display: grid;
+  grid-template-columns: 100px 100px 1fr;
+  gap: 8px;
+}
+
+.dwt-ai-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--dwt-radius-sm);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.5px;
+}
+
+.dwt-ai-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dwt-border);
+  color: #ffffff;
+}
+
+.dwt-ai-action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dwt-ai-action-btn.primary {
+  background: linear-gradient(135deg, #e10613, #b8050f);
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(225, 6, 19, 0.4);
+}
+
+.dwt-ai-action-btn.primary:hover {
+  background: #ff1c2b;
+  box-shadow: 0 0 24px rgba(225, 6, 19, 0.6);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 860px) {
+  .dwt-ai-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .dwt-ai-preview-column {
+    border-right: none;
+    border-bottom: 1px solid var(--dwt-border);
+  }
+  .dwt-ai-btns-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dwt-ai-action-btn.primary {
+    grid-column: span 2;
+  }
+}
+
+/* ==========================================================================
+   NOUVELLES FONCTIONNALITÉS STUDIO : POSITIONS RAPIDES, DRAPEAUX, GUIDE TAILLES
+   ========================================================================== */
+
+/* 1. BARRE D'EMPLACEMENTS RAPIDES ESPORT */
+.dwt-quick-presets-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(14, 17, 24, 0.95);
+  border-bottom: 1px solid var(--dwt-border);
+  padding: 6px 14px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dwt-quick-presets-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.dwt-presets-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--dwt-text-secondary);
+  white-space: nowrap;
+  letter-spacing: 0.8px;
+}
+
+.dwt-presets-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dwt-preset-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--dwt-text-primary);
+  padding: 4px 9px;
+  border-radius: var(--dwt-radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--dwt-transition);
+}
+
+.dwt-preset-pill-btn:hover:not(:disabled) {
+  background: rgba(225, 6, 19, 0.18);
+  border-color: var(--dwt-red);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.dwt-preset-pill-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.dwt-preset-icon {
+  font-size: 11px;
+}
+
+.dwt-preset-text {
+  font-size: 10px;
+}
+
+/* 2. GRILLE D'ANCRAGE 9 POINTS (DROPDOWN) */
+.dwt-anchor-dropdown-box {
+  width: 170px !important;
+  padding: 10px !important;
+}
+
+.dwt-anchor-grid-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--dwt-cyan);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.dwt-anchor-grid-3x3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.dwt-anchor-cell-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-anchor-cell-btn:hover {
+  background: var(--dwt-red);
+  border-color: var(--dwt-red);
+  transform: scale(1.08);
+}
+
+/* 3. PAVÉ FLOTTANT DE MICRO-DÉPLACEMENT (D-PAD) */
+.dwt-nudge-floating-pad {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 50;
+  background: rgba(14, 17, 24, 0.94);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--dwt-border-hover);
+  border-radius: var(--dwt-radius-md);
+  padding: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dwt-nudge-pad-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--dwt-cyan);
+  letter-spacing: 1px;
+}
+
+.dwt-nudge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 30px);
+  grid-template-rows: repeat(3, 30px);
+  gap: 4px;
+}
+
+.dwt-nudge-arrow-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-nudge-arrow-btn:hover {
+  background: var(--dwt-cyan);
+  color: #000;
+  border-color: var(--dwt-cyan);
+}
+
+.dwt-nudge-center-btn {
+  background: rgba(225, 6, 19, 0.2);
+  border: 1px solid var(--dwt-red);
+  color: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.dwt-nudge-tip {
+  font-size: 8.5px;
+  color: var(--dwt-text-muted);
+  text-align: center;
+  max-width: 140px;
+  line-height: 1.2;
+}
+
+/* 4. ONGLETS DE FILTRE DANS LA BIBLIOTHÈQUE D'IMAGES */
+.dwt-asset-category-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+.dwt-asset-category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.dwt-asset-tab-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--dwt-text-secondary);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--dwt-transition);
+}
+
+.dwt-asset-tab-pill:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dwt-asset-tab-pill.active {
+  background: var(--dwt-red);
+  color: #fff;
+  border-color: var(--dwt-red);
+  box-shadow: 0 0 10px rgba(225, 6, 19, 0.35);
+}
+
+.dwt-asset-tag {
+  font-family: 'Orbitron', monospace;
+  font-size: 7.5px;
+  font-weight: 800;
+  color: var(--dwt-cyan);
+  background: rgba(0, 229, 255, 0.12);
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-top: 2px;
+}
+
+.dwt-asset-preview-wrap {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dwt-asset-preview-wrap img {
+  max-width: 90%;
+  max-height: 48px;
+  object-fit: contain;
+}
+
+/* 5. OPTIONS SPÉCIFIQUES MAILLOT DE COMPÉTITION */
+.dwt-jersey-custom-options {
+  margin-top: 14px;
+  background: rgba(14, 17, 24, 0.7);
+  border: 1px solid rgba(225, 6, 19, 0.25);
+  border-radius: var(--dwt-radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dwt-toggle-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.dwt-sub-toggle-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dwt-border);
+  color: var(--dwt-text-secondary);
+  padding: 6px 8px;
+  border-radius: var(--dwt-radius-sm);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+  text-align: center;
+}
+
+.dwt-sub-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.dwt-sub-toggle-btn.active {
+  background: rgba(225, 6, 19, 0.16);
+  border-color: var(--dwt-red);
+  color: #fff;
+  font-weight: 700;
+}
+
+.dwt-front-number-toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: var(--dwt-radius-sm);
+  padding: 8px 10px;
+}
+
+.dwt-front-number-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dwt-front-num-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dwt-front-num-desc {
+  font-size: 9.5px;
+  color: var(--dwt-text-muted);
+  line-height: 1.2;
+}
+
+.dwt-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--dwt-red);
+  cursor: pointer;
+}
+
+/* 6. MOTS-CLÉS DE TEXTE RAPIDES */
+.dwt-quick-text-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dwt-text-chip-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--dwt-border);
+  color: var(--dwt-text-secondary);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-text-chip-btn:hover {
+  background: var(--dwt-cyan);
+  color: #000;
+  border-color: var(--dwt-cyan);
+}
+
+.dwt-range-slider {
+  flex: 1;
+  accent-color: var(--dwt-cyan);
+  cursor: pointer;
+}
+
+.dwt-mini-action-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--dwt-border);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-mini-action-btn:hover {
+  background: var(--dwt-red);
+  border-color: var(--dwt-red);
+}
+
+/* 7. BOÎTIER DE POSITIONNEMENT RAPIDE DANS L'ONGLET CALQUES */
+.dwt-drawer-quick-position-box {
+  background: rgba(0, 229, 255, 0.04);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: var(--dwt-radius-sm);
+  padding: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dwt-drawer-quick-pos-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', monospace;
+  font-size: 8.5px;
+  font-weight: 800;
+  color: var(--dwt-cyan);
+  letter-spacing: 0.8px;
+}
+
+.dwt-drawer-pos-pills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.dwt-drawer-pos-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-drawer-pos-pill:hover {
+  background: var(--dwt-red);
+  border-color: var(--dwt-red);
+}
+
+.dwt-drawer-dpad-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 8. BOUTONS VIEWPORT 3D (MAQUETTE HD & GUIDE TAILLES) */
+.dwt-viewport-mockup-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: var(--dwt-cyan);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 9px;
+  border-radius: var(--dwt-radius-sm);
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-viewport-mockup-btn:hover {
+  background: var(--dwt-cyan);
+  color: #000;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+}
+
+.dwt-size-guide-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--dwt-cyan);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: var(--dwt-transition);
+}
+
+.dwt-size-guide-link-btn:hover {
+  color: #fff;
+}
+
+/* 9. MODALE OFFICIELLE DU GUIDE DES TAILLES */
+.dwt-size-guide-modal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: dwtFadeIn 0.2s ease-out;
+}
+
+.dwt-size-guide-modal-content {
+  background: #0d1017;
+  border: 1px solid rgba(225, 6, 19, 0.4);
+  border-radius: var(--dwt-radius-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(225, 6, 19, 0.15);
+  width: 100%;
+  max-width: 580px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dwt-size-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--dwt-border);
+  padding-bottom: 10px;
+}
+
+.dwt-size-modal-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fff;
+  margin: 0;
+}
+
+.dwt-size-modal-desc {
+  font-size: 11.5px;
+  color: var(--dwt-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dwt-size-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: left;
+}
+
+.dwt-size-table th {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dwt-cyan);
+  font-family: 'Orbitron', monospace;
+  font-weight: 800;
+  font-size: 9px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.dwt-size-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--dwt-text-primary);
+}
+
+.dwt-size-table tr.selected-row td {
+  background: rgba(225, 6, 19, 0.15);
+  color: #fff;
+}
+
+.size-badge-cell strong {
+  font-family: 'Orbitron', monospace;
+  color: #fff;
+  font-size: 12px;
+}
+
+.fit-badge {
+  font-size: 9.5px;
+  color: var(--dwt-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dwt-size-tip-box {
+  background: rgba(255, 183, 3, 0.08);
+  border: 1px solid rgba(255, 183, 3, 0.25);
+  border-radius: var(--dwt-radius-sm);
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
+.dwt-size-confirm-btn {
+  background: var(--dwt-red);
+  color: #fff;
+  border: none;
+  border-radius: var(--dwt-radius-sm);
+  padding: 10px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--dwt-transition);
+}
+
+.dwt-size-confirm-btn:hover {
+  background: #ff1c2b;
+  box-shadow: 0 0 15px rgba(225, 6, 19, 0.5);
+}
+
+/* 10. TEXTE INCURVÉ SVG */
+.dwt-curved-text-svg {
+  pointer-events: none;
+}
+
+

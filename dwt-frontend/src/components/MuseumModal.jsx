@@ -117,7 +117,7 @@ const MuseumModal = ({ isOpen, onClose }) => {
             marginBottom: '16px',
             filter: 'drop-shadow(0 0 16px rgba(230,0,0,0.4))'
           }}>
-            🏛️
+            
           </div>
           <h3 style={{
             fontFamily: '"Orbitron", sans-serif',

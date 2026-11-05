@@ -1,18 +1,63 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { WolfLogo } from '../components/WolfLogo';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import API from '../services/api';
+import { Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { DiscordIcon, GoogleIcon } from '../components/SocialIcons';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [identifier, setIdentifier] = useState('');
+  const location = useLocation();
+  const { login, setSession } = useAuth();
+  const [identifier, setIdentifier] = useState(location.state?.identifier || '');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState(location.state?.successMsg || '');
   const [loading, setLoading] = useState(false);
+
+  // Écoute du retour OAuth (Google ou Discord)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tokenParam = params.get('token');
+    const providerParam = params.get('provider');
+    const errorParam = params.get('error');
+
+    if (errorParam) {
+      setErrorMsg(decodeURIComponent(errorParam));
+      window.history.replaceState({}, document.title, '/login');
+      return;
+    }
+
+    if (tokenParam) {
+      setLoading(true);
+      API.get('/auth/me', {
+        headers: { Authorization: `Bearer ${tokenParam}` }
+      })
+        .then((res) => {
+          if (res.data.success) {
+            setSession(tokenParam, res.data.user);
+            const providerName = providerParam === 'discord' ? 'Discord' : 'Google';
+            setSuccessMsg(`Connexion réussie avec ${providerName} ! Bon retour, ${res.data.user.gamertag} `);
+            setTimeout(() => {
+              if (res.data.user.role === 'admin' || res.data.user.role === 'moderator') {
+                window.location.href = '/admin';
+              } else {
+                navigate('/');
+              }
+            }, 1000);
+          }
+        })
+        .catch((err) => {
+          setErrorMsg(err.response?.data?.message || 'Erreur lors de la validation du compte.');
+        })
+        .finally(() => {
+          setLoading(false);
+          window.history.replaceState({}, document.title, '/login');
+        });
+    }
+  }, [location.search, navigate, setSession]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,13 +65,22 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      await login(identifier, password);
-      navigate('/');
+      const data = await login(identifier, password);
+      if (data?.user?.role === 'admin' || data?.user?.role === 'moderator') {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/';
+      }
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Identifiants invalides');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSocialLogin = (provider) => {
+    const backendUrl = import.meta.env.VITE_SERVER_URL || '';
+    window.location.href = `${backendUrl}/api/auth/${provider}`;
   };
 
   return (
@@ -38,6 +92,24 @@ const LoginPage = () => {
           <h1 className="auth-main-title">Connexion</h1>
           <p className="auth-subtitle">Accédez à votre espace membre</p>
         </div>
+
+        {successMsg && (
+          <div style={{
+            padding: '12px 14px',
+            borderRadius: '6px',
+            background: 'rgba(34, 197, 94, 0.12)',
+            border: '1px solid rgba(34, 197, 94, 0.4)',
+            color: '#4ade80',
+            fontSize: '13px',
+            marginBottom: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <CheckCircle2 size={18} color="#4ade80" />
+            <span>{successMsg}</span>
+          </div>
+        )}
 
         {errorMsg && (
           <div style={{ padding: '10px 14px', borderRadius: '6px', background: 'rgba(230, 0, 0, 0.15)', border: '1px solid var(--red-primary)', color: '#ff6666', fontSize: '13px', marginBottom: '18px' }}>
@@ -105,11 +177,19 @@ const LoginPage = () => {
           <span>OU</span>
         </div>
 
-        {/* Social Logins matching mockup */}
-        <button className="auth-social-btn" onClick={() => setErrorMsg('Connexion Discord en cours d\'intégration 🎮')}>
+        {/* Social Logins */}
+        <button
+          type="button"
+          className="auth-social-btn"
+          onClick={() => handleSocialLogin('discord')}
+        >
           <DiscordIcon size={18} /> Se connecter avec Discord
         </button>
-        <button className="auth-social-btn" onClick={() => setErrorMsg('Connexion Google en cours d\'intégration 🐺')}>
+        <button
+          type="button"
+          className="auth-social-btn"
+          onClick={() => handleSocialLogin('google')}
+        >
           <GoogleIcon size={18} /> Se connecter avec Google
         </button>
 

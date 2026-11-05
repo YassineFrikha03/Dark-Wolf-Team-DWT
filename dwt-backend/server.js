@@ -28,9 +28,20 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Configuration CORS
+// Configuration CORS pour localhost et réseau local (Wi-Fi / Ethernet)
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    // Permettre les requêtes sans origin (ex: mobile apps, proxy interne, Postman)
+    if (!origin) return callback(null, true);
+
+    const isLocalOrNetwork = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin);
+    const isConfiguredFrontend = process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL;
+
+    if (isLocalOrNetwork || isConfiguredFrontend || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    return callback(new Error('Origine non autorisée par la politique CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -70,6 +81,9 @@ const predictionRoutes = require('./routes/predictionRoutes');
 const missionRoutes = require('./routes/missionRoutes');
 const wolfpackRoutes = require('./routes/wolfpackRoutes');
 const videoRoutes = require('./routes/videoRoutes');
+const countdownRoutes = require('./routes/countdownRoutes');
+const couponRoutes = require('./routes/couponRoutes');
+const customGearRoutes = require('./routes/customGearRoutes');
 
 // Montage des routes d'API
 app.use('/api/auth', authRoutes);
@@ -94,6 +108,9 @@ app.use('/api/predictions', predictionRoutes);
 app.use('/api/missions', missionRoutes);
 app.use('/api/wolfpack', wolfpackRoutes);
 app.use('/api/videos', videoRoutes);
+app.use('/api/countdown', countdownRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/custom-gear', customGearRoutes);
 
 // Route d'accueil & de santé de l'API
 app.get('/', (req, res) => {

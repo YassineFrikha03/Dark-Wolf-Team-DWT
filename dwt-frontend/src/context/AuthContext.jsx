@@ -126,6 +126,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const setSession = (tokenData, userData) => {
+    sessionStorage.setItem('dwt_token', tokenData);
+    localStorage.removeItem('dwt_token');
+    setToken(tokenData);
+    setUser(userData);
+  };
+
   const updateUser = (updatedUser) => {
     setUser(updatedUser);
   };
@@ -139,6 +146,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        setSession,
         updateUser,
         isAdmin: user?.role === 'admin' || user?.role === 'moderator'
       }}

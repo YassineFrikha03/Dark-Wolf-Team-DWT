@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Trash2, ArrowRight, ShieldCheck, CheckCircle2, Tag, Ticket, Check } from 'lucide-react';
 import API from '../services/api';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -24,6 +24,50 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [successOrder, setSuccessOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Gestion Code Promo & Réduction
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const finalCalculatedTotal = Math.max(0, Number((totalPrice - discountAmount).toFixed(2)));
+
+  const handleApplyCoupon = async (e) => {
+    if (e) e.preventDefault();
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await API.post('/coupons/validate', {
+        code: promoInput.trim().toUpperCase(),
+        orderAmount: itemsPrice,
+        userId: user?._id,
+        email: user?.email || shippingAddress.email,
+        gamertag: user?.gamertag || shippingAddress.fullName
+      });
+      if (res.data.success) {
+        setAppliedCoupon({
+          code: res.data.coupon.code,
+          discountType: res.data.coupon.discountType,
+          discountValue: res.data.coupon.discountValue,
+          discountAmount: res.data.discountAmount,
+          description: res.data.coupon.description
+        });
+      }
+    } catch (err) {
+      setPromoError(err.response?.data?.message || 'Code promo invalide ou non autorisé');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setPromoInput('');
+    setPromoError('');
+  };
 
   const handleChange = (e) => {
     setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
@@ -49,7 +93,9 @@ const CartPage = () => {
         shippingAddress,
         itemsPrice,
         shippingPrice,
-        totalPrice,
+        discountAmount,
+        couponCode: appliedCoupon ? appliedCoupon.code : '',
+        totalPrice: finalCalculatedTotal,
         paymentMethod: 'Paiement à la livraison / En ligne'
       };
 
@@ -69,7 +115,7 @@ const CartPage = () => {
     return (
       <div className="section-container" style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         <CheckCircle2 size={64} color="#4ade80" style={{ marginBottom: '20px' }} />
-        <h1 className="section-title">Commande Confirmée ! 🐺</h1>
+        <h1 className="section-title">Commande Confirmée ! </h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '520px', marginBottom: '24px' }}>
           Merci pour votre achat ! Votre commande #{successOrder._id.slice(-8).toUpperCase()} a été enregistrée avec succès. Un e-mail récapitulatif a été envoyé à <strong>{successOrder.shippingAddress.email}</strong>.
         </p>
@@ -248,6 +294,103 @@ const CartPage = () => {
               </div>
             </div>
 
+            {/* Section Code Promo */}
+            <div style={{ marginBottom: '20px', background: 'rgba(11, 13, 20, 0.7)', border: '1px solid var(--border-dark)', borderRadius: '8px', padding: '14px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#cbd5e1', fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>
+                <Tag size={15} color="var(--red-primary)" /> Avez-vous un code promo ?
+              </label>
+
+              {!appliedCoupon ? (
+                <div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={(e) => {
+                        setPromoInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                        setPromoError('');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      placeholder="Code (ex: WOLF10)"
+                      className="auth-text-input"
+                      style={{
+                        paddingLeft: '12px',
+                        fontSize: '13px',
+                        fontFamily: 'Orbitron, sans-serif',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        borderColor: promoError ? '#ef4444' : undefined
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={promoLoading || !promoInput.trim()}
+                      className="btn-red-primary"
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: promoInput.trim() ? 'pointer' : 'default',
+                        opacity: promoInput.trim() ? 1 : 0.6,
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {promoLoading ? 'Validation...' : 'Appliquer'}
+                    </button>
+                  </div>
+
+                  {promoError && (
+                    <div style={{ color: '#f87171', fontSize: '12px', marginTop: '6px' }}>
+                      {promoError}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  borderRadius: '6px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '10px'
+                }}>
+                  <div>
+                    <div style={{ color: '#10b981', fontSize: '13px', fontWeight: '800', fontFamily: 'Orbitron, sans-serif' }}>
+                      ✓ {appliedCoupon.code} (-{appliedCoupon.discountType === 'percentage' ? `${appliedCoupon.discountValue}%` : `${appliedCoupon.discountValue} DT`})
+                    </div>
+                    {appliedCoupon.description && (
+                      <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '2px' }}>
+                        {appliedCoupon.description}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      fontSize: '15px',
+                      padding: '4px'
+                    }}
+                    title="Retirer ce code"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Price breakdown */}
             <div style={{ borderTop: '1px solid var(--border-dark)', paddingTop: '16px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '14px' }}>
@@ -258,9 +401,15 @@ const CartPage = () => {
                 <span>Livraison partout en Tunisie</span>
                 <span>{shippingPrice === 0 ? 'GRATUITE' : `${shippingPrice.toFixed(2)} DT`}</span>
               </div>
+              {appliedCoupon && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981', marginBottom: '8px', fontSize: '14px', fontWeight: '700' }}>
+                  <span>Code Promo ({appliedCoupon.code})</span>
+                  <span>- {discountAmount.toFixed(2)} DT</span>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: '19px', fontWeight: '800', fontFamily: 'var(--font-display)', borderTop: '1px solid var(--border-dark)', paddingTop: '12px' }}>
                 <span>TOTAL</span>
-                <span style={{ color: 'var(--red-primary)' }}>{totalPrice.toFixed(2)} DT</span>
+                <span style={{ color: appliedCoupon ? '#10b981' : 'var(--red-primary)' }}>{finalCalculatedTotal.toFixed(2)} DT</span>
               </div>
             </div>
 

@@ -27,10 +27,10 @@ const ContactSection = () => {
         subject: formData.subject || 'Général',
         message: formData.message,
       });
-      setStatus({ type: 'success', text: '🐺 Message envoyé avec succès ! L\'équipe dirigeante DWT reviendra vers vous sous 24h.' });
+      setStatus({ type: 'success', text: ' Message envoyé avec succès ! L\'équipe dirigeante DWT reviendra vers vous sous 24h.' });
       setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setStatus({ type: 'success', text: '🐺 Message transmis à la Dark Wolf Team ! Merci de nous avoir contactés.' });
+      setStatus({ type: 'success', text: ' Message transmis à la Dark Wolf Team ! Merci de nous avoir contactés.' });
       setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
     } finally {
       setLoading(false);

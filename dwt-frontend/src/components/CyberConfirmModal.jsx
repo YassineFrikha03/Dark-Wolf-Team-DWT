@@ -157,7 +157,7 @@ export const CyberConfirmModal = ({
                 marginTop: '2px'
               }}
             >
-              {isDanger ? '⚠️ Action Destructive' : isWarning ? '⚡ Attention' : '🐺 Dark Wolf Team'}
+              {isDanger ? ' Action Destructive' : isWarning ? ' Attention' : ' Dark Wolf Team'}
             </div>
           </div>
         </div>

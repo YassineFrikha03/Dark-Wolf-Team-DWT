@@ -196,10 +196,10 @@ const MediaSection = ({ onNavigate, videos: externalVideos }) => {
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {[
             { id: 'all', label: 'Toutes les Vidéos' },
-            { id: 'trailer', label: '🎬 Trailers Team' },
-            { id: 'product_ad', label: '🛍️ Pubs Produits' },
-            { id: 'announcement', label: '📢 Annonces' },
-            { id: 'match_highlight', label: '🏆 Matchs' }
+            { id: 'trailer', label: ' Trailers Team' },
+            { id: 'product_ad', label: ' Pubs Produits' },
+            { id: 'announcement', label: ' Annonces' },
+            { id: 'match_highlight', label: ' Matchs' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -308,7 +308,7 @@ const MediaSection = ({ onNavigate, videos: externalVideos }) => {
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                 <span style={{ color: '#ff4d4d', fontSize: '11px', fontWeight: '800', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  ★ VEDETTE OFFICIELLE DU MOMENT
+                   VEDETTE OFFICIELLE DU MOMENT
                 </span>
               </div>
               <h3 className="ytttl" style={{ fontSize: '20px', lineHeight: '1.3' }}>

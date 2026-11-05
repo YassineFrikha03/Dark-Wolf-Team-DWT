@@ -9,6 +9,50 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
   const [submitting, setSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
+  // Gestion des Codes Promo & Réductions
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const finalTotal = Math.max(0, totalPrice - discountAmount);
+
+  const handleApplyPromo = async (e) => {
+    if (e) e.preventDefault();
+    if (!promoCodeInput.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await API.post('/coupons/validate', {
+        code: promoCodeInput.trim().toUpperCase(),
+        orderAmount: totalPrice,
+        userId: user?._id,
+        email: user?.email || orderForm.email,
+        gamertag: user?.gamertag || orderForm.fullName
+      });
+      if (res.data.success) {
+        setAppliedCoupon({
+          code: res.data.coupon.code,
+          discountType: res.data.coupon.discountType,
+          discountValue: res.data.coupon.discountValue,
+          discountAmount: res.data.discountAmount,
+          description: res.data.coupon.description
+        });
+      }
+    } catch (err) {
+      setPromoError(err.response?.data?.message || 'Code promo invalide ou non autorisé');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedCoupon(null);
+    setPromoCodeInput('');
+    setPromoError('');
+  };
+
   const handleUpdateQty = (item, delta) => {
     if (delta > 0) {
       addToCart({ _id: item.product, name: item.name, price: item.price, images: [item.image] }, item.size, 1);
@@ -25,30 +69,38 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
     if (!cartItems.length) return;
     setSubmitting(true);
     try {
-      if (user) {
-        await API.post('/orders', {
-          orderItems: cartItems.map((item) => ({
-            product: item.product,
-            name: item.name,
-            qty: item.qty,
-            price: item.price,
-            size: item.size,
-            image: item.image,
-          })),
-          shippingAddress: {
-            address: 'Adresse client',
-            city: 'Tunis',
-            postalCode: '1000',
-            country: 'Tunisia',
-          },
-          totalPrice,
-          paymentMethod: 'Cash on Delivery',
-        }).catch(() => null);
-      }
+      const orderPayload = {
+        orderItems: cartItems.map((item) => ({
+          product: item.product,
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          size: item.size,
+          image: item.image,
+        })),
+        shippingAddress: {
+          fullName: user?.gamertag || 'Client Meute DWT',
+          email: user?.email || 'commande@darkwolfteam.gg',
+          address: 'Adresse client',
+          city: 'Tunis',
+          postalCode: '1000',
+          country: 'Tunisia',
+        },
+        itemsPrice: totalPrice,
+        shippingPrice: 0,
+        discountAmount,
+        couponCode: appliedCoupon ? appliedCoupon.code : '',
+        totalPrice: finalTotal,
+        paymentMethod: 'Cash on Delivery',
+      };
+
+      await API.post('/orders', orderPayload).catch(() => null);
 
       setOrderSuccess(true);
       setTimeout(() => {
         clearCart();
+        setAppliedCoupon(null);
+        setPromoCodeInput('');
         setOrderSuccess(false);
         onClose();
       }, 2400);
@@ -56,6 +108,8 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
       setOrderSuccess(true);
       setTimeout(() => {
         clearCart();
+        setAppliedCoupon(null);
+        setPromoCodeInput('');
         setOrderSuccess(false);
         onClose();
       }, 2400);
@@ -86,7 +140,7 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
               Commande Confirmée !
             </div>
             <div style={{ color: '#94a3b8', fontSize: '13px', marginTop: '8px', lineHeight: 1.5 }}>
-              La Dark Wolf Team a bien reçu votre commande.<br />Merci pour votre soutien à la Meute ! 🐺📦
+              La Dark Wolf Team a bien reçu votre commande.<br />Merci pour votre soutien à la Meute ! 
             </div>
           </div>
         ) : !cartItems.length ? (
@@ -108,7 +162,7 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
             const lineTotal = item.price * item.qty;
             const imgStyle = item.image
               ? {
-                  backgroundImage: `url(${item.image.startsWith('http') ? item.image : (item.image.startsWith('/') ? item.image : `http://localhost:5000${item.image}`)})`,
+                  backgroundImage: `url(${item.image.startsWith('http') ? item.image : (item.image.startsWith('/') ? item.image : `/${item.image}`)})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }
@@ -144,10 +198,116 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
       </div>
 
       <div className="opftr">
+        {/* Section Code Promo */}
+        {cartItems.length > 0 && (
+          <div style={{ marginBottom: '14px', borderBottom: '1px solid #1a2234', paddingBottom: '12px' }}>
+            {!appliedCoupon ? (
+              <div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input
+                    type="text"
+                    placeholder="Code promo (ex: WOLF10)"
+                    value={promoCodeInput}
+                    onChange={(e) => {
+                      setPromoCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                      setPromoError('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleApplyPromo();
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      background: '#0d131f',
+                      border: promoError ? '1px solid #ef4444' : '1px solid #202b3f',
+                      borderRadius: '6px',
+                      padding: '8px 10px',
+                      color: '#fff',
+                      fontSize: '12px',
+                      fontFamily: 'Orbitron, sans-serif',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyPromo}
+                    disabled={promoLoading || !promoCodeInput.trim()}
+                    style={{
+                      background: promoCodeInput.trim() ? 'var(--red-primary)' : '#1e293b',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '0 12px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: promoCodeInput.trim() ? 'pointer' : 'default',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {promoLoading ? '...' : 'Appliquer'}
+                  </button>
+                </div>
+
+                {promoError && (
+                  <div style={{ color: '#f87171', fontSize: '11px', marginTop: '5px' }}>
+                    {promoError}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.12)',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                borderRadius: '6px',
+                padding: '8px 10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}>
+                <div>
+                  <div style={{ color: '#10b981', fontSize: '12px', fontWeight: '800', fontFamily: 'Orbitron, sans-serif' }}>
+                    ✓ Code {appliedCoupon.code} (-{appliedCoupon.discountType === 'percentage' ? `${appliedCoupon.discountValue}%` : `${appliedCoupon.discountValue} DT`})
+                  </div>
+                  <div style={{ color: '#94a3b8', fontSize: '10px' }}>
+                    Remise appliquée : -TND {appliedCoupon.discountAmount.toFixed(2)}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemovePromo}
+                  title="Retirer le code promo"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    padding: '2px 6px'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {appliedCoupon && (
+          <div className="otrow" style={{ color: '#10b981', fontSize: '13px', marginBottom: '6px' }}>
+            <span className="otlbl" style={{ color: '#10b981' }}>Réduction ({appliedCoupon.code})</span>
+            <span className="otamt" style={{ color: '#10b981' }}>- TND {appliedCoupon.discountAmount.toFixed(2)}</span>
+          </div>
+        )}
+
         <div className="otrow">
           <span className="otlbl">Total</span>
-          <span className="otamt" id="ototal">
-            TND {totalPrice.toFixed(2)}
+          <span className="otamt" id="ototal" style={{ color: appliedCoupon ? '#10b981' : undefined }}>
+            TND {finalTotal.toFixed(2)}
           </span>
         </div>
         <div

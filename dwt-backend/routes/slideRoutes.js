@@ -5,7 +5,7 @@ const Slide = require('../models/Slide');
 const defaultSlides = [
   {
     title: 'HUNT. DOMINATE. CONQUER.',
-    subtitle: 'Dark Wolf Team — Elite esports. Dark Lab — Premium gear crafted for champions who refuse to lose.',
+    subtitle: 'Dark Wolf Team — Elite esports. Dark Lab — Équipements d\'élite conçus pour les champions.',
     label: 'New Collection 2026',
     backgroundImage: '/backgrounds/hero-gaming-bg.jpg',
     btn1Text: 'Shop Collection',
@@ -16,7 +16,7 @@ const defaultSlides = [
     isActive: true
   },
   {
-    title: 'PRO GEAR ONLY.',
+    title: 'PRO ESPORTS ONLY.',
     subtitle: 'Performance-grade equipment engineered for the elite. Built by wolves, worn by champions.',
     label: 'Dark Lab Pro Kit',
     backgroundImage: '/backgrounds/bg-red-moon-pack.png',
