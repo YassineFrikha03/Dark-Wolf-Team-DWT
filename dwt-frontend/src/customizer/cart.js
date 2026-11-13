@@ -45,10 +45,9 @@ export function formatTND(val) {
 
 export function computeCustomPrice(state) {
   const base = BASE_PRICES[state?.category] || 69.99;
-  const hasDesign = state?.customDesign ? 10.0 : 0.0;
-  const hasCustomPlayer = (state?.gamertag && state.gamertag !== 'SHADOW') ? 5.0 : 0.0;
+  const hasFlocking = !!(state?.showGamertag || state?.showPlayerNumber || state?.showPlayerRole);
   const finishExtra = state?.finish === 'mesh' ? 5.0 : 0.0;
-  return base + hasDesign + hasCustomPlayer + finishExtra;
+  return base + (hasFlocking ? 5.0 : 0.0) + finishExtra;
 }
 
 export function buildCartPayload(state, previewSnapshotUrl = null) {
@@ -63,22 +62,35 @@ export function buildCartPayload(state, previewSnapshotUrl = null) {
 
   return {
     _id: `custom_${state.category}_${Date.now()}`,
-    name: `${categoryTitles[state.category] || 'Équipement Esport'} - ${state.modelName || 'Apex Striker'}`,
+    name: `${categoryTitles[state.category] || 'Équipement Esport'} - ${state.modelName || 'Custom'}`,
     price: price,
     category: state.category,
-    size: state.size,
-    image: previewSnapshotUrl || '/custom-gear/jersey_front_transparent.png',
+    size: state.size || 'L',
+    image: previewSnapshotUrl || '/logo-dwt.png',
+    images: previewSnapshotUrl ? [previewSnapshotUrl] : ['/logo-dwt.png'],
     isCustom: true,
+    customConfig: {
+      category: state.category,
+      gamertag: state.gamertag || '',
+      playerNumber: state.playerNumber || '',
+      playerRole: state.playerRole || '',
+      collarStyle: state.collarStyle,
+      jerseyFit: state.jerseyFit,
+      frontNumberEnabled: state.frontNumberEnabled,
+      teamMode: state.teamMode,
+      teamRoster: state.teamRoster,
+      finish: state.finish,
+      colors: state.colors,
+      layersCount: state.layers?.length || 0,
+    },
     customDetails: {
-      model: state.modelName || 'Apex Striker',
-      color: state.color?.name || 'Onyx Black',
+      model: categoryTitles[state.category] || 'Équipement Esport',
+      color: state.colors?.body || state.color?.name || 'Noir',
       finish: state.finish || 'mesh',
-      gamertag: state.gamertag || 'SHADOW',
-      playerNumber: state.playerNumber || '07',
-      playerRole: state.playerRole || 'PRO DUELIST',
-      logoPosition: state.logoPosition || 'center',
-      hasCustomDesign: !!state.customDesign,
-      uploadedDesignName: state.customDesign?.name || 'Logo Officiel DWT',
+      gamertag: state.gamertag || '',
+      number: state.playerNumber || '',
+      role: state.playerRole || '',
+      layersCount: state.layers?.length || 0,
     },
   };
 }

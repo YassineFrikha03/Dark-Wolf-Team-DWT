@@ -18,9 +18,11 @@ import {
   Bot
 } from 'lucide-react';
 import WolfLogo from '../components/WolfLogo';
+import { useCart } from '../context/CartContext';
 import { customizerState } from './state.js';
 import { TextureComposer } from './textureComposer.js';
 import { CustomizerScene } from './scene.js';
+import { buildCartPayload } from './cart.js';
 import PatternCanvas2D from './PatternCanvas2D.jsx';
 import ToolDrawer from './ToolDrawer.jsx';
 import Viewport3D from './Viewport3D.jsx';
@@ -40,6 +42,7 @@ const NAV_TOOLS = [
 ];
 
 export const CustomizerModal = ({ isOpen, onClose, onOpenCart }) => {
+  const { addToCart } = useCart();
   const [state, setState] = useState(customizerState.getState());
   const [unavailableNotice, setUnavailableNotice] = useState(null);
   const [debugModelInfo, setDebugModelInfo] = useState(null);
@@ -286,6 +289,10 @@ export const CustomizerModal = ({ isOpen, onClose, onOpenCart }) => {
           sceneRef={sceneRef}
           state={state}
           onAddToCart={() => {
+            const previewSnap = sceneRef.current?.capturePreview() || null;
+            const item = buildCartPayload(state, previewSnap);
+            const qty = state.teamMode ? (state.teamRoster?.length || 1) : (state.quantity || 1);
+            addToCart(item, state.size || 'L', qty);
             setIsAiResultModalOpen(false);
             if (onOpenCart) onOpenCart();
           }}

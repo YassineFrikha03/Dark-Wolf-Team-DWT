@@ -18,8 +18,8 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product, size = 'M', qty = 1) => {
     setCartItems(prev => {
-      const existing = prev.find(item => item.product === product._id && item.size === size);
-      if (existing) {
+      const existing = prev.find(item => item.product === product._id && item.size === size && !item.isCustom);
+      if (existing && !product.isCustom) {
         return prev.map(item =>
           item.product === product._id && item.size === size
             ? { ...item, qty: item.qty + qty }
@@ -32,9 +32,19 @@ export const CartProvider = ({ children }) => {
           product: product._id,
           name: product.name,
           price: product.price,
-          image: product.images?.[0] || '',
+          image: product.image || product.images?.[0] || '',
           size,
-          qty
+          qty,
+          isCustom: !!(product.isCustom || product.customConfig),
+          customConfig: product.customConfig || null,
+          customDetails: product.customDetails || (product.customConfig ? {
+            gamertag: product.customConfig.gamertag || '',
+            number: product.customConfig.playerNumber || '',
+            role: product.customConfig.playerRole || '',
+            model: product.customConfig.category || '',
+            color: product.customConfig.colors?.body || '',
+            finish: product.customConfig.finish || '',
+          } : null),
         }
       ];
     });

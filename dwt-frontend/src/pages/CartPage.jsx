@@ -88,7 +88,14 @@ const CartPage = () => {
           qty: item.qty,
           image: item.image,
           price: item.price,
-          size: item.size
+          size: item.size,
+          customDetails: item.customDetails || (item.customConfig ? {
+            gamertag: item.customConfig.gamertag || '',
+            model: item.customConfig.category || '',
+            color: item.customConfig.colors?.body || '',
+            position: item.customConfig.playerNumber || '',
+            style: item.customConfig.playerRole || '',
+          } : undefined),
         })),
         shippingAddress,
         itemsPrice,
@@ -183,6 +190,28 @@ const CartPage = () => {
                     <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
                       Taille: {item.size} | Qté: {item.qty}
                     </div>
+                    {item.isCustom && (
+                      <div style={{ marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(225, 6, 19, 0.15)', color: '#ff2d55', border: '1px solid rgba(225, 6, 19, 0.3)', padding: '2px 6px', borderRadius: '4px' }}>
+                          PRO CUSTOM 3D
+                        </span>
+                        {item.customDetails?.gamertag && (
+                          <span style={{ fontSize: '10px', color: '#00e5ff', background: 'rgba(0, 229, 255, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                            Pseudo: {item.customDetails.gamertag}
+                          </span>
+                        )}
+                        {item.customDetails?.number && (
+                          <span style={{ fontSize: '10px', color: '#ffb703', background: 'rgba(255, 183, 3, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                            N° {item.customDetails.number}
+                          </span>
+                        )}
+                        {item.customDetails?.role && (
+                          <span style={{ fontSize: '10px', color: '#aaa', background: '#141824', padding: '2px 6px', borderRadius: '4px' }}>
+                            {item.customDetails.role}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

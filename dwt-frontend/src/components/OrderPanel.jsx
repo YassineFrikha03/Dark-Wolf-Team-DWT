@@ -77,6 +77,13 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
           price: item.price,
           size: item.size,
           image: item.image,
+          customDetails: item.customDetails || (item.customConfig ? {
+            gamertag: item.customConfig.gamertag || '',
+            model: item.customConfig.category || '',
+            color: item.customConfig.colors?.body || '',
+            position: item.customConfig.playerNumber || '',
+            style: item.customConfig.playerRole || '',
+          } : undefined),
         })),
         shippingAddress: {
           fullName: user?.gamertag || 'Client Meute DWT',
@@ -173,7 +180,14 @@ const OrderPanel = ({ isOpen, onClose, onOpenAuth }) => {
                 <div className="oimg" style={imgStyle}></div>
                 <div className="oinfo">
                   <div className="oname">{item.name}</div>
-                  <div className="ocat">Size: {item.size || 'M'}</div>
+                  <div className="ocat">
+                    Taille: {item.size || 'M'}
+                    {item.isCustom && item.customDetails?.gamertag && (
+                      <span style={{ color: 'var(--cyan, #00e5ff)', marginLeft: '6px' }}>
+                        · {item.customDetails.gamertag} #{item.customDetails.number || ''}
+                      </span>
+                    )}
+                  </div>
                   <div className="qc">
                     <button className="qb" onClick={() => handleUpdateQty(item, -1)}>
                       −

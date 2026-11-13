@@ -210,7 +210,11 @@ export const AIFinalResultModal = ({ isOpen, onClose, sceneRef, state, onAddToCa
                 <div className="dwt-ai-spec-row">
                   <span className="dwt-ai-spec-k">Modèle :</span>
                   <span className="dwt-ai-spec-v">
-                    {state.category === 'hoodies' ? 'Hoodie Techwear Pro' : 'T-Shirt Athlétique Pro DWT'}
+                    {state.category === 'maillots'
+                      ? 'Maillot Esport Pro 2026'
+                      : state.category === 'hoodies'
+                      ? 'Hoodie Techwear Pro'
+                      : 'T-Shirt Athlétique Pro DWT'}
                   </span>
                 </div>
 
