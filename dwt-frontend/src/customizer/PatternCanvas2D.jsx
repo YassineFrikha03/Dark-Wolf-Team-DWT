@@ -23,6 +23,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Move,
+  MoveVertical,
+  Sliders,
   Lock,
   Eye,
   Check
@@ -157,6 +159,20 @@ export const PatternCanvas2D = ({ state }) => {
   const handleCenter = () => {
     if (!selectedLayer || selectedLayer.locked) return;
     customizerState.updateLayer(selectedLayer.id, { x: 0, y: 0 }, true);
+  };
+
+  const handleCenterX = () => {
+    if (!selectedLayer || selectedLayer.locked) return;
+    customizerState.centerLayerX(selectedLayer.id);
+  };
+
+  const handleCenterY = () => {
+    if (!selectedLayer || selectedLayer.locked) return;
+    customizerState.centerLayerY(selectedLayer.id);
+  };
+
+  const handleAlignBack = () => {
+    customizerState.alignBackColumn();
   };
 
   const handleFit = () => {
@@ -304,14 +320,29 @@ export const PatternCanvas2D = ({ state }) => {
         let targetX = layerStartPos.x + rawDx;
         let targetY = layerStartPos.y + rawDy;
 
-        // Magnétisme d'alignement intelligent au centre (Snapping)
+        // Magnétisme d'alignement intelligent au centre et inter-calques (Snapping)
         let isSnappedX = false;
         let isSnappedY = false;
 
+        // 1. Snapping au centre absolu X = 0
         if (Math.abs(targetX) < 0.035) {
           targetX = 0;
           isSnappedX = true;
+        } else {
+          // 2. Snapping aux autres calques visibles sur cette même pièce
+          const otherLayers = (state.layers || []).filter(
+            (l) => l.id !== selectedLayer.id && l.view === activeView && l.visible
+          );
+          for (const other of otherLayers) {
+            if (Math.abs(targetX - (other.x || 0)) < 0.035) {
+              targetX = other.x || 0;
+              isSnappedX = true;
+              break;
+            }
+          }
         }
+
+        // Snapping au centre absolu Y = 0
         if (Math.abs(targetY) < 0.035) {
           targetY = 0;
           isSnappedY = true;
@@ -389,17 +420,43 @@ export const PatternCanvas2D = ({ state }) => {
       {/* 1. BARRE D'OUTILS SUPÉRIEURE DU PATRON */}
       <div className="dwt-pattern-toolbar">
         <div className="dwt-toolbar-group">
-          {/* Centrer */}
+          {/* Centrer X */}
           <button
             type="button"
             className="dwt-tool-btn"
-            onClick={handleCenter}
+            onClick={handleCenterX}
             disabled={!selectedLayer}
-            title="Centrer l'élément (X:0, Y:0)"
+            title="Centrer l'élément horizontalement (X:0)"
           >
             <AlignCenter size={14} />
-            <span>Centrer</span>
+            <span>Centrer X</span>
           </button>
+
+          {/* Centrer Y */}
+          <button
+            type="button"
+            className="dwt-tool-btn"
+            onClick={handleCenterY}
+            disabled={!selectedLayer}
+            title="Centrer l'élément verticalement (Y:0)"
+          >
+            <MoveVertical size={14} />
+            <span>Centrer Y</span>
+          </button>
+
+          {/* Aligner Colonne Dos Esport */}
+          {activeView === 'back' && (
+            <button
+              type="button"
+              className="dwt-tool-btn"
+              onClick={handleAlignBack}
+              title="Aligner Gamertag, Rôle et Numéro dans la colonne officielle esport"
+              style={{ color: '#00e5ff', borderColor: 'rgba(0, 229, 255, 0.3)' }}
+            >
+              <Sliders size={14} color="#00e5ff" />
+              <span>Colonne Dos</span>
+            </button>
+          )}
 
           {/* Menu Ancrage 9 Points ▾ (Saut instantané) */}
           <div className="dwt-copy-dropdown-container" onClick={(e) => e.stopPropagation()}>

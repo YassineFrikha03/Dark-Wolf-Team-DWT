@@ -13,6 +13,28 @@ import { isColorDark, getSafeContrastColor } from './state.js';
  * - Synchronisation bidirectionnelle avec le slider et les boutons de vue
  */
 
+/**
+ * Nettoie la chaine de police pour eliminer les guillemets et fallbacks multiples
+ */
+export function getCleanFontFamily(fontFamily) {
+  if (!fontFamily) return 'Orbitron';
+  const first = fontFamily.split(',')[0];
+  return first.replace(/['"]/g, '').trim() || 'Orbitron';
+}
+
+/**
+ * Retourne la graisse exacte supportee par le webfont pour eviter le repli Times New Roman
+ */
+export function getValidFontWeight(fontFamily, isNumber = false) {
+  const fam = (fontFamily || '').toLowerCase();
+  if (fam.includes('bebas')) return '400';
+  if (fam.includes('teko')) return isNumber ? '700' : '600';
+  if (fam.includes('rajdhani')) return isNumber ? '700' : '600';
+  if (fam.includes('inter')) return isNumber ? '700' : '600';
+  if (fam.includes('impact')) return 'bold';
+  return isNumber ? '900' : '700';
+}
+
 export class CustomizerScene {
   constructor(containerElement, textureComposer, options = {}) {
     this.container = containerElement;
@@ -337,7 +359,7 @@ export class CustomizerScene {
     this.camera.position.z = this.currentZoom;
 
     // Rotation du modèle vêtement actif (entraîne rigidement decalContainer)
-    if (this.currentModelGroup) {
+    if (this.currentModelGroup && !this.isProjecting) {
       this.currentModelGroup.rotation.y = this.currentAngle;
     }
 
@@ -389,6 +411,22 @@ export class CustomizerScene {
     }
   }
 
+  async preloadLayer(layer) {
+    if (!layer || !layer.visible) return;
+    if (layer.type === 'text') {
+      const cleanFam = getCleanFontFamily(layer.fontFamily);
+      const isMatchNumber = /^\d{1,2}$/.test((layer.text || '').trim());
+      const weight = getValidFontWeight(cleanFam, isMatchNumber);
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
+        try {
+          await document.fonts.load(`${weight} 60px "${cleanFam}"`);
+        } catch {}
+      }
+    } else if (layer.url) {
+      await this.loadImage(layer.url);
+    }
+  }
+
   async syncDecals(state) {
     if (!state) return;
     this.lastState = state;
@@ -401,27 +439,31 @@ export class CustomizerScene {
     this.isSyncingDecals = true;
 
     try {
-      // 1. Sauvegarder la rotation actuelle et réinitialiser à zéro pour projection canonique
+      // 1. Précharger toutes les ressources (polices, images) AVANT de modifier la rotation
+      const activeLayers = (state.layers || []).filter(l => l && l.visible);
+      await Promise.all(activeLayers.map(l => this.preloadLayer(l)));
+
+      // 2. Verrouiller la rotation pour un cycle de projection 100% synchrone
+      this.isProjecting = true;
       const prevRot = this.currentModelGroup.rotation.y;
       this.currentModelGroup.rotation.y = 0;
       this.currentModelGroup.updateMatrixWorld(true);
 
-      // 2. Nettoyer les anciens decals
+      // 3. Nettoyer les anciens decals
       this.clearDecals();
 
-      // 3. Projeter chaque calque 2D actif (Le modèle 3D suit strictement le patron 2D)
-      if (state.layers && Array.isArray(state.layers)) {
-        for (const layer of state.layers) {
-          if (!layer.visible) continue;
-          await this.createLayerDecal(layer);
-        }
+      // 4. Projeter chaque calque 2D actif (Le modèle 3D suit strictement le patron 2D)
+      for (const layer of activeLayers) {
+        this.createLayerDecal(layer);
       }
 
-      // 4. Restaurer la rotation du modèle
+      // 5. Restaurer immédiatement la rotation du modèle
       this.currentModelGroup.rotation.y = prevRot;
       this.currentModelGroup.updateMatrixWorld(true);
+      this.isProjecting = false;
     } catch (err) {
       console.warn('Erreur projection decals:', err);
+      this.isProjecting = false;
     } finally {
       this.isSyncingDecals = false;
       if (this.pendingSyncState) {
@@ -432,28 +474,22 @@ export class CustomizerScene {
     }
   }
 
-  async createLayerDecal(layer) {
+  createLayerDecal(layer) {
     let texture = null;
     let decalAspect = 1.0;
 
     if (layer.type === 'text') {
       const text = layer.text || '';
-      const fontFam = (layer.fontFamily || 'Orbitron').replace(/['"]/g, '');
+      const cleanFam = getCleanFontFamily(layer.fontFamily);
       const isMatchNumber = /^\d{1,2}$/.test(text.trim());
-
-      // Assurer le chargement préalable de la police pour éviter le repli Times New Roman
-      if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
-        try {
-          await document.fonts.load(isMatchNumber ? `900 240px "${fontFam}"` : `bold 140px "${fontFam}"`);
-        } catch {}
-      }
+      const weight = getValidFontWeight(cleanFam, isMatchNumber);
 
       // Calculer les dimensions de canvas adaptées au ratio du texte
       const targetW = Math.max(80, layer.width || 200);
       const targetH = Math.max(40, layer.height || 60);
       decalAspect = targetW / targetH;
 
-      // Résolution haute définition (minimum 1024px sur le grand axe)
+      // Résolution haute définition (1024px sur le grand axe)
       const maxDim = 1024;
       let cvW, cvH;
       if (decalAspect >= 1) {
@@ -471,9 +507,7 @@ export class CustomizerScene {
       ctx.clearRect(0, 0, cvW, cvH);
 
       const fontSize = isMatchNumber ? Math.round(cvH * 0.78) : Math.round(cvH * 0.62);
-      ctx.font = isMatchNumber
-        ? `900 ${fontSize}px "${fontFam}", "Orbitron", sans-serif`
-        : `bold ${fontSize}px "${fontFam}", "Orbitron", sans-serif`;
+      ctx.font = `${weight} ${fontSize}px "${cleanFam}", "Orbitron", "Rajdhani", sans-serif`;
 
       const bodyColor = this.lastState?.colors?.body || this.lastState?.color?.hex || '#0a0b0e';
       const textColor = getSafeContrastColor(layer.textColor || '#ffffff', bodyColor);
@@ -522,7 +556,7 @@ export class CustomizerScene {
       texture.colorSpace = THREE.SRGBColorSpace;
     } else {
       if (!layer.url) return;
-      const img = await this.loadImage(layer.url);
+      const img = this.imageCache.get(layer.url);
       if (!img) return;
 
       const imgAspect = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth / img.naturalHeight) : 1;
@@ -564,11 +598,11 @@ export class CustomizerScene {
     const sz = new THREE.Vector3(baseDim * scale * decalAspect, baseDim * scale, 0.28);
 
     if (isBack) {
-      // Dos : centré rigoureusement selon les ratios du patron 2D
+      // Dos : synchronisation millimétrique avec le patron 2D
       pos.set(
-        -(layer.x || 0) * 0.22,
-        0.01 - (layer.y || 0) * 0.34,
-        -0.13
+        -(layer.x || 0) * 0.35,
+        -(layer.y || 0) * 0.68 - 0.04,
+        -0.155
       );
       rot.set(0, Math.PI, rad);
       sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.28);
@@ -600,11 +634,11 @@ export class CustomizerScene {
       rot.set(0, Math.PI * 0.5, rad);
       sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.26);
     } else {
-      // Devant : centré rigoureusement selon les ratios du patron 2D
+      // Devant : synchronisation millimétrique avec le patron 2D
       pos.set(
-        (layer.x || 0) * 0.22,
-        0.01 - (layer.y || 0) * 0.34,
-        0.13
+        (layer.x || 0) * 0.35,
+        -(layer.y || 0) * 0.68 - 0.04,
+        0.155
       );
       rot.set(0, 0, rad);
       sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.28);

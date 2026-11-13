@@ -863,18 +863,30 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
               <h3>FLOCAGE JOUEUR COMPÉTITION</h3>
               <p>Optionnel : ajoute et déplace librement selon tes souhaits</p>
             </div>
-            {(state.playerFlockingEnabled || state.gamertag || state.playerNumber || state.playerRole) && (
+            <div style={{ display: 'flex', gap: '6px' }}>
               <button
                 type="button"
                 className="dwt-mini-action-btn"
-                style={{ color: 'var(--dwt-red)', borderColor: 'rgba(225, 6, 19, 0.4)', fontSize: '10px', padding: '3px 8px' }}
-                onClick={() => customizerState.clearPlayerFlocking()}
-                title="Effacer tout le flocage"
+                style={{ color: '#00e5ff', borderColor: 'rgba(0, 229, 255, 0.4)', fontSize: '10px', padding: '3px 8px' }}
+                onClick={() => customizerState.alignBackColumn()}
+                title="Aligner parfaitement en colonne centrée"
               >
-                <Trash2 size={12} />
-                <span>Effacer tout</span>
+                <Sliders size={12} />
+                <span>Aligner</span>
               </button>
-            )}
+              {(state.playerFlockingEnabled || state.gamertag || state.playerNumber || state.playerRole) && (
+                <button
+                  type="button"
+                  className="dwt-mini-action-btn"
+                  style={{ color: 'var(--dwt-red)', borderColor: 'rgba(225, 6, 19, 0.4)', fontSize: '10px', padding: '3px 8px' }}
+                  onClick={() => customizerState.clearPlayerFlocking()}
+                  title="Effacer tout le flocage"
+                >
+                  <Trash2 size={12} />
+                  <span>Effacer</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Master Switch Flocage Dos */}
@@ -1400,6 +1412,38 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
                 <span>{generationStep || "Génération du style en cours..."}</span>
               </div>
             )}
+
+            <div style={{ marginTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--dwt-text-muted)', display: 'block', marginBottom: '6px' }}>Suggestions d'instructions :</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                {[
+                  'Maillot Noir et Or Capitaine #10 Yassine',
+                  'Hoodie Furtif Stealth Sniper #07 Frost',
+                  'Maillot Blanc et Cyan IGL #04 Shadow',
+                  'Maillot Crimson DWT Duelist #99 Blaze'
+                ].map((samplePrompt) => (
+                  <button
+                    key={samplePrompt}
+                    type="button"
+                    className="dwt-text-chip-btn"
+                    onClick={() => {
+                      setAiPrompt(samplePrompt);
+                      setTimeout(() => {
+                        const foundPreset = generateConfigFromPrompt(samplePrompt);
+                        customizerState.setState({
+                          ...foundPreset.config,
+                          selectedLayerId: foundPreset.config.layers?.[0]?.id || null,
+                        });
+                        showAiToast(`Configuration générée : "${samplePrompt}"`);
+                      }, 50);
+                    }}
+                    style={{ fontSize: '11px', padding: '5px 8px', textAlign: 'left', width: '100%' }}
+                  >
+                    {samplePrompt}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 2. ARCHÉTYPES ESPORT */}

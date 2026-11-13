@@ -127,13 +127,46 @@ export function isColorDark(hex) {
 }
 
 /**
+ * Détecte si une couleur est proche du noir / gris très sombre achromatique
+ */
+export function isColorNearBlack(hex) {
+  if (!hex || typeof hex !== 'string') return true;
+  const clean = hex.replace('#', '');
+  if (clean.length < 6) return true;
+  const r = parseInt(clean.substring(0, 2), 16) || 0;
+  const g = parseInt(clean.substring(2, 4), 16) || 0;
+  const b = parseInt(clean.substring(4, 6), 16) || 0;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luma < 60 && (max - min) < 35;
+}
+
+/**
+ * Détecte si une couleur est proche du blanc / gris très clair achromatique
+ */
+export function isColorNearWhite(hex) {
+  if (!hex || typeof hex !== 'string') return false;
+  const clean = hex.replace('#', '');
+  if (clean.length < 6) return false;
+  const r = parseInt(clean.substring(0, 2), 16) || 0;
+  const g = parseInt(clean.substring(2, 4), 16) || 0;
+  const b = parseInt(clean.substring(4, 6), 16) || 0;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luma > 200 && (max - min) < 35;
+}
+
+/**
  * Garantit un contraste parfait pour éviter toute disparition sur tissu noir ou blanc
+ * Préserve fidèlement les teintes chromatiques vives (Rouge DWT #e10613, Cyan #00e5ff, Or #ffb703)
  */
 export function getSafeContrastColor(textColor, bgColor) {
+  if (!textColor) return '#ffffff';
   const bgDark = isColorDark(bgColor);
-  const textDark = isColorDark(textColor);
-  if (bgDark && textDark) return '#ffffff';
-  if (!bgDark && !textDark) return '#0a0b0e';
+  if (bgDark && isColorNearBlack(textColor)) return '#ffffff';
+  if (!bgDark && isColorNearWhite(textColor)) return '#0a0b0e';
   return textColor;
 }
 
@@ -341,17 +374,40 @@ class CustomizerStateManager {
       const activeBodyHex = updates.colors?.body || updates.color?.hex;
       if (activeBodyHex) {
         const isDark = isColorDark(activeBodyHex);
+        let flockTextUpdated = false;
+        let flockNumUpdated = false;
+
         if (isDark) {
-          if (isColorDark(this.state.playerTextColor)) {
+          if (isColorNearBlack(this.state.playerTextColor)) {
             this.state.playerTextColor = '#ffffff';
+            flockTextUpdated = true;
           }
-          if (isColorDark(this.state.playerNumberColor)) {
+          if (isColorNearBlack(this.state.playerNumberColor)) {
             this.state.playerNumberColor = '#ffffff';
+            flockNumUpdated = true;
           }
         } else {
-          if (!isColorDark(this.state.playerTextColor)) {
+          if (isColorNearWhite(this.state.playerTextColor)) {
             this.state.playerTextColor = '#0a0b0e';
+            flockTextUpdated = true;
           }
+          if (isColorNearWhite(this.state.playerNumberColor)) {
+            this.state.playerNumberColor = '#0a0b0e';
+            flockNumUpdated = true;
+          }
+        }
+
+        // Mettre à jour immédiatement les calques de flocage existants
+        if (flockTextUpdated || flockNumUpdated) {
+          this.state.layers = this.state.layers.map((l) => {
+            if (l.id === 'flock_gamertag_back' && flockTextUpdated) {
+              return { ...l, textColor: this.state.playerTextColor };
+            }
+            if (l.id === 'flock_number_back' && flockNumUpdated) {
+              return { ...l, textColor: this.state.playerNumberColor };
+            }
+            return l;
+          });
         }
       }
     }
@@ -577,6 +633,38 @@ class CustomizerStateManager {
     const pt = ANCHOR_POINTS.find(p => p.id === anchorId);
     if (!pt) return;
     this.updateLayer(layerId, { x: pt.x, y: pt.y }, true);
+  }
+
+  // Centrage strict horizontal (X = 0) en conservant la coordonnée Y
+  centerLayerX(layerId) {
+    const layer = this.state.layers.find(l => l.id === layerId);
+    if (!layer || layer.locked) return;
+    this.updateLayer(layerId, { x: 0 }, true);
+  }
+
+  // Centrage strict vertical (Y = 0) en conservant la coordonnée X
+  centerLayerY(layerId) {
+    const layer = this.state.layers.find(l => l.id === layerId);
+    if (!layer || layer.locked) return;
+    this.updateLayer(layerId, { y: 0 }, true);
+  }
+
+  // Aligne tous les éléments du dos dans la hiérarchie officielle esport (Gamertag en haut, Rôle au milieu, Numéro centré)
+  alignBackColumn() {
+    const newLayers = this.state.layers.map((l) => {
+      if (l.view !== 'back') return l;
+      if (l.id === 'flock_gamertag_back' || l.name?.toLowerCase().includes('gamertag')) {
+        return { ...l, x: 0, y: -0.32, rotation: 0 };
+      }
+      if (l.id === 'flock_role_back' || l.name?.toLowerCase().includes('rôle') || l.name?.toLowerCase().includes('capitaine')) {
+        return { ...l, x: 0, y: -0.20, rotation: 0 };
+      }
+      if (l.id === 'flock_number_back' || l.name?.toLowerCase().includes('numéro') || /^\d{1,2}$/.test((l.text || '').trim())) {
+        return { ...l, x: 0, y: -0.04, rotation: 0 };
+      }
+      return l;
+    });
+    this.setState({ layers: newLayers }, true);
   }
 
   moveLayerOrder(id, direction) {
