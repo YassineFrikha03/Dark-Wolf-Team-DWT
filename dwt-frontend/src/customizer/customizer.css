@@ -2156,6 +2156,202 @@
   animation: fadeIn 0.2s ease;
 }
 
+/* 4b. Chat Interactif IA */
+.dwt-ai-chat-container {
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 13, 20, 0.9);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: var(--dwt-radius-sm);
+  padding: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.dwt-ai-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dwt-ai-chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  min-height: 100px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 229, 255, 0.3) rgba(0, 0, 0, 0.2);
+}
+
+.dwt-ai-chat-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 94%;
+  animation: fadeIn 0.15s ease;
+}
+
+.dwt-ai-chat-msg.user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.dwt-ai-chat-msg.agent {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.dwt-ai-msg-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--dwt-text-muted);
+  margin-bottom: 3px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.dwt-ai-msg-time {
+  font-size: 8px;
+  opacity: 0.6;
+}
+
+.dwt-ai-msg-bubble {
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dwt-ai-chat-msg.user .dwt-ai-msg-bubble {
+  background: linear-gradient(135deg, rgba(225, 6, 19, 0.25), rgba(225, 6, 19, 0.1));
+  border: 1px solid rgba(225, 6, 19, 0.4);
+  color: #ffffff;
+}
+
+.dwt-ai-chat-msg.agent .dwt-ai-msg-bubble {
+  background: rgba(18, 22, 33, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  color: #e2e8f0;
+}
+
+.dwt-ai-msg-action-badge {
+  display: inline-block;
+  font-size: 7px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  background: rgba(0, 229, 255, 0.15);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+}
+
+.dwt-ai-thinking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #00e5ff;
+}
+
+.dwt-ai-chat-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dwt-ai-pill-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 9px;
+  padding: 3px 7px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.dwt-ai-pill-btn:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: #00e5ff;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.dwt-ai-pill-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dwt-ai-chat-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dwt-ai-chat-input {
+  flex: 1;
+  background: rgba(6, 8, 12, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: #ffffff;
+  font-size: 11px;
+  padding: 7px 10px;
+  border-radius: var(--dwt-radius-sm);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.dwt-ai-chat-input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.dwt-ai-chat-input:disabled {
+  opacity: 0.5;
+}
+
+.dwt-ai-chat-send-btn {
+  background: linear-gradient(135deg, #e10613, #b8050f);
+  border: none;
+  color: #ffffff;
+  padding: 7px 12px;
+  border-radius: var(--dwt-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.dwt-ai-chat-send-btn:hover:not(:disabled) {
+  background: #ff1c2b;
+  box-shadow: 0 0 12px rgba(225, 6, 19, 0.5);
+  transform: translateY(-1px);
+}
+
+.dwt-ai-chat-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .dwt-ai-prompt-box {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--dwt-border);

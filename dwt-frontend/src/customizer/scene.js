@@ -537,8 +537,15 @@ export class CustomizerScene {
       const ctx = cv.getContext('2d');
       ctx.clearRect(0, 0, cvW, cvH);
 
-      const fontSize = isMatchNumber ? Math.round(cvH * 0.78) : Math.round(cvH * 0.62);
+      let fontSize = isMatchNumber ? Math.round(cvH * 0.78) : Math.round(cvH * 0.62);
       ctx.font = `${weight} ${fontSize}px "${cleanFam}", "Orbitron", "Rajdhani", sans-serif`;
+
+      // Mesurer et ajuster la taille de police pour éliminer tout risque de rognage
+      const textMetrics = ctx.measureText(text);
+      if (textMetrics.width > cvW * 0.88) {
+        fontSize = Math.round(fontSize * ((cvW * 0.88) / textMetrics.width));
+        ctx.font = `${weight} ${fontSize}px "${cleanFam}", "Orbitron", "Rajdhani", sans-serif`;
+      }
 
       const bodyColor = this.lastState?.colors?.body || this.lastState?.color?.hex || '#0a0b0e';
       const textColor = getSafeContrastColor(layer.textColor || '#ffffff', bodyColor);
@@ -611,6 +618,10 @@ export class CustomizerScene {
 
       texture = new THREE.CanvasTexture(cv);
       texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 8;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = true;
     }
 
     if (!texture) return;
@@ -630,13 +641,13 @@ export class CustomizerScene {
     const sz = new THREE.Vector3(baseDim * scale * decalAspect, baseDim * scale, 0.08);
 
     if (isBack) {
-      // Dos : synchronisation millimétrique avec le patron 2D (centre dos Y = 0.06m)
+      // Dos : rotation compensée (-rad) pour synchroniser rigoureusement le sens horaire
       pos.set(
         -(layer.x || 0) * 0.28,
         0.06 - (layer.y || 0) * 0.46,
         -0.150
       );
-      rot.set(0, Math.PI, rad);
+      rot.set(0, Math.PI, -rad);
       sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.08);
     } else if (isLeft) {
       // Manche gauche (Wearer's Left Arm, looking from front = X > 0)
@@ -703,9 +714,11 @@ export class CustomizerScene {
               depthTest: true,
               depthWrite: false,
               polygonOffset: true,
-              polygonOffsetFactor: -4,
-              roughness: 0.85,
-              metalness: 0.05,
+              polygonOffsetFactor: -1.2,
+              polygonOffsetUnits: -1.2,
+              roughness: 0.68,
+              metalness: 0.03,
+              alphaTest: 0.01,
             });
             const decalMesh = new THREE.Mesh(decalGeo, decalMat);
             this.decalContainer.add(decalMesh);

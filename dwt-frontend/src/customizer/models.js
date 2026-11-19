@@ -34,6 +34,33 @@ export function hasWebGLSupport() {
 }
 
 /**
+ * Génère une texture procédurale de tissage textile micro-perforé Dry-Tech PBR
+ */
+export function createFabricWeaveTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, 256, 256);
+
+  // Micro-perforations et croisillons de maille esport respirante
+  for (let x = 0; x < 256; x += 4) {
+    for (let y = 0; y < 256; y += 4) {
+      const isAlt = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 0;
+      ctx.fillStyle = isAlt ? '#8e8e8e' : '#6f6f6f';
+      ctx.fillRect(x, y, 3, 3);
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(24, 24);
+  return texture;
+}
+
+/**
  * Génère une texture de damier UV pour le mode diagnostic (?debug=1)
  */
 export function createUVCheckerTexture(size = 2048) {
@@ -188,24 +215,32 @@ export async function loadGarmentModel(category, canvasTexture, options = {}) {
     return hex;
   };
 
+  const fabricBumpMap = createFabricWeaveTexture();
+
   const bodyMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color(resolveColor(initialColors.body, '#141722')),
-    roughness: 0.62,
+    roughness: 0.65,
     metalness: 0.04,
+    bumpMap: fabricBumpMap,
+    bumpScale: 0.003,
     side: THREE.DoubleSide,
   });
 
   const sleevesMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color(resolveColor(initialColors.sleeves || initialColors.body, '#141722')),
-    roughness: 0.62,
+    roughness: 0.65,
     metalness: 0.04,
+    bumpMap: fabricBumpMap,
+    bumpScale: 0.003,
     side: THREE.DoubleSide,
   });
 
   const collarMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color(resolveColor(initialColors.collar, '#e10613')),
-    roughness: 0.75,
-    metalness: 0.04,
+    roughness: 0.78,
+    metalness: 0.03,
+    bumpMap: fabricBumpMap,
+    bumpScale: 0.004,
     side: THREE.DoubleSide,
   });
 

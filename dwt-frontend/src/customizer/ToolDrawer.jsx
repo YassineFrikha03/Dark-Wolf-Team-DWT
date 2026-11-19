@@ -39,7 +39,10 @@ import {
   Move,
   Flag,
   Crosshair,
-  Maximize2
+  Maximize2,
+  Send,
+  MessageSquare,
+  Terminal
 } from 'lucide-react';
 import {
   customizerState,
@@ -66,7 +69,8 @@ import {
   generateConfigFromPrompt,
   autoHarmonizeColors,
   autoAlignLayers,
-  generateRandomPlayerIdentity
+  generateRandomPlayerIdentity,
+  processAIAgentMessage
 } from './aiEngine.js';
 
 const QUICK_TEXT_PRESETS = [
@@ -102,11 +106,23 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
 
   const [selectedZone, setSelectedZone] = useState('body');
 
-  // État de l'assistant IA
+  // État de l'assistant IA & Co-Pilote Interactif
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
   const [aiToast, setAiToast] = useState('');
+  const [chatInput, setChatInput] = useState('');
+  const [isProcessingAgent, setIsProcessingAgent] = useState(false);
+  const chatScrollRef = useRef(null);
+  const [aiChatMessages, setAiChatMessages] = useState([
+    {
+      id: 'msg_welcome',
+      sender: 'agent',
+      text: "Bonjour. Je suis le co-pilote IA officiel Dark Wolf Team. Décrivez vos souhaits ou donnez une consigne technique (couleurs des manches/col/corps, flocage joueur, blason loup, logos sponsors, centrage, matière respirante). J'ajuste le modèle 3D et le patron 2D en temps réel selon les normes esport VCT.",
+      actionType: 'info',
+      time: 'Direct',
+    }
+  ]);
 
   const activeTool = state.activeNavTool || 'upload';
   const activeView = state.activePatternView || 'front';
@@ -119,6 +135,55 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
   const showAiToast = (msg) => {
     setAiToast(msg);
     setTimeout(() => setAiToast(''), 3000);
+  };
+
+  const handleSendAgentInstruction = (instructionText) => {
+    const textToSend = (instructionText || chatInput || '').trim();
+    if (!textToSend || isProcessingAgent) return;
+
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      sender: 'user',
+      text: textToSend,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setAiChatMessages((prev) => [...prev, userMessage]);
+    setChatInput('');
+    setIsProcessingAgent(true);
+
+    setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      }
+    }, 40);
+
+    setTimeout(() => {
+      const currentState = customizerState.getState();
+      const result = processAIAgentMessage(textToSend, currentState);
+
+      if (result?.patch && Object.keys(result.patch).length > 0) {
+        customizerState.setState(result.patch);
+      }
+
+      const agentMessage = {
+        id: `agent_${Date.now()}`,
+        sender: 'agent',
+        text: result.response,
+        actionType: result.actionType,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      setAiChatMessages((prev) => [...prev, agentMessage]);
+      setIsProcessingAgent(false);
+      showAiToast("Modifications appliquées sur le modèle 3D !");
+
+      setTimeout(() => {
+        if (chatScrollRef.current) {
+          chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+        }
+      }, 80);
+    }, 350);
   };
 
   const handleApplyPreset = (preset) => {
@@ -1362,16 +1427,17 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
         </div>
       )}
 
-      {/* ────────────────── 9. STUDIO IA & CONFIGURATION EN DIRECT ────────────────── */}
+      {/* ────────────────── 9. STUDIO IA & CO-PILOTE INTERACTIF ────────────────── */}
       {activeTool === 'ai' && (
         <div className="dwt-drawer-section">
           <div className="dwt-drawer-header">
             <div className="dwt-ai-drawer-badge">
               <Bot size={13} color="#00e5ff" />
-              <span>ASSISTANT IA & CO-PILOTE</span>
+              <span className="dwt-ai-pulse-dot" />
+              <span>CO-PILOTE IA ACTIF</span>
             </div>
-            <h3>CONFIGURATION IA DU STUDIO</h3>
-            <p>Génération par prompt, réglages en direct & rendu final</p>
+            <h3>ASSISTANT STUDIO IA INTERACTIF</h3>
+            <p>Contrôle en direct par langage naturel et calibration esport 3D</p>
           </div>
 
           {aiToast && (
@@ -1381,119 +1447,104 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
             </div>
           )}
 
-          {/* 1. GÉNÉRATEUR IA PAR PROMPT */}
-          <div className="dwt-ai-prompt-box">
-            <label className="dwt-form-label">CRÉER PAR INSTRUCTION IA :</label>
-            <div className="dwt-ai-prompt-input-row">
-              <input
-                type="text"
-                placeholder="Ex: Maillot VCT noir et rouge avec blason loup..."
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAIPromptGenerate();
-                }}
-                className="dwt-text-input dwt-ai-input"
-                disabled={isGenerating}
-              />
-              <button
-                type="button"
-                className="dwt-ai-send-btn"
-                onClick={handleAIPromptGenerate}
-                disabled={isGenerating || !aiPrompt.trim()}
-                title="Générer avec l'IA"
-              >
-                {isGenerating ? <RotateCw size={16} className="dwt-spin" /> : <Wand2 size={16} />}
-              </button>
+          {/* 1. TERMINAL DE DIALOGUE & CONVERSATION IA */}
+          <div className="dwt-ai-chat-container">
+            <div className="dwt-ai-chat-header">
+              <Terminal size={12} color="#00e5ff" />
+              <span>CANAL DIRECT IA - MOTEUR ES-3D</span>
             </div>
-            {isGenerating && (
-              <div className="dwt-ai-progress-status">
-                <span className="dwt-ai-pulse-dot" />
-                <span>{generationStep || "Génération du style en cours..."}</span>
-              </div>
-            )}
 
-            <div style={{ marginTop: '10px' }}>
-              <span style={{ fontSize: '11px', color: 'var(--dwt-text-muted)', display: 'block', marginBottom: '6px' }}>Suggestions d'instructions :</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                {[
-                  'Maillot Noir et Or Capitaine #10 Yassine',
-                  'Hoodie Furtif Stealth Sniper #07 Frost',
-                  'Maillot Blanc et Cyan IGL #04 Shadow',
-                  'Maillot Crimson DWT Duelist #99 Blaze'
-                ].map((samplePrompt) => (
-                  <button
-                    key={samplePrompt}
-                    type="button"
-                    className="dwt-text-chip-btn"
-                    onClick={() => {
-                      setAiPrompt(samplePrompt);
-                      setTimeout(() => {
-                        const foundPreset = generateConfigFromPrompt(samplePrompt);
-                        customizerState.setState({
-                          ...foundPreset.config,
-                          selectedLayerId: foundPreset.config.layers?.[0]?.id || null,
-                        });
-                        showAiToast(`Configuration générée : "${samplePrompt}"`);
-                      }, 50);
-                    }}
-                    style={{ fontSize: '11px', padding: '5px 8px', textAlign: 'left', width: '100%' }}
-                  >
-                    {samplePrompt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 2. ARCHÉTYPES ESPORT */}
-          <div style={{ marginTop: '14px' }}>
-            <label className="dwt-form-label">THÈMES ESPORT PRÉ-CONFIGURÉS :</label>
-            <div className="dwt-ai-presets-list">
-              {AI_PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  className="dwt-ai-preset-card"
-                  onClick={() => handleApplyPreset(preset)}
-                >
-                  <div className="dwt-ai-preset-icon">{preset.icon}</div>
-                  <div className="dwt-ai-preset-info">
-                    <div className="dwt-ai-preset-title">{preset.title}</div>
-                    <div className="dwt-ai-preset-desc">{preset.description}</div>
+            <div className="dwt-ai-chat-thread" ref={chatScrollRef}>
+              {aiChatMessages.map((msg) => (
+                <div key={msg.id} className={`dwt-ai-chat-msg ${msg.sender}`}>
+                  <div className="dwt-ai-msg-header">
+                    {msg.sender === 'agent' ? (
+                      <>
+                        <Bot size={10} color="#00e5ff" />
+                        <span>DWT STUDIO IA</span>
+                        {msg.actionType && (
+                          <span className="dwt-ai-msg-action-badge">{msg.actionType}</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck size={10} color="#e10613" />
+                        <span>DESIGNER</span>
+                      </>
+                    )}
+                    <span className="dwt-ai-msg-time">{msg.time}</span>
                   </div>
-                  <Zap size={14} className="dwt-ai-preset-arrow" />
+                  <div className="dwt-ai-msg-bubble">
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+
+              {isProcessingAgent && (
+                <div className="dwt-ai-chat-msg agent">
+                  <div className="dwt-ai-msg-header">
+                    <Bot size={10} color="#00e5ff" />
+                    <span>DWT STUDIO IA</span>
+                  </div>
+                  <div className="dwt-ai-msg-bubble dwt-ai-thinking">
+                    <span className="dwt-ai-pulse-dot" />
+                    <span>Analyse sémantique et calibration textile en cours...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Suggestions rapides sous forme de pills */}
+            <div className="dwt-ai-chat-pills-row">
+              {[
+                { label: 'Noir & Manches Rouges', cmd: 'Passe le corps en noir et les manches en rouge' },
+                { label: 'Flocage: FROST #07', cmd: 'Flock le pseudo FROST et le numéro #07 au dos' },
+                { label: 'Full Black Stealth', cmd: 'Style tout en noir stealth avec col crimson' },
+                { label: 'Centrer Tout', cmd: 'Centre et aligne tous les éléments sur le patron' },
+                { label: 'Blason Loup Torse', cmd: 'Ajoute le blason loup officiel sur le torse' },
+                { label: 'Sponsor Dubby', cmd: 'Ajoute le sponsor Dubby sur la manche gauche' },
+                { label: 'Mesh Respirant', cmd: 'Passe en matière Dry-Tech mesh respirant' },
+                { label: 'Vue Dos', cmd: 'Montre le dos du maillot' },
+                { label: 'Réinitialiser', cmd: 'Efface tout et réinitialise le maillot' }
+              ].map((pill) => (
+                <button
+                  key={pill.label}
+                  type="button"
+                  className="dwt-ai-pill-btn"
+                  onClick={() => handleSendAgentInstruction(pill.cmd)}
+                  disabled={isProcessingAgent}
+                >
+                  {pill.label}
                 </button>
               ))}
             </div>
+
+            {/* Champ de saisie direct */}
+            <div className="dwt-ai-chat-input-row">
+              <input
+                type="text"
+                placeholder="Ex: Col rouge, manches blanches, dos #10..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSendAgentInstruction();
+                }}
+                className="dwt-ai-chat-input"
+                disabled={isProcessingAgent}
+              />
+              <button
+                type="button"
+                className="dwt-ai-chat-send-btn"
+                onClick={() => handleSendAgentInstruction()}
+                disabled={isProcessingAgent || !chatInput.trim()}
+                title="Envoyer l'instruction au co-pilote IA"
+              >
+                <Send size={14} />
+              </button>
+            </div>
           </div>
 
-          {/* 3. AUDIT IA EN DIRECT */}
-          <div className="dwt-ai-live-audit-card">
-            <div className="dwt-ai-audit-header">
-              <ShieldCheck size={16} color="#00e5ff" />
-              <span>AUDIT DE CONFORMITÉ EN DIRECT</span>
-            </div>
-
-            <div className="dwt-ai-audit-stats">
-              <div className="dwt-ai-audit-stat">
-                <span className="dwt-stat-lbl">Harmonie :</span>
-                <span className="dwt-stat-val">{aiAudit?.score || 95}%</span>
-              </div>
-              <div className="dwt-ai-audit-stat">
-                <span className="dwt-stat-lbl">Lisibilité VCT :</span>
-                <span className="dwt-stat-val cyan">{aiAudit?.readabilityScore || 90}%</span>
-              </div>
-            </div>
-
-            {aiAudit?.tips && aiAudit.tips.length > 0 && (
-              <div className="dwt-ai-audit-tip">
-                {aiAudit.tips[0].text}
-              </div>
-            )}
-          </div>
-
-          {/* 4. RÉGLAGES INTELLIGENTS */}
+          {/* 2. RÉGLAGES INTELLIGENTS EN 1 CLIC */}
           <div style={{ marginTop: '14px' }}>
             <label className="dwt-form-label">RÉGLAGES INTELLIGENTS EN 1 CLIC :</label>
             <div className="dwt-ai-tuning-grid">
@@ -1526,6 +1577,53 @@ export const ToolDrawer = ({ state, onOpenFinalResult }) => {
                 <UserCheck size={14} color="#ffb703" />
                 <span>Générer Identité Joueur IA</span>
               </button>
+            </div>
+          </div>
+
+          {/* 3. AUDIT IA EN DIRECT */}
+          <div className="dwt-ai-live-audit-card">
+            <div className="dwt-ai-audit-header">
+              <ShieldCheck size={16} color="#00e5ff" />
+              <span>AUDIT DE CONFORMITÉ EN DIRECT</span>
+            </div>
+
+            <div className="dwt-ai-audit-stats">
+              <div className="dwt-ai-audit-stat">
+                <span className="dwt-stat-lbl">Harmonie :</span>
+                <span className="dwt-stat-val">{aiAudit?.score || 95}%</span>
+              </div>
+              <div className="dwt-ai-audit-stat">
+                <span className="dwt-stat-lbl">Lisibilité VCT :</span>
+                <span className="dwt-stat-val cyan">{aiAudit?.readabilityScore || 90}%</span>
+              </div>
+            </div>
+
+            {aiAudit?.tips && aiAudit.tips.length > 0 && (
+              <div className="dwt-ai-audit-tip">
+                {aiAudit.tips[0].text}
+              </div>
+            )}
+          </div>
+
+          {/* 4. ARCHÉTYPES ESPORT */}
+          <div style={{ marginTop: '14px' }}>
+            <label className="dwt-form-label">THÈMES ESPORT PRÉ-CONFIGURÉS :</label>
+            <div className="dwt-ai-presets-list">
+              {AI_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className="dwt-ai-preset-card"
+                  onClick={() => handleApplyPreset(preset)}
+                >
+                  <div className="dwt-ai-preset-icon">{preset.icon}</div>
+                  <div className="dwt-ai-preset-info">
+                    <div className="dwt-ai-preset-title">{preset.title}</div>
+                    <div className="dwt-ai-preset-desc">{preset.description}</div>
+                  </div>
+                  <Zap size={14} className="dwt-ai-preset-arrow" />
+                </button>
+              ))}
             </div>
           </div>
 
