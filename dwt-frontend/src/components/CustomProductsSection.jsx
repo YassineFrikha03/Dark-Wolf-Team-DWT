@@ -333,3 +333,4 @@ export const CustomProductsSection = ({ onOpenCustomStudio, onSelectCategory }) 
 };
 
 export default CustomProductsSection;
+

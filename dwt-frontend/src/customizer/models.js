@@ -179,7 +179,37 @@ export async function loadGarmentModel(category, canvasTexture, options = {}) {
   // Texture active (damier si debug, sinon CanvasTexture officielle)
   const activeTexture = isDebug ? createUVCheckerTexture() : canvasTexture;
 
-  // 4. Traversée et affectation des matériaux
+  // Création des matériaux PBR textile haute performance pour chaque zone
+  const initialColors = options.colors || {};
+  const resolveColor = (hex, fallback = '#141722') => {
+    if (!hex) return fallback;
+    const lower = hex.toLowerCase().trim();
+    if (lower === '#0a0b0e' || lower === '#000000') return '#141722';
+    return hex;
+  };
+
+  const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(resolveColor(initialColors.body, '#141722')),
+    roughness: 0.62,
+    metalness: 0.04,
+    side: THREE.DoubleSide,
+  });
+
+  const sleevesMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(resolveColor(initialColors.sleeves || initialColors.body, '#141722')),
+    roughness: 0.62,
+    metalness: 0.04,
+    side: THREE.DoubleSide,
+  });
+
+  const collarMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(resolveColor(initialColors.collar, '#e10613')),
+    roughness: 0.75,
+    metalness: 0.04,
+    side: THREE.DoubleSide,
+  });
+
+  // 4. Traversée et affectation des matériaux par pièce
   model.traverse((child) => {
     if (child.isMesh) {
       debugInfo.meshes.push(child.name || 'UnnamedMesh');
@@ -198,24 +228,34 @@ export async function loadGarmentModel(category, canvasTexture, options = {}) {
         debugInfo.materials.push(matName);
       }
 
-      // Application du matériau PBR textile (rugosité 0.72 pour un beau relief sur tenues sombres et claires)
-      child.material = new THREE.MeshStandardMaterial({
-        map: activeTexture || null,
-        roughness: 0.72,
-        metalness: 0.05,
-        side: THREE.DoubleSide,
-      });
+      const parentName = child.parent ? (child.parent.name || '') : '';
+      const nodeName = child.name || '';
 
-      if (child.material.map) {
-        child.material.map.flipY = false;
-        child.material.map.anisotropy = 8;
-        child.material.map.needsUpdate = true;
+      if (isDebug) {
+        child.material = new THREE.MeshStandardMaterial({
+          map: activeTexture,
+          roughness: 0.65,
+          metalness: 0.05,
+          side: THREE.DoubleSide,
+        });
+      } else if (parentName.includes('Sleeves') || nodeName.includes('Sleeves')) {
+        child.material = sleevesMaterial;
+      } else if (parentName.includes('Ribbing') || nodeName.includes('Ribbing')) {
+        child.material = collarMaterial;
+      } else {
+        child.material = bodyMaterial;
       }
 
       const box = new THREE.Box3().setFromObject(child);
-      console.log(`[GARMENT MESH] "${child.name}": center=(${box.getCenter(new THREE.Vector3()).toArray().map(v=>v.toFixed(3))}) min=(${box.min.toArray().map(v=>v.toFixed(3))}) max=(${box.max.toArray().map(v=>v.toFixed(3))})`);
+      console.log(`[GARMENT MESH] "${child.name}" (Parent: "${parentName}"): center=(${box.getCenter(new THREE.Vector3()).toArray().map(v=>v.toFixed(3))})`);
     }
   });
+
+  pivotGroup.userData = {
+    bodyMaterial,
+    sleevesMaterial,
+    collarMaterial,
+  };
 
   return {
     model: pivotGroup,

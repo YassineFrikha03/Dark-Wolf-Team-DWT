@@ -9,7 +9,7 @@
 
 import { BRAND_COLORS, ESPORT_FONTS, ESPORT_ROLES } from './state.js';
 
-// Archetypes esportifs officiels Dark Wolf Team
+// Archetypes esportifs officiels Dark Wolf Team (Harmonies visuelles et finitions pro)
 export const AI_PRESETS = [
   {
     id: 'vct_apex',
@@ -19,7 +19,7 @@ export const AI_PRESETS = [
     description: 'Bicolore Onyx & Crimson DWT, aération Dry-Tech Mesh, blason centré',
     prompt: 'Maillot VCT pro noir et rouge avec logo Dark Wolf sur le torse et finition mesh',
     config: {
-      category: 't-shirt',
+      category: 'maillots',
       finish: 'mesh',
       colors: {
         body: '#0a0b0e',
@@ -29,10 +29,6 @@ export const AI_PRESETS = [
         pocket: '#0a0b0e',
         cuffs: '#e10613',
       },
-      playerFlockingEnabled: true,
-      gamertag: 'APEX',
-      playerNumber: '01',
-      playerRole: 'PRO DUELIST',
       playerFont: 'Orbitron',
       playerTextColor: '#ffffff',
       playerNumberColor: '#e10613',
@@ -90,10 +86,6 @@ export const AI_PRESETS = [
         pocket: '#0a0b0e',
         cuffs: '#1e2430',
       },
-      playerFlockingEnabled: true,
-      gamertag: 'GHOST',
-      playerNumber: '00',
-      playerRole: 'SNIPER AWP',
       playerFont: 'Rajdhani',
       playerTextColor: '#94a3b8',
       playerNumberColor: '#e10613',
@@ -125,7 +117,7 @@ export const AI_PRESETS = [
     description: 'Teinte Cyber Matrix avec accents néon cyan, typographie futuriste Orbitron',
     prompt: 'Maillot cyberpunk bleu nuit et néon cyan avec style stratège IGL',
     config: {
-      category: 't-shirt',
+      category: 'maillots',
       finish: 'satine',
       colors: {
         body: '#0c2233',
@@ -135,10 +127,6 @@ export const AI_PRESETS = [
         pocket: '#0c2233',
         cuffs: '#00e5ff',
       },
-      playerFlockingEnabled: true,
-      gamertag: 'NEXUS',
-      playerNumber: '04',
-      playerRole: 'IGL / STRATÈGE',
       playerFont: 'Orbitron',
       playerTextColor: '#00e5ff',
       playerNumberColor: '#ffffff',
@@ -170,7 +158,7 @@ export const AI_PRESETS = [
     description: 'Blanc glacier pur contrasté par le rouge rubis DWT, respirabilité maximale',
     prompt: 'Maillot blanc glacier d été avec col rouge et logo loup centré',
     config: {
-      category: 't-shirt',
+      category: 'maillots',
       finish: 'mesh',
       colors: {
         body: '#f8fafc',
@@ -180,10 +168,6 @@ export const AI_PRESETS = [
         pocket: '#f8fafc',
         cuffs: '#e10613',
       },
-      playerFlockingEnabled: true,
-      gamertag: 'FROST',
-      playerNumber: '07',
-      playerRole: 'CAPITAINE',
       playerFont: 'Bebas Neue',
       playerTextColor: '#0a0b0e',
       playerNumberColor: '#e10613',
@@ -215,7 +199,7 @@ export const AI_PRESETS = [
     description: 'Rouge Crimson dominant DWT avec détails Onyx, impact visuel agressif',
     prompt: 'Maillot rouge vif esport avec blason dark wolf et rôle entry fragger',
     config: {
-      category: 't-shirt',
+      category: 'maillots',
       finish: 'mesh',
       colors: {
         body: '#990000',
@@ -225,10 +209,6 @@ export const AI_PRESETS = [
         pocket: '#0a0b0e',
         cuffs: '#0a0b0e',
       },
-      playerFlockingEnabled: true,
-      gamertag: 'WARLORD',
-      playerNumber: '99',
-      playerRole: 'ENTRY FRAGGER',
       playerFont: 'Impact',
       playerTextColor: '#ffffff',
       playerNumberColor: '#0a0b0e',

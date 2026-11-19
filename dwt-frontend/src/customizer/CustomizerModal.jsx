@@ -111,8 +111,11 @@ export const CustomizerModal = ({ isOpen, onClose, onOpenCart }) => {
     };
   }, [isOpen]);
 
-  // 1. Re-composition de la texture textile (uniquement lors de changements de matière ou couleurs)
+  // 1. Re-composition de la texture textile et mise à jour instantanée des couleurs 3D
   useEffect(() => {
+    if (sceneRef.current && isOpen && state.colors) {
+      sceneRef.current.updateColors(state.colors);
+    }
     if (textureComposerRef.current && isOpen) {
       textureComposerRef.current.compose(state);
     }

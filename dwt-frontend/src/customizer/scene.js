@@ -126,12 +126,16 @@ export class CustomizerScene {
   }
 
   setupLighting() {
-    // Lumière d'ambiance studio renforcée pour faire ressortir les tenues noires et leurs plis
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.05);
+    // Lumière d'ambiance studio renforcée pour faire ressortir les tenues et leurs plis
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.15);
     this.scene.add(ambientLight);
 
+    // Éclairage hémisphérique pour simuler le rebond naturel studio sur le tissu PBR
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x252a38, 1.35);
+    this.scene.add(hemiLight);
+
     // Key Light blanche naturelle haute définition
-    this.keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    this.keyLight = new THREE.DirectionalLight(0xffffff, 1.65);
     this.keyLight.position.set(2, 3, 3);
     this.keyLight.castShadow = true;
     this.keyLight.shadow.mapSize.width = 1024;
@@ -140,17 +144,17 @@ export class CustomizerScene {
     this.scene.add(this.keyLight);
 
     // Fill Light adoucissant avec nuances fraîches
-    const fillLight = new THREE.DirectionalLight(0xddeeff, 0.75);
-    fillLight.position.set(-2.5, 1, 2);
+    const fillLight = new THREE.DirectionalLight(0xddeeff, 0.95);
+    fillLight.position.set(-2.5, 1.2, 2.2);
     this.scene.add(fillLight);
 
     // Back Light blanche studio pour illuminer le dos et les flocages
-    const backLight = new THREE.DirectionalLight(0xffffff, 1.55);
+    const backLight = new THREE.DirectionalLight(0xffffff, 1.65);
     backLight.position.set(0, 2.5, -3);
     this.scene.add(backLight);
 
     // Rim Light ROUGE DWT esport subtile (#E10613) sur les contours
-    this.rimLight = new THREE.DirectionalLight(0xe10613, 1.25);
+    this.rimLight = new THREE.DirectionalLight(0xe10613, 1.1);
     this.rimLight.position.set(0, 2, -2.5);
     this.scene.add(this.rimLight);
   }
@@ -209,6 +213,7 @@ export class CustomizerScene {
       const texture = this.textureComposer ? this.textureComposer.getTexture() : null;
       const result = await loadGarmentModel(category, texture, {
         isDebug: this.options.isDebug,
+        colors: this.lastState?.colors,
       });
 
       if (result.isUnavailable) {
@@ -228,6 +233,7 @@ export class CustomizerScene {
       this.scene.add(this.currentModelGroup);
 
       if (this.lastState) {
+        this.updateColors(this.lastState.colors);
         this.syncDecals(this.lastState);
       }
 
@@ -237,6 +243,31 @@ export class CustomizerScene {
     } catch (err) {
       console.error('Erreur chargement modèle .glb:', err);
       if (this.onError) this.onError(err);
+    }
+  }
+
+  updateColors(colors) {
+    if (!colors || !this.currentModelGroup || !this.currentModelGroup.userData) return;
+    const { bodyMaterial, sleevesMaterial, collarMaterial } = this.currentModelGroup.userData;
+
+    const resolveHex = (hex, fallback = '#141722') => {
+      if (!hex) return fallback;
+      const lower = hex.toLowerCase().trim();
+      if (lower === '#0a0b0e' || lower === '#000000') return '#141722';
+      return hex;
+    };
+
+    if (bodyMaterial) {
+      bodyMaterial.color.set(resolveHex(colors.body, '#141722'));
+      bodyMaterial.needsUpdate = true;
+    }
+    if (sleevesMaterial) {
+      sleevesMaterial.color.set(resolveHex(colors.sleeves || colors.body, '#141722'));
+      sleevesMaterial.needsUpdate = true;
+    }
+    if (collarMaterial) {
+      collarMaterial.color.set(resolveHex(colors.collar, '#e10613'));
+      collarMaterial.needsUpdate = true;
     }
   }
 
@@ -595,35 +626,36 @@ export class CustomizerScene {
 
     const scale = layer.scale || 1.0;
     const baseDim = 0.22;
-    const sz = new THREE.Vector3(baseDim * scale * decalAspect, baseDim * scale, 0.28);
+    // Profondeur de projection calibrée à 0.08m pour éviter tout saignement sur la face opposée
+    const sz = new THREE.Vector3(baseDim * scale * decalAspect, baseDim * scale, 0.08);
 
     if (isBack) {
-      // Dos : synchronisation millimétrique avec le patron 2D
+      // Dos : synchronisation millimétrique avec le patron 2D (centre dos Y = 0.06m)
       pos.set(
-        -(layer.x || 0) * 0.35,
-        -(layer.y || 0) * 0.68 - 0.04,
-        -0.155
+        -(layer.x || 0) * 0.28,
+        0.06 - (layer.y || 0) * 0.46,
+        -0.150
       );
       rot.set(0, Math.PI, rad);
-      sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.28);
+      sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.08);
     } else if (isLeft) {
       // Manche gauche (Wearer's Left Arm, looking from front = X > 0)
       pos.set(
-        0.24,
-        0.10 - (layer.y || 0) * 0.22,
-        0.04 - (layer.x || 0) * 0.16
+        0.25,
+        0.08 - (layer.y || 0) * 0.22,
+        0.02 - (layer.x || 0) * 0.14
       );
       rot.set(0, -Math.PI * 0.5, rad);
-      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.28);
+      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.08);
     } else if (isRight) {
       // Manche droite (Wearer's Right Arm, looking from front = X < 0)
       pos.set(
-        -0.24,
-        0.10 - (layer.y || 0) * 0.22,
-        -0.08 + (layer.x || 0) * 0.16
+        -0.25,
+        0.08 - (layer.y || 0) * 0.22,
+        0.02 + (layer.x || 0) * 0.14
       );
       rot.set(0, Math.PI * 0.5, rad);
-      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.28);
+      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.08);
     } else if (isHood) {
       // Capuche
       pos.set(
@@ -632,26 +664,32 @@ export class CustomizerScene {
         0.0
       );
       rot.set(0, Math.PI * 0.5, rad);
-      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.26);
+      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.08);
     } else {
-      // Devant : synchronisation millimétrique avec le patron 2D
+      // Devant : synchronisation rigoureuse avec le patron 2D (centre torse Y = 0.08m)
       pos.set(
-        (layer.x || 0) * 0.35,
-        -(layer.y || 0) * 0.68 - 0.04,
-        0.155
+        (layer.x || 0) * 0.28,
+        0.08 - (layer.y || 0) * 0.46,
+        0.150
       );
       rot.set(0, 0, rad);
-      sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.28);
+      sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.08);
     }
 
-    // Diagnostic et projection du decal sur les maillages du modèle avec isolation de pièces
+    // Diagnostic et projection du decal sur les maillages du modèle avec isolation stricte des pièces
     let totalDecalCount = 0;
     this.currentModelGroup.traverse((child) => {
       if (child.isMesh && child.parent !== this.decalContainer) {
-        // Filtrage spécifique aux sous-maillages du vêtement (tshirt.glb) pour zéro saignement croisé
-        const nodeHierarchy = `${child.name} ${(child.parent && child.parent.name) || ''}`;
-        if (isBack && nodeHierarchy.includes('Body_Front')) return;
-        if (!isBack && !isLeft && !isRight && !isHood && nodeHierarchy.includes('Body_Back')) return;
+        const parentName = child.parent ? (child.parent.name || '') : '';
+        const nodeHierarchy = `${child.name} ${parentName}`;
+        
+        // Isolation stricte des sous-maillages de tshirt.glb
+        if (parentName) {
+          if (isBack && (parentName.includes('Body_Front') || parentName.includes('Sleeves') || parentName.includes('Ribbing'))) return;
+          if (!isBack && !isLeft && !isRight && !isHood && (parentName.includes('Body_Back') || parentName.includes('Sleeves') || parentName.includes('Ribbing'))) return;
+          if (isLeft && (!parentName.includes('Sleeves_Node_6') && !nodeHierarchy.includes('Object_18'))) return;
+          if (isRight && (!parentName.includes('Sleeves_Node_7') && !nodeHierarchy.includes('Object_20'))) return;
+        }
         if (isLeft && (nodeHierarchy.includes('Body_Back') || nodeHierarchy.includes('Sleeves_Node_7'))) return;
         if (isRight && (nodeHierarchy.includes('Body_Back') || nodeHierarchy.includes('Sleeves_Node_6'))) return;
 
