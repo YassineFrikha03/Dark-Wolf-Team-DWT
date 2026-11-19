@@ -636,37 +636,38 @@ export class CustomizerScene {
     const rad = -((layer.rotation || 0) * Math.PI) / 180;
 
     const scale = layer.scale || 1.0;
-    const baseDim = 0.22;
-    // Profondeur de projection calibrée à 0.08m pour éviter tout saignement sur la face opposée
-    const sz = new THREE.Vector3(baseDim * scale * decalAspect, baseDim * scale, 0.08);
+    const baseDim = 0.25;
+    // Profondeur de projection calibrée à 0.16m pour englober la courbure sans aucun découpage
+    const projDepth = 0.16;
+    const sz = new THREE.Vector3(baseDim * scale * decalAspect, baseDim * scale, projDepth);
 
     if (isBack) {
       // Dos : rotation compensée (-rad) pour synchroniser rigoureusement le sens horaire
       pos.set(
         -(layer.x || 0) * 0.28,
         0.06 - (layer.y || 0) * 0.46,
-        -0.150
+        -0.08
       );
       rot.set(0, Math.PI, -rad);
-      sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.08);
+      sz.set(baseDim * scale * decalAspect, baseDim * scale, projDepth);
     } else if (isLeft) {
       // Manche gauche (Wearer's Left Arm, looking from front = X > 0)
       pos.set(
-        0.25,
+        0.24,
         0.08 - (layer.y || 0) * 0.22,
         0.02 - (layer.x || 0) * 0.14
       );
       rot.set(0, -Math.PI * 0.5, rad);
-      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.08);
+      sz.set(0.16 * scale * decalAspect, 0.16 * scale, projDepth);
     } else if (isRight) {
       // Manche droite (Wearer's Right Arm, looking from front = X < 0)
       pos.set(
-        -0.25,
+        -0.24,
         0.08 - (layer.y || 0) * 0.22,
         0.02 + (layer.x || 0) * 0.14
       );
       rot.set(0, Math.PI * 0.5, rad);
-      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.08);
+      sz.set(0.16 * scale * decalAspect, 0.16 * scale, projDepth);
     } else if (isHood) {
       // Capuche
       pos.set(
@@ -675,16 +676,16 @@ export class CustomizerScene {
         0.0
       );
       rot.set(0, Math.PI * 0.5, rad);
-      sz.set(0.14 * scale * decalAspect, 0.14 * scale, 0.08);
+      sz.set(0.16 * scale * decalAspect, 0.16 * scale, projDepth);
     } else {
-      // Devant : synchronisation rigoureuse avec le patron 2D (centre torse Y = 0.08m)
+      // Devant : synchronisation rigoureuse avec le patron 2D (centre torse Y = 0.08m, Z = 0.08m)
       pos.set(
         (layer.x || 0) * 0.28,
         0.08 - (layer.y || 0) * 0.46,
-        0.150
+        0.08
       );
       rot.set(0, 0, rad);
-      sz.set(baseDim * scale * decalAspect, baseDim * scale, 0.08);
+      sz.set(baseDim * scale * decalAspect, baseDim * scale, projDepth);
     }
 
     // Diagnostic et projection du decal sur les maillages du modèle avec isolation stricte des pièces

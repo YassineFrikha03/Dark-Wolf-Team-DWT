@@ -172,6 +172,19 @@ export async function loadGarmentModel(category, canvasTexture, options = {}) {
     bbox: null,
   };
 
+  // Correction rigoureuse de l'orientation native du fichier 3D
+  // tshirt.glb (Sketchfab) possède une rotation interne parasite (-28.865° sur Y et -5.16° sur X)
+  // qui décalait la face avant vers la droite et tronquait la projection des logos sur les côtes.
+  if (glbUrl.includes('tshirt.glb')) {
+    model.rotation.set(
+      THREE.MathUtils.degToRad(5.16),
+      THREE.MathUtils.degToRad(28.865),
+      THREE.MathUtils.degToRad(0.165),
+      'YXZ'
+    );
+    model.updateMatrixWorld(true);
+  }
+
   // 3. Normalisation de l'échelle et du centrage rigoureux dans un pivotGroup
   const bbox = new THREE.Box3().setFromObject(model);
   const size = bbox.getSize(new THREE.Vector3());
@@ -182,6 +195,7 @@ export async function loadGarmentModel(category, canvasTexture, options = {}) {
   const scaleFactor = targetHeight / currentHeight;
 
   model.scale.setScalar(scaleFactor);
+  model.updateMatrixWorld(true);
 
   // Recalcul de la boîte après échelle pour centrer exactement
   const scaledBbox = new THREE.Box3().setFromObject(model);
