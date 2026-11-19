@@ -1,0 +1,491 @@
+/* ==========================================================================
+   ESPACE PRODUITS PERSONNALISÉS • DWT CUSTOM LAB
+   Style esport haute performance inspiré des grandes écuries compétitives
+   ========================================================================== */
+
+.dwt-custom-space-section {
+  position: relative;
+  padding: 100px 60px;
+  background: radial-gradient(circle at 50% 15%, rgba(204, 34, 34, 0.08) 0%, rgba(8, 10, 16, 0.98) 70%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.dwt-custom-space-container {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* En-tête de section */
+.dwt-custom-space-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.dwt-custom-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(204, 34, 34, 0.12);
+  border: 1px solid rgba(204, 34, 34, 0.4);
+  color: #ff4444;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.dwt-custom-badge-pill.cyan {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+}
+
+.dwt-custom-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+.dwt-custom-subtitle {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  color: var(--silver, #9a9a9a);
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.dwt-custom-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  background: #cc2222;
+  color: #ffffff;
+  border: 1px solid #ff4444;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 25px rgba(204, 34, 34, 0.4);
+}
+
+.dwt-custom-launch-btn:hover {
+  background: #e60000;
+  box-shadow: 0 0 35px rgba(230, 0, 0, 0.65);
+  transform: translateY(-2px);
+}
+
+/* Grille des caractéristiques clés */
+.dwt-custom-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-bottom: 48px;
+}
+
+.dwt-custom-pillar-card {
+  background: rgba(14, 17, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.dwt-custom-pillar-card:hover {
+  border-color: rgba(204, 34, 34, 0.4);
+  background: rgba(18, 22, 34, 0.85);
+  transform: translateY(-2px);
+}
+
+.dwt-custom-pillar-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(204, 34, 34, 0.12);
+  border: 1px solid rgba(204, 34, 34, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff4444;
+  flex-shrink: 0;
+}
+
+.dwt-custom-pillar-icon.cyan {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.3);
+  color: #00e5ff;
+}
+
+.dwt-custom-pillar-icon.gold {
+  background: rgba(255, 183, 3, 0.1);
+  border-color: rgba(255, 183, 3, 0.3);
+  color: #ffb703;
+}
+
+.dwt-custom-pillar-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.dwt-custom-pillar-desc {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Grille des produits personnalisables */
+.dwt-custom-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 26px;
+  margin-bottom: 60px;
+}
+
+.dwt-custom-product-card {
+  background: #0d1017;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.dwt-custom-product-card:hover {
+  border-color: rgba(204, 34, 34, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(204, 34, 34, 0.15);
+  transform: translateY(-4px);
+}
+
+.dwt-custom-card-badges {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.dwt-custom-card-tag {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(204, 34, 34, 0.2);
+  color: #ff5555;
+  border: 1px solid rgba(204, 34, 34, 0.4);
+}
+
+.dwt-custom-3d-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+/* Zone d'image avec bascule Face / Dos */
+.dwt-custom-img-stage {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, rgba(10, 12, 18, 0.95) 75%);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
+.dwt-custom-img-element {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
+  transition: transform 0.35s ease, opacity 0.25s ease;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.7));
+}
+
+.dwt-custom-product-card:hover .dwt-custom-img-element {
+  transform: scale(1.05);
+}
+
+.dwt-custom-view-toggle {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: inline-flex;
+  background: rgba(10, 12, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 2px;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+
+.dwt-custom-view-btn {
+  background: none;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 16px;
+  color: #94a3b8;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dwt-custom-view-btn.active {
+  background: #cc2222;
+  color: #ffffff;
+}
+
+/* Détails du produit */
+.dwt-custom-prod-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.dwt-custom-prod-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 12px 0;
+}
+
+.dwt-custom-specs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.dwt-custom-spec-item {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* Bas de carte : Prix et bouton de personnalisation */
+.dwt-custom-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dwt-custom-price-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.dwt-custom-price-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.dwt-custom-price-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ff4444;
+}
+
+.dwt-custom-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(204, 34, 34, 0.15);
+  border: 1px solid #cc2222;
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dwt-custom-card-action-btn:hover {
+  background: #cc2222;
+  box-shadow: 0 0 18px rgba(204, 34, 34, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Étapes du processus de création */
+.dwt-custom-steps-wrap {
+  background: #090b10;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 36px 40px;
+  margin-bottom: 30px;
+}
+
+.dwt-custom-steps-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.dwt-custom-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.dwt-custom-step-item {
+  position: relative;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.dwt-custom-step-number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: rgba(204, 34, 34, 0.35);
+  margin-bottom: 8px;
+}
+
+.dwt-custom-step-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.dwt-custom-step-desc {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Appel d'action Clubs & Rosters */
+.dwt-custom-club-banner {
+  background: linear-gradient(135deg, rgba(20, 25, 38, 0.95) 0%, rgba(10, 12, 18, 0.95) 100%);
+  border: 1px solid rgba(204, 34, 34, 0.35);
+  border-radius: 12px;
+  padding: 30px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.dwt-custom-club-info h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.dwt-custom-club-info p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+  max-width: 620px;
+}
+
+.dwt-custom-club-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dwt-custom-club-btn:hover {
+  border-color: #ff4444;
+  color: #ff4444;
+  background: rgba(204, 34, 34, 0.1);
+}
+
+@media (max-width: 900px) {
+  .dwt-custom-space-section {
+    padding: 60px 24px;
+  }
+  .dwt-custom-title {
+    font-size: 24px;
+  }
+}

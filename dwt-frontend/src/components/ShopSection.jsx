@@ -118,8 +118,13 @@ const ShopSection = ({ products = [], onSelectProduct, onOpenMuseum, initialCate
             key={cat}
             type="button"
             onClick={() => {
-              if (cat === 'Custom' && onOpenCustomStudio) {
-                onOpenCustomStudio();
+              if (cat === 'Custom') {
+                const customEl = document.querySelector('#custom-gear');
+                if (customEl) {
+                  customEl.scrollIntoView({ behavior: 'smooth' });
+                } else if (onOpenCustomStudio) {
+                  onOpenCustomStudio();
+                }
               } else {
                 setActiveCategory(cat);
               }

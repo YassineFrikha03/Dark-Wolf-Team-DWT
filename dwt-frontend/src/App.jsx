@@ -34,6 +34,7 @@ import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ShopPage from './pages/ShopPage';
 import CustomizerModal from './customizer/CustomizerModal';
+import CustomProductsSection from './components/CustomProductsSection';
 
 function AppContent() {
   const { user, loading, logout } = useAuth();
@@ -834,6 +835,14 @@ function AppContent() {
           initialCategory={shopCategoryFilter}
           onOpenShop={goToShop}
           onOpenCustomStudio={handleOpenCustomStudio}
+        />
+
+        {/* Espace Produits Personnalisés 3D & Merch Compétition */}
+        <CustomProductsSection
+          onOpenCustomStudio={handleOpenCustomStudio}
+          onSelectCategory={(cat) => {
+            handleOpenCustomStudio();
+          }}
         />
 
         {/* News & Matches */}

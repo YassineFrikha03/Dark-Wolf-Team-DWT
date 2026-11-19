@@ -14,6 +14,7 @@ import {
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageUrl';
 import API from '../services/api';
+import CustomProductsSection from '../components/CustomProductsSection';
 
 const defaultGradients = [
   { bga: 'linear-gradient(135deg,#1a1a2e,#0e0e1e)', bgb: 'linear-gradient(160deg,#2a2a4e,#1a1a2e)' },
@@ -428,118 +429,131 @@ const ShopPage = ({
             </div>
           </div>
 
-          {/* Custom Studio Banner Card */}
-          <div
-            style={{
-              marginTop: '24px',
-              padding: '24px 32px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, rgba(230, 0, 0, 0.16) 0%, rgba(10, 14, 22, 0.95) 60%, rgba(5, 7, 12, 0.98) 100%)',
-              border: '1px solid rgba(255, 42, 42, 0.35)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 24px rgba(255, 42, 42, 0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '20px',
-            }}
-          >
-            <div style={{ maxWidth: '720px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                <span style={{ background: '#ff2a2a', color: '#fff', fontSize: '10px', fontFamily: '"Orbitron", sans-serif', fontWeight: '900', padding: '2px 8px', borderRadius: '4px', letterSpacing: '0.08em' }}>
-                  ESPACE CUSTOM OFFICIEL
-                </span>
-                <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: '"Rajdhani", sans-serif', letterSpacing: '0.05em' }}>
-                  MAILLOTS • HOODIES • CACHE-COLS • SURVÊTEMENTS
-                </span>
-              </div>
-              <h3 style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '17px', fontWeight: '900', color: '#ffffff', letterSpacing: '0.05em', margin: '4px 0' }}>
-                PERSONNALISEZ VOTRE ÉQUIPEMENT DWT AVEC VOS GRAFFITIS & GAMERTAG
-              </h3>
-              <p style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '13px', color: '#cbd5e1', lineHeight: '1.4', margin: 0 }}>
-                Choisissez votre vêtement de base, appliquez des graffitis street art exclusifs avec calcul de prix en temps réel, et floquez votre pseudo et numéro de dossard officiel.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onOpenCustomStudio && onOpenCustomStudio()}
+          {/* Custom Studio Banner Card (Shown when outside Custom category) */}
+          {activeCategory !== 'Custom' && activeCategory !== 'Custom Gear' && (
+            <div
               style={{
-                padding: '12px 26px',
-                borderRadius: '6px',
-                background: '#ff2a2a',
-                border: 'none',
-                color: '#ffffff',
-                fontFamily: '"Orbitron", sans-serif',
-                fontSize: '11px',
-                fontWeight: '900',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                display: 'inline-flex',
+                marginTop: '24px',
+                padding: '24px 32px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, rgba(230, 0, 0, 0.16) 0%, rgba(10, 14, 22, 0.95) 60%, rgba(5, 7, 12, 0.98) 100%)',
+                border: '1px solid rgba(255, 42, 42, 0.35)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 24px rgba(255, 42, 42, 0.08)',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                boxShadow: '0 0 20px rgba(255, 42, 42, 0.5)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 42, 42, 0.8)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 42, 42, 0.5)';
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '20px',
               }}
             >
-              <Sparkles size={14} />
-              LANCER LE STUDIO CUSTOM
-            </button>
-          </div>
+              <div style={{ maxWidth: '720px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span style={{ background: '#ff2a2a', color: '#fff', fontSize: '10px', fontFamily: '"Orbitron", sans-serif', fontWeight: '900', padding: '2px 8px', borderRadius: '4px', letterSpacing: '0.08em' }}>
+                    ESPACE CUSTOM OFFICIEL
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: '"Rajdhani", sans-serif', letterSpacing: '0.05em' }}>
+                    MAILLOTS • HOODIES • CACHE-COLS • SURVÊTEMENTS
+                  </span>
+                </div>
+                <h3 style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '17px', fontWeight: '900', color: '#ffffff', letterSpacing: '0.05em', margin: '4px 0' }}>
+                  PERSONNALISEZ VOTRE ÉQUIPEMENT DWT AVEC VOS GRAFFITIS & GAMERTAG
+                </h3>
+                <p style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '13px', color: '#cbd5e1', lineHeight: '1.4', margin: 0 }}>
+                  Choisissez votre vêtement de base, appliquez des graffitis street art exclusifs avec calcul de prix en temps réel, et floquez votre pseudo et numéro de dossard officiel.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onOpenCustomStudio && onOpenCustomStudio()}
+                style={{
+                  padding: '12px 26px',
+                  borderRadius: '6px',
+                  background: '#ff2a2a',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontFamily: '"Orbitron", sans-serif',
+                  fontSize: '11px',
+                  fontWeight: '900',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: '0 0 20px rgba(255, 42, 42, 0.5)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 42, 42, 0.8)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 42, 42, 0.5)';
+                }}
+              >
+                <Sparkles size={14} />
+                LANCER LE STUDIO CUSTOM
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Product Catalog Grid (Using Native Site pcard Styling) */}
-      <section style={{ maxWidth: '1440px', margin: '0 auto', padding: '40px 60px' }}>
-        
-        {/* Count Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '13px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gray3)' }}>
-            {filteredProducts.length} PRODUIT{filteredProducts.length > 1 ? 'S' : ''} TROUVÉ{filteredProducts.length > 1 ? 'S' : ''}
-          </div>
-        </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '100px 0', color: 'var(--silver)' }}>
-            <div className="animate-spin" style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid var(--gray1)', borderTopColor: 'var(--white)', borderRadius: '50%', marginBottom: '16px' }}></div>
-            <div style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              CHARGEMENT DU CATALOGUE...
-            </div>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div 
-            style={{
-              background: 'var(--dark2)',
-              border: '1px solid var(--gray1)',
-              padding: '80px 24px',
-              textAlign: 'center',
-              maxWidth: '600px',
-              margin: '40px auto'
-            }}
-          >
-            <div style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '18px', fontWeight: '700', color: 'var(--white)', marginBottom: '10px' }}>
-              AUCUN PRODUIT TROUVÉ
-            </div>
-            <p style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '14px', color: 'var(--silver)', marginBottom: '20px' }}>
-              Aucun article ne correspond à votre sélection actuelle.
-            </p>
-            <button
-              type="button"
-              className="bva"
-              onClick={resetFilters}
-            >
-              Afficher Tous les Produits
-            </button>
+      {/* Product Catalog Grid or Custom Products Space */}
+      <section style={{ maxWidth: '1440px', margin: '0 auto', padding: (activeCategory === 'Custom' || activeCategory === 'Custom Gear') ? '10px 20px 40px' : '40px 60px' }}>
+        {(activeCategory === 'Custom' || activeCategory === 'Custom Gear') ? (
+          <div>
+            <CustomProductsSection
+              onOpenCustomStudio={onOpenCustomStudio}
+              onSelectCategory={(cat) => {
+                if (onOpenCustomStudio) onOpenCustomStudio();
+              }}
+            />
           </div>
         ) : (
+          <>
+            {/* Count Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '13px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gray3)' }}>
+                {filteredProducts.length} PRODUIT{filteredProducts.length > 1 ? 'S' : ''} TROUVÉ{filteredProducts.length > 1 ? 'S' : ''}
+              </div>
+            </div>
+
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '100px 0', color: 'var(--silver)' }}>
+                <div className="animate-spin" style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid var(--gray1)', borderTopColor: 'var(--white)', borderRadius: '50%', marginBottom: '16px' }}></div>
+                <div style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  CHARGEMENT DU CATALOGUE...
+                </div>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div 
+                style={{
+                  background: 'var(--dark2)',
+                  border: '1px solid var(--gray1)',
+                  padding: '80px 24px',
+                  textAlign: 'center',
+                  maxWidth: '600px',
+                  margin: '40px auto'
+                }}
+              >
+                <div style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '18px', fontWeight: '700', color: 'var(--white)', marginBottom: '10px' }}>
+                  AUCUN PRODUIT TROUVÉ
+                </div>
+                <p style={{ fontFamily: '"Rajdhani", sans-serif', fontSize: '14px', color: 'var(--silver)', marginBottom: '20px' }}>
+                  Aucun article ne correspond à votre sélection actuelle.
+                </p>
+                <button
+                  type="button"
+                  className="bva"
+                  onClick={resetFilters}
+                >
+                  Afficher Tous les Produits
+                </button>
+              </div>
+            ) : (
           <div
             style={{
               display: 'grid',
@@ -653,7 +667,8 @@ const ShopPage = ({
             })}
           </div>
         )}
-
+          </>
+        )}
       </section>
 
       {/* Trust & E-Commerce Guarantees (Clean, Esport Style, No Emojis) */}

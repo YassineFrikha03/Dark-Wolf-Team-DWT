@@ -158,6 +158,40 @@ const Navbar = ({
           </div>
         </div>
 
+        {/* Custom 3D Space */}
+        <div className="ng">
+          <button 
+            className="nb" 
+            onClick={() => {
+              const customEl = document.querySelector('#custom-gear');
+              if (customEl) {
+                customEl.scrollIntoView({ behavior: 'smooth' });
+              } else if (onOpenCustomStudio) {
+                onOpenCustomStudio();
+              }
+            }}
+            style={{ 
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>Custom 3D</span>
+            <span style={{ 
+              fontSize: '9px', 
+              background: 'rgba(230, 0, 0, 0.25)', 
+              color: '#ff4d4d', 
+              border: '1px solid #e60000', 
+              borderRadius: '4px', 
+              padding: '1px 5px', 
+              fontWeight: '900',
+              letterSpacing: '0.06em'
+            }}>
+              STUDIO
+            </span>
+          </button>
+        </div>
+
         {/* DWT Teams Dropdown */}
         <div className="ng">
           <button className="nb" onClick={() => scrollTo('#teams')}>
