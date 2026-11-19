@@ -176,7 +176,7 @@ const Navbar = ({
               gap: '6px'
             }}
           >
-            <span>Custom 3D</span>
+            <span>Custom</span>
             <span style={{ 
               fontSize: '9px', 
               background: 'rgba(230, 0, 0, 0.25)', 

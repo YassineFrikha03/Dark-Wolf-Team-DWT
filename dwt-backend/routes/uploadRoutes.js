@@ -36,19 +36,28 @@ router.post('/', (req, res) => {
       if (fs.existsSync(frontendPublicUploads)) {
         fs.copyFileSync(file.path, path.join(frontendPublicUploads, file.filename));
       }
+      if (/\.(glb|gltf|bin)$/i.test(file.filename)) {
+        const frontendPublicModels = path.join(__dirname, '../../dwt-frontend/public/models');
+        if (fs.existsSync(frontendPublicModels)) {
+          fs.copyFileSync(file.path, path.join(frontendPublicModels, file.filename));
+        }
+      }
     } catch (copyErr) {
       // Ignorer si dossier inaccessible
     }
 
     const isVideo = file.mimetype.startsWith('video/') || /\.(mp4|webm|mov|mkv|avi|ogg|m4v)$/i.test(file.filename);
+    const isModel = /\.(glb|gltf)$/i.test(file.filename);
 
     res.status(200).json({
       success: true,
-      message: isVideo ? 'Vidéo téléversée avec succès ! 🐺🎬' : 'Image téléversée avec succès !',
+      message: isVideo ? 'Vidéo téléversée avec succès.' : (isModel ? 'Modèle 3D GLB téléversé avec succès.' : 'Image téléversée avec succès.'),
       fileUrl: filePath,
       filePath: filePath,
+      modelUrl: isModel ? `/models/${file.filename}` : null,
       url: fullUrl,
       isVideo,
+      isModel,
       file: {
         filename: file.filename,
         originalName: file.originalname,
@@ -56,7 +65,8 @@ router.post('/', (req, res) => {
         mimetype: file.mimetype,
         path: filePath,
         url: fullUrl,
-        isVideo
+        isVideo,
+        isModel
       }
     });
   });

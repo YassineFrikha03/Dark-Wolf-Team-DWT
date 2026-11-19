@@ -209,6 +209,7 @@ export const CustomizerModal = ({ isOpen, onClose, onOpenCart }) => {
               <Sparkles size={14} color="#00e5ff" />
               <span>RÉSULTAT FINAL IA</span>
             </button>
+            <div className="dwt-header-divider" />
             <button
               type="button"
               className="dwt-header-btn"
@@ -233,6 +234,7 @@ export const CustomizerModal = ({ isOpen, onClose, onOpenCart }) => {
             >
               <RotateCcw size={16} />
             </button>
+            <div className="dwt-header-divider" />
             <button
               type="button"
               className="dwt-header-close-btn"

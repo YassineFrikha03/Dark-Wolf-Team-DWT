@@ -132,6 +132,14 @@
   gap: 8px;
 }
 
+.dwt-header-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
 .dwt-header-btn {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--dwt-border);
@@ -1147,46 +1155,66 @@
 
 /* 3.1 Barre d'outils supérieure du patron 2D */
 .dwt-pattern-toolbar {
-  height: 46px;
+  height: 48px;
   background: var(--dwt-bg-surface);
   border-bottom: 1px solid var(--dwt-border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
+  justify-content: flex-start;
+  padding: 0 14px;
+  gap: 8px;
   flex-shrink: 0;
   z-index: 10;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
+.dwt-pattern-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
 .dwt-toolbar-group {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dwt-toolbar-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 4px;
   flex-shrink: 0;
 }
 
 .dwt-tool-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 8px;
+  gap: 5px;
+  padding: 5px 9px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--dwt-border);
   border-radius: var(--dwt-radius-sm);
   color: var(--dwt-text-secondary);
   font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
   transition: var(--dwt-transition);
   white-space: nowrap;
 }
 
 .dwt-tool-btn:hover:not(:disabled) {
-  background: var(--dwt-bg-hover);
+  background: rgba(0, 229, 255, 0.08);
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(0, 229, 255, 0.35);
+}
+
+.dwt-tool-btn.active {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: #00e5ff;
+  color: #00e5ff;
 }
 
 .dwt-tool-btn:disabled {
@@ -1194,14 +1222,18 @@
   cursor: not-allowed;
 }
 
+.dwt-tool-btn.dwt-tool-delete {
+  color: #ff5555;
+}
+
 .dwt-tool-btn.dwt-tool-delete:hover:not(:disabled) {
-  background: rgba(225, 6, 19, 0.15);
+  background: rgba(225, 6, 19, 0.18);
   border-color: var(--dwt-red);
-  color: var(--dwt-red);
+  color: #fff;
 }
 
 .dwt-tool-btn.dwt-icon-only {
-  padding: 6px 8px;
+  padding: 6px 9px;
 }
 
 /* Dropdown Copier vers une autre pièce */
@@ -1621,29 +1653,47 @@
   gap: 4px;
 }
 
+.dwt-camera-presets-col {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+}
+
 .dwt-view-pill {
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.03);
+  min-width: 52px;
+  height: 28px;
+  padding: 0 10px;
+  background: rgba(14, 17, 24, 0.85);
   border: 1px solid var(--dwt-border);
-  border-radius: 4px;
+  backdrop-filter: blur(8px);
+  border-radius: var(--dwt-radius-sm);
   font-family: 'Orbitron', monospace;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
+  letter-spacing: 0.5px;
   color: var(--dwt-text-secondary);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--dwt-transition);
 }
 
 .dwt-view-pill:hover {
-  background: var(--dwt-bg-hover);
-  color: #fff;
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.45);
+  color: #00e5ff;
 }
 
 .dwt-view-pill.active {
   background: var(--dwt-red);
   color: #fff;
   border-color: var(--dwt-red);
-  box-shadow: 0 0 10px var(--dwt-red-glow);
+  box-shadow: 0 0 12px var(--dwt-red-glow);
 }
 
 /* Scène 3D Canvas */
@@ -1665,11 +1715,11 @@
   cursor: grabbing;
 }
 
-/* Boutons flottants de caméra 3D */
+/* Boutons flottants de caméra 3D - Positionnés à GAUCHE pour ne jamais chevaucher les vues à DROITE */
 .dwt-viewport-float-controls {
   position: absolute;
   top: 14px;
-  right: 14px;
+  left: 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3111,11 +3161,11 @@
   align-items: center;
   gap: 5px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--dwt-text-primary);
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: var(--dwt-radius-sm);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -3123,9 +3173,10 @@
 }
 
 .dwt-preset-pill-btn:hover:not(:disabled) {
-  background: rgba(225, 6, 19, 0.18);
-  border-color: var(--dwt-red);
-  color: #ffffff;
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.45);
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
   transform: translateY(-1px);
 }
 

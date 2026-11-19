@@ -222,17 +222,7 @@ export const Viewport3D = ({
         </div>
 
         {/* Colonne verticale des angles caméras à droite du 3D */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50px',
-            right: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-            zIndex: 10,
-          }}
-        >
+        <div className="dwt-camera-presets-col">
           {CAMERA_PRESETS.map((preset) => {
             const isActive = !preset.isDetail && Math.round(state.rotationAngle || 0) === preset.angle;
             return (
@@ -240,7 +230,6 @@ export const Viewport3D = ({
                 key={preset.id}
                 type="button"
                 className={`dwt-view-pill ${isActive ? 'active' : ''}`}
-                style={{ padding: '6px 8px', fontSize: '9px', textAlign: 'center', minWidth: '44px' }}
                 onClick={() => handleSetAngle(preset)}
                 title={`Vue ${preset.label}`}
               >

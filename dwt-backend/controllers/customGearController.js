@@ -39,6 +39,17 @@ const DEFAULT_GEAR = [
       { id: 'carbon', name: 'Fibre Carbone Tissée', extraPrice: 15 }
     ],
     customTextPrice: 0,
+    glbModelUrl: '/models/tshirt.glb',
+    glbTargetHeight: 0.70,
+    customPricing: {
+      layerPrice: 5.0,
+      gamertagPrice: 0.0,
+      numberPrice: 0.0,
+      rolePrice: 0.0,
+      finishMeshPrice: 5.0,
+      finishMatPrice: 0.0,
+      finishSatinePrice: 7.0
+    },
     isActive: true
   },
   {
@@ -78,6 +89,17 @@ const DEFAULT_GEAR = [
       { id: 'fleece', name: 'Doublure Polaire Hiver', extraPrice: 18 }
     ],
     customTextPrice: 0,
+    glbModelUrl: '/models/tshirt.glb',
+    glbTargetHeight: 0.70,
+    customPricing: {
+      layerPrice: 5.0,
+      gamertagPrice: 0.0,
+      numberPrice: 0.0,
+      rolePrice: 0.0,
+      finishMeshPrice: 5.0,
+      finishMatPrice: 0.0,
+      finishSatinePrice: 7.0
+    },
     isActive: true
   },
   {
@@ -116,6 +138,17 @@ const DEFAULT_GEAR = [
       { id: 'vintage', name: 'Lavage Acid Wash Vintage', extraPrice: 8 }
     ],
     customTextPrice: 0,
+    glbModelUrl: '/models/tshirt.glb',
+    glbTargetHeight: 0.70,
+    customPricing: {
+      layerPrice: 5.0,
+      gamertagPrice: 0.0,
+      numberPrice: 0.0,
+      rolePrice: 0.0,
+      finishMeshPrice: 5.0,
+      finishMatPrice: 0.0,
+      finishSatinePrice: 7.0
+    },
     isActive: true
   },
   {
@@ -149,6 +182,17 @@ const DEFAULT_GEAR = [
       { id: 'metallic', name: 'Plaque Métallique Wolfpack', extraPrice: 6 }
     ],
     customTextPrice: 0,
+    glbModelUrl: '/models/tshirt.glb',
+    glbTargetHeight: 0.70,
+    customPricing: {
+      layerPrice: 5.0,
+      gamertagPrice: 0.0,
+      numberPrice: 0.0,
+      rolePrice: 0.0,
+      finishMeshPrice: 5.0,
+      finishMatPrice: 0.0,
+      finishSatinePrice: 7.0
+    },
     isActive: true
   },
   {
@@ -179,6 +223,17 @@ const DEFAULT_GEAR = [
       { id: 'reflective', name: 'Encre Phosphorescente', extraPrice: 5 }
     ],
     customTextPrice: 0,
+    glbModelUrl: '/models/tshirt.glb',
+    glbTargetHeight: 0.70,
+    customPricing: {
+      layerPrice: 5.0,
+      gamertagPrice: 0.0,
+      numberPrice: 0.0,
+      rolePrice: 0.0,
+      finishMeshPrice: 5.0,
+      finishMatPrice: 0.0,
+      finishSatinePrice: 7.0
+    },
     isActive: true
   }
 ];
@@ -189,7 +244,7 @@ const autoSeedIfEmpty = async () => {
     const count = await CustomGear.countDocuments();
     if (count === 0) {
       await CustomGear.insertMany(DEFAULT_GEAR);
-      console.log('✅ Collection CustomGear initialisée avec les 5 équipements par défaut.');
+      console.log('[CustomGear] Collection initialisee avec les 5 equipements par defaut.');
     }
   } catch (err) {
     console.error('Erreur lors de l’auto-seed CustomGear:', err.message);

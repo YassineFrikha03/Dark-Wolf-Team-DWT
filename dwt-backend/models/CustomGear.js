@@ -45,6 +45,23 @@ const customGearSchema = new mongoose.Schema(
       type: String,
       default: 'shirt'
     },
+    glbModelUrl: {
+      type: String,
+      default: ''
+    },
+    glbTargetHeight: {
+      type: Number,
+      default: 0.70
+    },
+    customPricing: {
+      layerPrice: { type: Number, default: 5.0 },
+      gamertagPrice: { type: Number, default: 0.0 },
+      numberPrice: { type: Number, default: 0.0 },
+      rolePrice: { type: Number, default: 0.0 },
+      finishMeshPrice: { type: Number, default: 0.0 },
+      finishMatPrice: { type: Number, default: 0.0 },
+      finishSatinePrice: { type: Number, default: 0.0 }
+    },
     models: [
       {
         id: { type: String, required: true },

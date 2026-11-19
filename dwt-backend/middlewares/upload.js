@@ -20,16 +20,23 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtre pour les types de fichiers (images et vidéos)
+// Filtre pour les types de fichiers (images, vidéos et modèles 3D GLB)
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif|svg|avif|mp4|webm|mov|mkv|avi|ogg|m4v/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype) || file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+  const allowedTypes = /jpeg|jpg|png|webp|gif|svg|avif|mp4|webm|mov|mkv|avi|ogg|m4v|glb|gltf|bin/;
+  const ext = path.extname(file.originalname).toLowerCase();
+  const extname = allowedTypes.test(ext);
+  const mimetype = allowedTypes.test(file.mimetype) ||
+    file.mimetype.startsWith('image/') ||
+    file.mimetype.startsWith('video/') ||
+    file.mimetype.includes('model') ||
+    file.mimetype.includes('gltf') ||
+    ext === '.glb' ||
+    ext === '.gltf';
 
   if (extname || mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error('Format non supporté. Seules les images (PNG, JPG, WEBP) et vidéos (MP4, WEBM, MOV, MKV) sont acceptées !'));
+    cb(new Error('Format non supporté. Seules les images (PNG, JPG, WEBP), vidéos (MP4, WEBM) et modèles 3D (.GLB, .GLTF) sont acceptés.'));
   }
 };
 

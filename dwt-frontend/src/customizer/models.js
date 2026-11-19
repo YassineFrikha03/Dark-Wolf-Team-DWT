@@ -128,13 +128,36 @@ export function disposeHierarchy(object) {
 }
 
 /**
+ * Retourne le modèle 3D actif pour une catégorie (dynamique d'après l'espace Admin)
+ */
+export function getActiveGlbModel(category) {
+  try {
+    const customConfig = localStorage.getItem('dwt_custom_glb_models');
+    if (customConfig) {
+      const parsed = JSON.parse(customConfig);
+      if (parsed[category] && parsed[category].trim()) {
+        return parsed[category].trim();
+      }
+    }
+  } catch (_) {}
+
+  if (category === 'hoodies') return '/models/hoodie_posed.glb';
+  if (category === 'casquettes') return '';
+  if (category === 'tote-bags') return '';
+  return '/models/tshirt.glb';
+}
+
+/**
  * Chargeur principal des modèles .glb de l'utilisateur
  */
 export async function loadGarmentModel(category, canvasTexture, options = {}) {
   const isDebug = options.isDebug || window.location.search.includes('debug=1');
 
-  // 1. Catégories non encore fournies en .glb : Signalement propre sans forme bidon
-  if (category === 'casquettes' || category === 'tote-bags') {
+  // Détermination de la source .glb (dynamique ou par défaut officiel)
+  const glbUrl = getActiveGlbModel(category);
+
+  // Catégories sans modèle 3D configuré : Signalement propre
+  if (!glbUrl) {
     return {
       model: null,
       isUnavailable: true,
@@ -142,10 +165,6 @@ export async function loadGarmentModel(category, canvasTexture, options = {}) {
       statusMessage: 'Modèle 3D bientôt disponible (Session Pro DWT en cours d\'intégration)',
     };
   }
-
-  // 2. Détermination de la source .glb
-  // Les maillots et les t-shirts utilisent le modèle tshirt.glb optimisé, les hoodies utilisent hoodie_posed.glb
-  const glbUrl = category === 'hoodies' ? '/models/hoodie_posed.glb' : '/models/tshirt.glb';
 
   const loader = new GLTFLoader();
   loader.setDRACOLoader(getDRACOLoader());

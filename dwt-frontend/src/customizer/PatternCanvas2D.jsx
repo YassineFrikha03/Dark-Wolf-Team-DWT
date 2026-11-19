@@ -419,8 +419,8 @@ export const PatternCanvas2D = ({ state }) => {
     <div className="dwt-pattern-workspace">
       {/* 1. BARRE D'OUTILS SUPÉRIEURE DU PATRON */}
       <div className="dwt-pattern-toolbar">
+        {/* Groupe 1 : Alignement & Ancrage */}
         <div className="dwt-toolbar-group">
-          {/* Centrer X */}
           <button
             type="button"
             className="dwt-tool-btn"
@@ -432,7 +432,6 @@ export const PatternCanvas2D = ({ state }) => {
             <span>Centrer X</span>
           </button>
 
-          {/* Centrer Y */}
           <button
             type="button"
             className="dwt-tool-btn"
@@ -444,7 +443,6 @@ export const PatternCanvas2D = ({ state }) => {
             <span>Centrer Y</span>
           </button>
 
-          {/* Aligner Colonne Dos Esport */}
           {activeView === 'back' && (
             <button
               type="button"
@@ -458,7 +456,6 @@ export const PatternCanvas2D = ({ state }) => {
             </button>
           )}
 
-          {/* Menu Ancrage 9 Points ▾ (Saut instantané) */}
           <div className="dwt-copy-dropdown-container" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
@@ -499,8 +496,12 @@ export const PatternCanvas2D = ({ state }) => {
               </div>
             )}
           </div>
+        </div>
 
-          {/* Remplir / Full */}
+        <div className="dwt-toolbar-divider" />
+
+        {/* Groupe 2 : Redimensionnement */}
+        <div className="dwt-toolbar-group">
           <button
             type="button"
             className="dwt-tool-btn"
@@ -512,7 +513,6 @@ export const PatternCanvas2D = ({ state }) => {
             <span>Remplir</span>
           </button>
 
-          {/* Ajuster / Fit */}
           <button
             type="button"
             className="dwt-tool-btn"
@@ -523,8 +523,12 @@ export const PatternCanvas2D = ({ state }) => {
             <Minimize2 size={14} />
             <span>Ajuster</span>
           </button>
+        </div>
 
-          {/* Dupliquer / Copy */}
+        <div className="dwt-toolbar-divider" />
+
+        {/* Groupe 3 : Transformation & Calque */}
+        <div className="dwt-toolbar-group">
           <button
             type="button"
             className="dwt-tool-btn"
@@ -536,7 +540,6 @@ export const PatternCanvas2D = ({ state }) => {
             <span>Dupliquer</span>
           </button>
 
-          {/* Menu Déroulant Calque / Layer ▾ */}
           <div className="dwt-copy-dropdown-container" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
@@ -582,7 +585,6 @@ export const PatternCanvas2D = ({ state }) => {
             )}
           </div>
 
-          {/* Menu Déroulant Pivoter / Rotate ▾ */}
           <div className="dwt-copy-dropdown-container" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
@@ -654,7 +656,6 @@ export const PatternCanvas2D = ({ state }) => {
             )}
           </div>
 
-          {/* Toggle Pavé de Micro-déplacement */}
           <button
             type="button"
             className={`dwt-tool-btn ${showNudgePad ? 'active' : ''}`}
@@ -665,19 +666,12 @@ export const PatternCanvas2D = ({ state }) => {
             <Move size={14} color="#00e5ff" />
             <span>Déplacer</span>
           </button>
+        </div>
 
-          {/* Clear / Effacer tout sur la face */}
-          <button
-            type="button"
-            className="dwt-tool-btn"
-            onClick={handleClearAll}
-            title="Effacer tous les éléments de cette pièce"
-          >
-            <RotateCcw size={14} />
-            <span>Effacer</span>
-          </button>
+        <div className="dwt-toolbar-divider" />
 
-          {/* Reset / Réinitialiser */}
+        {/* Groupe 4 : Réinitialisation & Nettoyage */}
+        <div className="dwt-toolbar-group">
           <button
             type="button"
             className="dwt-tool-btn"
@@ -689,7 +683,16 @@ export const PatternCanvas2D = ({ state }) => {
             <span>Reset</span>
           </button>
 
-          {/* Delete / Supprimer */}
+          <button
+            type="button"
+            className="dwt-tool-btn"
+            onClick={handleClearAll}
+            title="Effacer tous les éléments de cette pièce"
+          >
+            <RotateCcw size={14} />
+            <span>Effacer</span>
+          </button>
+
           <button
             type="button"
             className="dwt-tool-btn dwt-tool-delete"
@@ -703,7 +706,7 @@ export const PatternCanvas2D = ({ state }) => {
         </div>
 
         {/* Historique Undo / Redo */}
-        <div className="dwt-toolbar-group">
+        <div className="dwt-toolbar-group" style={{ marginLeft: 'auto' }}>
           <button
             type="button"
             className="dwt-tool-btn dwt-icon-only"

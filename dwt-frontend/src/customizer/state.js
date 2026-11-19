@@ -56,6 +56,37 @@ export const BASE_PRICES = {
   'tote-bags': 24.99,
 };
 
+/**
+ * Grille tarifaire dynamique synchronisée avec le tableau de bord Admin
+ */
+export function getCustomPricingRules() {
+  try {
+    const saved = localStorage.getItem('dwt_custom_pricing_rules');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (_) {}
+
+  return {
+    basePrices: {
+      maillots: 69.99,
+      hoodies: 89.99,
+      't-shirt': 49.99,
+      casquettes: 34.99,
+      'tote-bags': 24.99,
+    },
+    layerPrice: 5.0,
+    gamertagPrice: 0.0,
+    numberPrice: 0.0,
+    rolePrice: 0.0,
+    finishMeshPrice: 5.0,
+    finishMatPrice: 0.0,
+    finishSatinePrice: 7.0,
+    techniqueBroderiePrice: 12.0,
+    techniqueFlexPrice: 4.0,
+  };
+}
+
 // Emplacements rapides standardisés selon la face active (Esport Layouts)
 export const QUICK_POSITION_PRESETS = {
   front: [
@@ -702,14 +733,31 @@ class CustomizerStateManager {
   }
 
   calculatePrice() {
-    const base = BASE_PRICES[this.state.category] || 69.99;
-    const layersCount = this.state.layers.filter(l => l.visible).length;
-    const customLayersExtra = layersCount > 1 ? (layersCount - 1) * 6.0 : (layersCount === 1 ? 4.0 : 0.0);
-    const hasCustomText = (this.state.gamertag && this.state.gamertag !== 'SHADOW') ? 5.0 : 0.0;
-    const finishExtra = this.state.finish === 'mesh' ? 5.0 : (this.state.finish === 'satine' ? 7.0 : 0.0);
-    const techniqueExtra = this.state.technique === 'broderie' ? 12.0 : (this.state.technique === 'flex' ? 4.0 : 0.0);
+    const rules = getCustomPricingRules();
+    const base = rules.basePrices?.[this.state.category] ?? (BASE_PRICES[this.state.category] || 69.99);
 
-    const unitPrice = base + customLayersExtra + hasCustomText + finishExtra + techniqueExtra;
+    // Éléments additionnels (visuels / logos)
+    const layersCount = this.state.layers.filter(l => l.visible).length;
+    const layerCost = rules.layerPrice !== undefined ? rules.layerPrice : 5.0;
+    const customLayersExtra = layersCount > 0 ? layersCount * layerCost : 0.0;
+
+    // Flocage joueur
+    const tagCost = (this.state.showGamertag && this.state.gamertag) ? (rules.gamertagPrice || 0.0) : 0.0;
+    const numCost = (this.state.showPlayerNumber && this.state.playerNumber) ? (rules.numberPrice || 0.0) : 0.0;
+    const roleCost = (this.state.showPlayerRole && this.state.playerRole) ? (rules.rolePrice || 0.0) : 0.0;
+
+    // Finitions textile
+    let finishExtra = 0.0;
+    if (this.state.finish === 'mesh') finishExtra = rules.finishMeshPrice || 5.0;
+    else if (this.state.finish === 'satine') finishExtra = rules.finishSatinePrice || 7.0;
+    else if (this.state.finish === 'mat') finishExtra = rules.finishMatPrice || 0.0;
+
+    // Technique d'impression
+    let techniqueExtra = 0.0;
+    if (this.state.technique === 'broderie') techniqueExtra = rules.techniqueBroderiePrice || 12.0;
+    else if (this.state.technique === 'flex') techniqueExtra = rules.techniqueFlexPrice || 4.0;
+
+    const unitPrice = base + customLayersExtra + tagCost + numCost + roleCost + finishExtra + techniqueExtra;
 
     if (this.state.teamMode && this.state.teamRoster?.length >= 5) {
       // Remise de groupe esport (-15%)
