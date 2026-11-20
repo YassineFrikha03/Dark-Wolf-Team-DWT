@@ -67,7 +67,7 @@ const register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Compte créé avec succès ! Bienvenue chez Dark Wolf Team 🐺',
+      message: 'Compte créé avec succès ! Bienvenue chez Dark Wolf Team',
       token,
       user: {
         id: user._id,
@@ -90,20 +90,21 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { identifier, email, password } = req.body;
-    const loginId = identifier || email;
+    const rawLoginId = (identifier || email || '').trim();
 
-    if (!loginId || !password) {
+    if (!rawLoginId || !password) {
       return res.status(400).json({
         success: false,
         message: 'Veuillez fournir votre email (ou pseudo) et votre mot de passe'
       });
     }
 
-    // Recherche par email OU par gamertag
+    // Recherche par email OU par gamertag (insensible a la casse)
+    const escapedGamertag = rawLoginId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const user = await User.findOne({
       $or: [
-        { email: loginId.toLowerCase() },
-        { gamertag: loginId }
+        { email: rawLoginId.toLowerCase() },
+        { gamertag: { $regex: new RegExp(`^${escapedGamertag}$`, 'i') } }
       ]
     }).select('+password');
 
@@ -114,8 +115,9 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Vérification du mot de passe
-    const isMatch = await user.matchPassword(password);
+    // Verification du mot de passe
+    const cleanPassword = typeof password === 'string' ? password.trim() : password;
+    const isMatch = await user.matchPassword(cleanPassword);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -147,7 +149,7 @@ const login = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `Ravi de te revoir, ${user.gamertag} ! 🐺`,
+      message: `Ravi de te revoir, ${user.gamertag} !`,
       token,
       user: {
         id: user._id,
@@ -269,8 +271,12 @@ const forgotPassword = async (req, res, next) => {
       });
     }
 
+    const escapedGamertag = cleanId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const user = await User.findOne({
-      $or: [{ email: cleanId.toLowerCase() }, { gamertag: cleanId }]
+      $or: [
+        { email: cleanId.toLowerCase() },
+        { gamertag: { $regex: new RegExp(`^${escapedGamertag}$`, 'i') } }
+      ]
     });
 
     if (!user) {
@@ -639,7 +645,7 @@ const resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Votre mot de passe a été réinitialisé avec succès ! Vous êtes maintenant connecté. 🐺🔑',
+      message: 'Votre mot de passe a été réinitialisé avec succès ! Vous êtes maintenant connecté.',
       token,
       user: {
         id: user._id,

@@ -13,7 +13,7 @@ API.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type'];
   }
-  const token = sessionStorage.getItem('dwt_token');
+  const token = localStorage.getItem('dwt_token') || sessionStorage.getItem('dwt_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

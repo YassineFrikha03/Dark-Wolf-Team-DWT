@@ -39,12 +39,12 @@ const LoginPage = () => {
           if (res.data.success) {
             setSession(tokenParam, res.data.user);
             const providerName = providerParam === 'discord' ? 'Discord' : 'Google';
-            setSuccessMsg(`Connexion réussie avec ${providerName} ! Bon retour, ${res.data.user.gamertag} `);
+            setSuccessMsg(`Connexion réussie avec ${providerName} ! Bon retour, ${res.data.user.gamertag}`);
             setTimeout(() => {
               if (res.data.user.role === 'admin' || res.data.user.role === 'moderator') {
                 window.location.href = '/admin';
               } else {
-                navigate('/');
+                window.location.href = '/espace-joueur';
               }
             }, 1000);
           }
@@ -69,7 +69,7 @@ const LoginPage = () => {
       if (data?.user?.role === 'admin' || data?.user?.role === 'moderator') {
         window.location.href = '/admin';
       } else {
-        window.location.href = '/';
+        window.location.href = '/espace-joueur';
       }
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Identifiants invalides');

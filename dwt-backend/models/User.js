@@ -141,6 +141,7 @@ userSchema.pre('save', async function () {
 
 // Méthode pour comparer les mots de passe
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password || !enteredPassword) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

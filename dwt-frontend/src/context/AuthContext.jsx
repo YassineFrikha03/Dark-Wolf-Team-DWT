@@ -3,35 +3,9 @@ import API from '../services/api';
 
 const AuthContext = createContext();
 
-// Détection précise d'un rafraîchissement de page dans l'onglet actif (F5 / reload) vs une nouvelle visite / reconnexion
-const isPageReload = () => {
-  try {
-    const navEntries = performance.getEntriesByType('navigation');
-    if (navEntries && navEntries.length > 0) {
-      return navEntries[0].type === 'reload';
-    }
-    if (window.performance && window.performance.navigation) {
-      return window.performance.navigation.type === 1; // 1 = TYPE_RELOAD
-    }
-  } catch {
-    return false;
-  }
-  return false;
-};
-
-// Récupérer le token initial :
-// - Si simple rechargement (F5) dans l'onglet en cours, préserver temporairement la session de travail
-// - Si nouvelle visite / reconnexion au site (ouverture de l'onglet, du navigateur ou nouvelle navigation),
-//   on garantit que TOUS les comptes (admin et joueur) sont déconnectés par défaut.
 const getInitialToken = () => {
   try {
-    localStorage.removeItem('dwt_token');
-    if (isPageReload()) {
-      return sessionStorage.getItem('dwt_token') || null;
-    }
-    // Déconnexion complète à chaque réouverture / reconnexion au site
-    sessionStorage.removeItem('dwt_token');
-    return null;
+    return localStorage.getItem('dwt_token') || sessionStorage.getItem('dwt_token') || null;
   } catch {
     return null;
   }
@@ -42,16 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(Boolean(token));
 
-  // Toujours nettoyer le localStorage au montage pour éviter toute persistance accidentelle
-  useEffect(() => {
-    try {
-      localStorage.removeItem('dwt_token');
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // Charger le profil utilisateur si token actif (cas d'un F5 dans la session en cours)
+  // Charger le profil utilisateur si token actif
   useEffect(() => {
     const fetchMe = async () => {
       if (!token) {
@@ -87,8 +52,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (identifier, password) => {
     const res = await API.post('/auth/login', { identifier, password });
     if (res.data.success) {
+      localStorage.setItem('dwt_token', res.data.token);
       sessionStorage.setItem('dwt_token', res.data.token);
-      localStorage.removeItem('dwt_token');
       setToken(res.data.token);
       setUser(res.data.user);
       return res.data;
@@ -99,8 +64,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (gamertag, email, password) => {
     const res = await API.post('/auth/register', { gamertag, email, password });
     if (res.data.success) {
+      localStorage.setItem('dwt_token', res.data.token);
       sessionStorage.setItem('dwt_token', res.data.token);
-      localStorage.removeItem('dwt_token');
       setToken(res.data.token);
       setUser(res.data.user);
       return res.data;
@@ -110,8 +75,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     try {
-      sessionStorage.removeItem('dwt_token');
       localStorage.removeItem('dwt_token');
+      sessionStorage.removeItem('dwt_token');
     } catch {
       // ignore
     }
@@ -127,8 +92,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const setSession = (tokenData, userData) => {
+    localStorage.setItem('dwt_token', tokenData);
     sessionStorage.setItem('dwt_token', tokenData);
-    localStorage.removeItem('dwt_token');
     setToken(tokenData);
     setUser(userData);
   };

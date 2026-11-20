@@ -95,6 +95,15 @@ function AppContent() {
 
   // Protection automatique des vues privées (Admin et Joueur)
   useEffect(() => {
+    const handleOpenAuthEvent = (e) => {
+      const tab = e.detail?.tab || 'login';
+      setAuthModal({ isOpen: true, tab });
+    };
+    window.addEventListener('open-auth-modal', handleOpenAuthEvent);
+    return () => window.removeEventListener('open-auth-modal', handleOpenAuthEvent);
+  }, []);
+
+  useEffect(() => {
     if (loading) return;
 
     if (currentView === 'admin') {
@@ -724,6 +733,13 @@ function AppContent() {
             isOpen={authModal.isOpen}
             initialTab={authModal.tab}
             onClose={closeAuth}
+            onSuccess={(loggedUser) => {
+              if (loggedUser?.role === 'admin' || loggedUser?.role === 'moderator') {
+                goToAdmin();
+              } else {
+                goToPlayer('Mon Profil');
+              }
+            }}
           />
           <WolfChatbot />
         </div>
@@ -911,6 +927,13 @@ function AppContent() {
         isOpen={authModal.isOpen}
         initialTab={authModal.tab}
         onClose={closeAuth}
+        onSuccess={(loggedUser) => {
+          if (loggedUser?.role === 'admin' || loggedUser?.role === 'moderator') {
+            goToAdmin();
+          } else {
+            goToPlayer('Mon Profil');
+          }
+        }}
       />
 
       {/* Fan Zone Portal Modal */}

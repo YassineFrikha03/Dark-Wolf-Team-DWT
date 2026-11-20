@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
 import { DiscordIcon, GoogleIcon } from './SocialIcons';
 
-const AuthModal = ({ isOpen, onClose, initialTab = 'login' }) => {
+const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
   const [tab, setTab] = useState(initialTab); // 'login' | 'register' | 'recovery'
   const { login } = useAuth();
 
@@ -35,10 +36,13 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login' }) => {
     setSuccessMsg('');
     setLoading(true);
     try {
-      await login(loginData.identifier, loginData.password);
+      const res = await login(loginData.identifier, loginData.password);
+      if (onSuccess) {
+        onSuccess(res?.user);
+      }
       onClose();
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Identifiants invalides. Vérifiez votre email et mot de passe.');
+      setErrorMsg(err.response?.data?.message || err.message || 'Identifiants invalides. Vérifiez votre email et mot de passe.');
     } finally {
       setLoading(false);
     }
@@ -52,12 +56,12 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login' }) => {
     try {
       const res = await API.post('/auth/register', regData);
       if (res.data.success) {
-        setSuccessMsg('Compte créé avec succès ! Connectez-vous avec vos identifiants. ');
+        setSuccessMsg('Compte créé avec succès ! Connectez-vous avec vos identifiants.');
         setTab('login');
         setLoginData({ identifier: regData.email, password: regData.password });
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Erreur lors de la création du compte.');
+      setErrorMsg(err.response?.data?.message || err.message || 'Erreur lors de la création du compte.');
     } finally {
       setLoading(false);
     }
@@ -135,7 +139,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login' }) => {
     >
       <div className="modal" style={{ maxWidth: '420px' }}>
         <button className="mclose" onClick={onClose} aria-label="Close auth modal">
-          ✕
+          <X size={18} />
         </button>
         <div className="mtitle" id="mtitle">
           {tab === 'login' && 'Welcome Back'}
