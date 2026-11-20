@@ -12,7 +12,7 @@
   padding: 14px 0 16px 0;
   overflow: hidden;
   z-index: 20;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 /* Ligne supérieure d'information / badge */
@@ -87,7 +87,7 @@
 .dwt-sponsors-modal-trigger:hover {
   background: var(--red, #cc2222);
   border-color: var(--red, #cc2222);
-  box-shadow: 0 0 16px rgba(204, 34, 34, 0.5);
+  box-shadow: 0 0 10px rgba(204, 34, 34, 0.35);
   transform: translateY(-1px);
 }
 
@@ -140,7 +140,7 @@
 .dwt-sponsor-card:hover {
   background: var(--dark3, #1a1a1a);
   border-color: var(--sponsor-accent, var(--red, #cc2222));
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 14px var(--sponsor-glow, rgba(204, 34, 34, 0.25));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 8px var(--sponsor-glow, rgba(204, 34, 34, 0.15));
   transform: translateY(-2px);
 }
 
@@ -167,7 +167,7 @@
   width: 26px;
   height: 26px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
 }
 
 /* Infos de marque */
