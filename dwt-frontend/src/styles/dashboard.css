@@ -916,35 +916,39 @@
 /* Sub navigation tabs (Boutique & Analytics) */
 .dash-subtabs-bar {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   background: #090b10;
-  padding: 6px;
+  padding: 8px;
   border-radius: 10px;
   border: 1px solid var(--border-dark);
-  overflow-x: auto;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dash-subtab-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: transparent;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
   color: #94a3b8;
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   border-radius: 6px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .dash-subtab-btn:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .dash-subtab-btn.active {
@@ -1201,9 +1205,9 @@
 
 .chat-filter-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
 }
 
 .chat-filter-chip {
@@ -1423,10 +1427,10 @@
 /* Suggestions rapides / Prompts pour le joueur */
 .chat-quick-prompts {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 10px 20px 0;
+  padding: 10px 16px 8px;
   background: #07090f;
-  overflow-x: auto;
 }
 
 .chat-prompt-pill {

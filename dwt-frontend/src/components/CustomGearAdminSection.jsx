@@ -473,7 +473,7 @@ const CustomGearAdminSection = ({
 
       {/* ────────────────── SOUS-ONGLET 1 : PRIX DE BASE DES VÊTEMENTS ────────────────── */}
       {activeSubTab === 'gear_prices' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '18px' }}>
           {customGearList.map((gear) => {
             const currentPriceInput = gearPriceInputs[gear._id] !== undefined ? gearPriceInputs[gear._id] : gear.basePrice;
             const isSaving = savingId === gear._id;
@@ -968,7 +968,7 @@ const CustomGearAdminSection = ({
           </div>
 
           {/* Grille des 5 modèles 3D par catégorie */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
             {[
               { id: 'maillots', name: 'Maillot Esport Pro', defaultFile: '/models/tshirt.glb', height: '0.70m', note: 'Maillage haute densité avec texture PBR Dry-Tech et col côtelé' },
               { id: 'hoodies', name: 'Hoodie Techwear Pro', defaultFile: '/models/hoodie_posed.glb', height: '0.75m', note: 'Maillage streetwear oversize avec capuche et poche ventrale' },

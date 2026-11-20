@@ -3253,7 +3253,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                           </button>
                         </div>
                       ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '18px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '18px' }}>
                           {couponsList.map((cpn) => {
                             const isExpired = cpn.endDate && new Date(cpn.endDate) < new Date();
                             const limitReached = cpn.usageLimit && cpn.usedCount >= cpn.usageLimit;
@@ -5448,7 +5448,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
               ) : (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
                   gap: '20px',
                   marginTop: '16px'
                 }}>
@@ -5717,7 +5717,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
               ) : (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
                   gap: '20px',
                   marginTop: '16px'
                 }}>

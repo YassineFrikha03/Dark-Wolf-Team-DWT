@@ -341,7 +341,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap: '10px' }}>
             {sponsors.filter((s) => s.isActive).map((sp) => (
               <div
                 key={sp._id}
@@ -349,11 +349,10 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   background: '#0d111a',
                   border: `1px solid ${sp.accentColor || '#00e5ff'}`,
                   borderRadius: '8px',
-                  padding: '8px 14px',
+                  padding: '8px 12px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  minWidth: '220px',
                   boxShadow: `0 0 10px ${sp.accentColor ? `${sp.accentColor}25` : 'rgba(0,229,255,0.15)'}`
                 }}
               >
@@ -390,7 +389,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
       </div>
 
       {/* Grille des Sponsors */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '16px' }}>
         {sponsors.map((sp) => (
           <div
             key={sp._id}
