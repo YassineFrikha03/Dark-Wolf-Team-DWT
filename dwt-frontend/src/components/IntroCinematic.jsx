@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import introVideo from '../assets/intro-cinematic.mp4';
+import introVideo from '../assets/intro cinematique.mp4';
 
 const IntroCinematic = ({ onFinish }) => {
   const [visible, setVisible] = useState(true);

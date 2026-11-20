@@ -312,6 +312,117 @@
   font-weight: 600;
 }
 
+/* ==========================================================================
+   BOUTONS OFFICIELS DASHBOARD (DARK WOLF TEAM ESPORT DESIGN SYSTEM)
+   ========================================================================== */
+.dash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: var(--font-heading, 'Rajdhani', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  outline: none;
+  border: 1px solid transparent;
+}
+
+.dash-btn.primary {
+  background: linear-gradient(135deg, #e10613 0%, #a8000a 100%);
+  color: #ffffff !important;
+  border-color: #ff3b47;
+  box-shadow: 0 4px 14px rgba(225, 6, 19, 0.4);
+}
+
+.dash-btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff1a27 0%, #c4000c 100%);
+  box-shadow: 0 6px 20px rgba(225, 6, 19, 0.65);
+  transform: translateY(-1px);
+}
+
+.dash-btn.outline {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.dash-btn.outline:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff !important;
+  border-color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.dash-btn.danger {
+  background: rgba(225, 6, 19, 0.12);
+  color: #ff4d4d !important;
+  border-color: rgba(225, 6, 19, 0.35);
+}
+
+.dash-btn.danger:hover:not(:disabled) {
+  background: #e10613;
+  color: #ffffff !important;
+  border-color: #e10613;
+  box-shadow: 0 0 14px rgba(225, 6, 19, 0.55);
+  transform: translateY(-1px);
+}
+
+.dash-btn.cyber {
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff !important;
+  border-color: rgba(0, 229, 255, 0.4);
+}
+
+.dash-btn.cyber:hover:not(:disabled) {
+  background: #00e5ff;
+  color: #05070a !important;
+  border-color: #00e5ff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.dash-btn.success {
+  background: rgba(34, 197, 94, 0.14);
+  color: #22c55e !important;
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.dash-btn.success:hover:not(:disabled) {
+  background: #22c55e;
+  color: #05070a !important;
+  border-color: #22c55e;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.6);
+  transform: translateY(-1px);
+}
+
+.dash-btn.sm {
+  padding: 5px 11px;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  gap: 5px;
+}
+
+.dash-btn.icon-only {
+  padding: 6px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.dash-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .dash-btn-group-actions {
   display: flex;
   align-items: center;
@@ -640,6 +751,9 @@
   font-family: var(--font-body);
   outline: none;
   transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
 }
 
 .dash-form-input:focus,
@@ -1505,5 +1619,117 @@
   box-shadow: 0 0 12px rgba(230, 0, 0, 0.4);
   transform: translateY(-1px);
 }
+
+/* ==========================================================================
+   GESTION DES SPONSORS & LOGOS (DWT ESPORT ADMIN)
+   ========================================================================== */
+.sponsor-admin-logo-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #080b12;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.sponsor-admin-logo-img {
+  max-width: 34px;
+  max-height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+}
+
+.sponsor-logo-panel {
+  background: #080b12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sponsor-logo-preview-card {
+  background: #0d121c;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.08);
+}
+
+.sponsor-logo-upload-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 18px 14px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sponsor-logo-upload-dropzone:hover {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.05);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.15);
+}
+
+.sponsor-url-reader-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.sponsor-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  outline: none;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.sponsor-status-pill.active {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: #22c55e;
+  color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.25);
+}
+
+.sponsor-status-pill.active:hover {
+  background: #22c55e;
+  color: #05070a;
+}
+
+.sponsor-status-pill.inactive {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.sponsor-status-pill.inactive:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
 
 

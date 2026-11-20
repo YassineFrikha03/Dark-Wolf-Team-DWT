@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Zap, 
   Laptop, 
@@ -18,18 +18,24 @@ import {
   Sliders, 
   Eye, 
   Sparkles,
-  Tag
+  Tag,
+  Upload,
+  Globe,
+  Image as ImageIcon,
+  CheckCircle2,
+  AlertCircle,
+  Link as LinkIcon
 } from 'lucide-react';
 import API from '../services/api';
 
 const AVAILABLE_ICONS = [
-  { id: 'Zap', label: 'Éclair / Énergie', icon: <Zap size={18} /> },
+  { id: 'Zap', label: 'Eclair / Energie', icon: <Zap size={18} /> },
   { id: 'Laptop', label: 'Laptop / PC', icon: <Laptop size={18} /> },
   { id: 'Headphones', label: 'Casque Audio', icon: <Headphones size={18} /> },
   { id: 'MessageSquare', label: 'Chat / Discord', icon: <MessageSquare size={18} /> },
   { id: 'Cpu', label: 'Processeur / Hardware', icon: <Cpu size={18} /> },
   { id: 'Flame', label: 'Flamme / Performance', icon: <Flame size={18} /> },
-  { id: 'Shield', label: 'Bouclier / Sécurité', icon: <Shield size={18} /> },
+  { id: 'Shield', label: 'Bouclier / Securite', icon: <Shield size={18} /> },
   { id: 'Radio', label: 'Diffusion / Live', icon: <Radio size={18} /> },
 ];
 
@@ -41,7 +47,7 @@ const PRESET_COLORS = [
   { label: 'Cyber Cyan', hex: '#00e5ff' },
   { label: 'Nvidia Green', hex: '#76b900' },
   { label: 'Twitch Violet', hex: '#a855f7' },
-  { label: 'DWT Crimson', hex: '#e10613' },
+  { label: 'DWT Crimson', hex: '#cc2222' },
 ];
 
 export const renderSponsorIcon = (iconName, color = '#00e5ff', size = 20) => {
@@ -62,17 +68,24 @@ export const renderSponsorIcon = (iconName, color = '#00e5ff', size = 20) => {
 export const SponsorsAdminSection = ({ showToast }) => {
   const [sponsors, setSponsors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
+  // Etats dedies a la gestion des logos (Upload PC & Lecteur d'URL)
+  const [detectingLogo, setDetectingLogo] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     name: '',
     category: 'Partenaire Officiel',
-    perk: 'PARTENAIRE HOMOLOGUÉ',
+    perk: 'PARTENAIRE HOMOLOGUE',
     desc: '',
     promoCode: '',
     websiteUrl: '',
+    logoUrl: '',
     iconName: 'Zap',
     accentColor: '#00e5ff',
     order: 0,
@@ -107,6 +120,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
       desc: '',
       promoCode: '',
       websiteUrl: 'https://',
+      logoUrl: '',
       iconName: 'Zap',
       accentColor: '#f59e0b',
       order: sponsors.length,
@@ -124,12 +138,85 @@ export const SponsorsAdminSection = ({ showToast }) => {
       desc: sponsor.desc || '',
       promoCode: sponsor.promoCode || '',
       websiteUrl: sponsor.websiteUrl || '',
+      logoUrl: sponsor.logoUrl || '',
       iconName: sponsor.iconName || 'Zap',
       accentColor: sponsor.accentColor || '#00e5ff',
       order: sponsor.order || 0,
       isActive: sponsor.isActive !== false
     });
     setModalOpen(true);
+  };
+
+  // 1. Lecteur d'URL automatique : telecharge et extrait le logo depuis le site du sponsor
+  const handleDetectLogoFromUrl = async () => {
+    const rawUrl = formData.websiteUrl ? formData.websiteUrl.trim() : '';
+    if (!rawUrl || rawUrl === 'https://' || rawUrl === 'http://') {
+      if (showToast) showToast('Veuillez d\'abord saisir une URL de sponsor valide dans le champ ci-dessus', 'warning');
+      return;
+    }
+
+    setDetectingLogo(true);
+    try {
+      const res = await API.post('/sponsors/fetch-logo', { url: rawUrl });
+      if (res.data?.success && res.data.logoUrl) {
+        setFormData((prev) => ({ ...prev, logoUrl: res.data.logoUrl }));
+        if (showToast) {
+          showToast(`Logo extrait avec succes depuis ${res.data.domain || 'le site web'}`, 'success');
+        }
+      } else {
+        if (showToast) showToast('Impossible d\'extraire automatiquement le logo pour cette adresse', 'warning');
+      }
+    } catch (err) {
+      console.error('Erreur detection logo:', err);
+      const msg = err.response?.data?.message || 'Erreur lors de la lecture de l\'URL du sponsor';
+      if (showToast) showToast(msg, 'error');
+    } finally {
+      setDetectingLogo(false);
+    }
+  };
+
+  // 2. Importateur de logo depuis le PC : envoi direct en multipart/form-data
+  const handleUploadLogoFromPC = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.match(/^image\/(png|jpeg|jpg|webp|svg\+xml)$/i) && !file.name.match(/\.(png|jpe?g|webp|svg)$/i)) {
+      if (showToast) showToast('Format non supporte. Formats acceptes : PNG transparent, SVG, WEBP, JPG', 'warning');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      if (showToast) showToast('Fichier trop lourd (maximum 5 Mo)', 'warning');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const res = await API.post('/upload', uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const url = res.data?.filePath || res.data?.fileUrl;
+      if (url) {
+        setFormData((prev) => ({ ...prev, logoUrl: url }));
+        if (showToast) showToast('Logo importe avec succes depuis votre ordinateur', 'success');
+      } else {
+        if (showToast) showToast('Erreur : URL de fichier non recue', 'error');
+      }
+    } catch (err) {
+      console.error('Erreur upload logo:', err);
+      if (showToast) showToast('Erreur lors du televersement du logo', 'error');
+    } finally {
+      setUploadingLogo(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  // Retirer le logo pour repasser sur l'icone vectorielle
+  const handleRemoveLogo = () => {
+    setFormData((prev) => ({ ...prev, logoUrl: '' }));
+    if (showToast) showToast('Logo retire. L\'icone cyber vectorielle sera utilisee', 'info');
   };
 
   const handleSaveSponsor = async (e) => {
@@ -139,18 +226,19 @@ export const SponsorsAdminSection = ({ showToast }) => {
       return;
     }
 
+    setSaving(true);
     try {
       if (editingSponsor) {
         const res = await API.put(`/sponsors/${editingSponsor._id}`, formData);
         if (res.data?.success) {
-          if (showToast) showToast('Sponsor mis à jour avec succès', 'success');
+          if (showToast) showToast('Sponsor mis a jour avec succes', 'success');
           fetchSponsors();
           setModalOpen(false);
         }
       } else {
         const res = await API.post('/sponsors', formData);
         if (res.data?.success) {
-          if (showToast) showToast('Nouveau sponsor ajouté avec succès', 'success');
+          if (showToast) showToast('Nouveau sponsor ajoute avec succes', 'success');
           fetchSponsors();
           setModalOpen(false);
         }
@@ -159,6 +247,8 @@ export const SponsorsAdminSection = ({ showToast }) => {
       console.error('Erreur sauvegarde sponsor:', err);
       const msg = err.response?.data?.message || 'Erreur lors de la sauvegarde du sponsor';
       if (showToast) showToast(msg, 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -172,7 +262,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
         );
         if (showToast) {
           showToast(
-            `${sponsor.name} est maintenant ${updatedStatus ? 'actif' : 'masqué'} sur le site`,
+            `${sponsor.name} est maintenant ${updatedStatus ? 'actif' : 'masque'} sur le site`,
             'info'
           );
         }
@@ -187,7 +277,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
     try {
       const res = await API.delete(`/sponsors/${id}`);
       if (res.data?.success) {
-        if (showToast) showToast('Sponsor supprimé avec succès', 'success');
+        if (showToast) showToast('Sponsor supprime avec succes', 'success');
         setSponsors((prev) => prev.filter((s) => s._id !== id));
         setDeleteConfirmId(null);
       }
@@ -212,17 +302,17 @@ export const SponsorsAdminSection = ({ showToast }) => {
               </span>
             </div>
             <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
-              Configurez les sponsors partenaires défilant sous le Hero et présentés dans le modal officiel.
+              Configurez les logos, liens officiels et avantages partenaires visibles sous le Hero et dans le modal officiel.
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
-              className="dash-btn outline"
+              className="dash-btn outline sm"
               onClick={fetchSponsors}
               disabled={loading}
-              title="Rafraîchir les sponsors"
+              title="Rafraichir la liste des sponsors"
             >
               <RotateCw size={14} className={loading ? 'spin' : ''} />
               <span>Actualiser</span>
@@ -230,7 +320,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
 
             <button
               type="button"
-              className="dash-btn primary"
+              className="dash-btn primary sm"
               onClick={handleOpenAddModal}
               title="Ajouter une nouvelle marque sponsor"
             >
@@ -240,14 +330,14 @@ export const SponsorsAdminSection = ({ showToast }) => {
           </div>
         </div>
 
-        {/* Aperçu en direct du bandeau sous le Hero */}
+        {/* Apercu en direct du bandeau sous le Hero */}
         <div style={{ marginTop: '16px', background: '#07090e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '10.5px', color: '#94a3b8', letterSpacing: '1px' }}>
-              // APERÇU EN DIRECT DU BANDEAU HERO ({activeCount} MARQUES DÉFILANTES)
+              // APERCU EN DIRECT DU BANDEAU HERO ({activeCount} MARQUES EN LIGNE)
             </span>
-            <span style={{ fontSize: '11px', color: '#e10613', fontFamily: 'monospace' }}>
-              DÉFILEMENT CONTINU ACTIF
+            <span style={{ fontSize: '11px', color: '#cc2222', fontFamily: 'monospace', fontWeight: '700' }}>
+              DEFILEMENT FLUIDE SOUS LE HERO
             </span>
           </div>
 
@@ -267,8 +357,23 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   boxShadow: `0 0 10px ${sp.accentColor ? `${sp.accentColor}25` : 'rgba(0,229,255,0.15)'}`
                 }}
               >
-                <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {renderSponsorIcon(sp.iconName, sp.accentColor, 18)}
+                <div className="sponsor-admin-logo-box" style={{ width: '32px', height: '32px' }}>
+                  {sp.logoUrl ? (
+                    <img
+                      src={sp.logoUrl}
+                      alt={sp.name}
+                      style={{ maxWidth: '24px', maxHeight: '24px', objectFit: 'contain' }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextSibling) {
+                          e.currentTarget.nextSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <span style={{ display: sp.logoUrl ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {renderSponsorIcon(sp.iconName, sp.accentColor, 16)}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '12px', fontWeight: '800', color: '#fff' }}>
@@ -293,11 +398,12 @@ export const SponsorsAdminSection = ({ showToast }) => {
             style={{
               borderLeft: `4px solid ${sp.accentColor || '#00e5ff'}`,
               opacity: sp.isActive ? 1 : 0.65,
-              transition: 'all 0.2s ease',
+              transition: 'all 0.22s ease',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              gap: '14px'
+              gap: '14px',
+              background: '#090d16'
             }}
           >
             <div>
@@ -305,18 +411,28 @@ export const SponsorsAdminSection = ({ showToast }) => {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div
+                    className="sponsor-admin-logo-box"
                     style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.04)',
                       border: `1px solid ${sp.accentColor || '#00e5ff'}40`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      boxShadow: `0 0 10px ${sp.accentColor || '#00e5ff'}20`
                     }}
                   >
-                    {renderSponsorIcon(sp.iconName, sp.accentColor, 22)}
+                    {sp.logoUrl ? (
+                      <img
+                        src={sp.logoUrl}
+                        alt={sp.name}
+                        className="sponsor-admin-logo-img"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          if (e.currentTarget.nextSibling) {
+                            e.currentTarget.nextSibling.style.display = 'flex';
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <span style={{ display: sp.logoUrl ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {renderSponsorIcon(sp.iconName, sp.accentColor, 22)}
+                    </span>
                   </div>
                   <div>
                     <h3 style={{ fontFamily: 'Orbitron, monospace', fontSize: '15px', fontWeight: '800', color: '#fff', margin: 0 }}>
@@ -328,27 +444,19 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   </div>
                 </div>
 
+                {/* Badge Actif / Masque stylise */}
                 <button
                   type="button"
+                  className={`sponsor-status-pill ${sp.isActive ? 'active' : 'inactive'}`}
                   onClick={() => handleToggleActive(sp)}
-                  style={{
-                    background: sp.isActive ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                    border: `1px solid ${sp.isActive ? '#22c55e' : '#ef4444'}`,
-                    color: sp.isActive ? '#22c55e' : '#ef4444',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    fontFamily: 'monospace',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                  title="Cliquer pour basculer le statut"
+                  title="Cliquer pour basculer la visibilite sur le site"
                 >
-                  {sp.isActive ? 'ACTIF' : 'MASQUÉ'}
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sp.isActive ? '#22c55e' : '#ef4444' }} />
+                  <span>{sp.isActive ? 'ACTIF' : 'MASQUE'}</span>
                 </button>
               </div>
 
-              {/* Badges Avantage & Code Promo */}
+              {/* Badges Avantage, Code Promo & Logo */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
                 {sp.perk && (
                   <span
@@ -384,6 +492,37 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   </span>
                 )}
 
+                {sp.logoUrl ? (
+                  <span
+                    style={{
+                      background: 'rgba(0, 229, 255, 0.1)',
+                      border: '1px solid rgba(0, 229, 255, 0.3)',
+                      color: '#00e5ff',
+                      fontSize: '10px',
+                      fontFamily: 'monospace',
+                      fontWeight: '700',
+                      padding: '3px 7px',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    LOGO PNG/SVG
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: '#94a3b8',
+                      fontSize: '10px',
+                      fontFamily: 'monospace',
+                      padding: '3px 7px',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    ICONE CYBER
+                  </span>
+                )}
+
                 <span style={{ fontSize: '10.5px', color: '#64748b', alignSelf: 'center', marginLeft: 'auto' }}>
                   Ordre: #{sp.order}
                 </span>
@@ -410,7 +549,8 @@ export const SponsorsAdminSection = ({ showToast }) => {
                     gap: '5px',
                     color: '#38bdf8',
                     fontSize: '11.5px',
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    fontWeight: '600'
                   }}
                 >
                   <span>Visiter le site</span>
@@ -423,8 +563,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="button"
-                  className="dash-btn outline"
-                  style={{ padding: '5px 10px', fontSize: '11px' }}
+                  className="dash-btn outline sm"
                   onClick={() => handleOpenEditModal(sp)}
                   title="Modifier ce sponsor"
                 >
@@ -436,14 +575,14 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
                       type="button"
-                      style={{ background: '#e10613', color: '#fff', border: 'none', padding: '5px 8px', borderRadius: '4px', fontSize: '10px', cursor: 'pointer', fontWeight: '700' }}
+                      className="dash-btn danger sm"
                       onClick={() => handleDeleteSponsor(sp._id)}
                     >
                       Confirmer
                     </button>
                     <button
                       type="button"
-                      style={{ background: '#334155', color: '#fff', border: 'none', padding: '5px 8px', borderRadius: '4px', fontSize: '10px', cursor: 'pointer' }}
+                      className="dash-btn outline sm"
                       onClick={() => setDeleteConfirmId(null)}
                     >
                       Annuler
@@ -452,12 +591,11 @@ export const SponsorsAdminSection = ({ showToast }) => {
                 ) : (
                   <button
                     type="button"
-                    className="dash-btn danger"
-                    style={{ padding: '5px 10px', fontSize: '11px' }}
+                    className="dash-btn danger icon-only sm"
                     onClick={() => setDeleteConfirmId(sp._id)}
                     title="Supprimer ce sponsor"
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={13} />
                   </button>
                 )}
               </div>
@@ -470,17 +608,6 @@ export const SponsorsAdminSection = ({ showToast }) => {
       {modalOpen && (
         <div
           className="dash-modal-backdrop"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(3, 5, 10, 0.94)',
-            backdropFilter: 'blur(12px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-            zIndex: 99999
-          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setModalOpen(false);
           }}
@@ -488,40 +615,41 @@ export const SponsorsAdminSection = ({ showToast }) => {
           <div
             className="dash-modal-box"
             style={{
-              maxWidth: '640px',
+              maxWidth: '680px',
               width: '100%',
               background: '#090d16',
-              border: '1px solid rgba(0, 229, 255, 0.35)',
+              border: '1px solid rgba(0, 229, 255, 0.4)',
               borderRadius: '12px',
               padding: '28px',
-              boxShadow: '0 25px 70px rgba(0,0,0,0.9), 0 0 30px rgba(0,229,255,0.15)',
+              boxShadow: '0 25px 70px rgba(0,0,0,0.95), 0 0 30px rgba(0,229,255,0.15)',
               maxHeight: '90vh',
               overflowY: 'auto'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '14px' }}>
               <div>
-                <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '18px', fontWeight: '900', color: '#fff', margin: 0 }}>
-                  {editingSponsor ? 'MODIFIER LE SPONSOR' : 'AJOUTER UN SPONSOR'}
+                <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '18px', fontWeight: '900', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
+                  {editingSponsor ? 'MODIFIER LE SPONSOR' : 'AJOUTER UN NOUVEAU SPONSOR'}
                 </h2>
                 <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                  Configuration des métadonnées visibles sur la page d'accueil et le modal
+                  Configuration complete du sponsor : logo haute resolution, URL, perks et visibilite.
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '6px', borderRadius: '4px' }}
+                title="Fermer la fenetre"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveSponsor} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Nom & Catégorie */}
+            <form onSubmit={handleSaveSponsor} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {/* Nom & Categorie */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
                   <label className="dash-form-label">Nom de la Marque *</label>
                   <input
                     type="text"
@@ -533,12 +661,12 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="dash-form-label">Catégorie / Titre Partenaire</label>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Categorie / Titre Partenaire</label>
                   <input
                     type="text"
                     className="dash-form-input"
-                    placeholder="Ex: Boisson Énergétique Officielle"
+                    placeholder="Ex: Boisson Energetique Officielle"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   />
@@ -547,8 +675,8 @@ export const SponsorsAdminSection = ({ showToast }) => {
 
               {/* Perk & Code Promo */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px' }}>
-                <div>
-                  <label className="dash-form-label">Avantage / Perk Défilant</label>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Avantage / Perk Defilant</label>
                   <input
                     type="text"
                     className="dash-form-input"
@@ -558,7 +686,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   />
                 </div>
 
-                <div>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
                   <label className="dash-form-label">Code Promo (Optionnel)</label>
                   <input
                     type="text"
@@ -572,8 +700,8 @@ export const SponsorsAdminSection = ({ showToast }) => {
 
               {/* URL du site officiel & Ordre */}
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
-                <div>
-                  <label className="dash-form-label">Lien URL Officiel</label>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                  <label className="dash-form-label">Lien URL Officiel du Sponsor</label>
                   <input
                     type="url"
                     className="dash-form-input"
@@ -583,7 +711,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
                   />
                 </div>
 
-                <div>
+                <div className="dash-form-group" style={{ marginBottom: 0 }}>
                   <label className="dash-form-label">Ordre d'affichage</label>
                   <input
                     type="number"
@@ -594,9 +722,133 @@ export const SponsorsAdminSection = ({ showToast }) => {
                 </div>
               </div>
 
-              {/* Choix de l'Icône */}
-              <div>
-                <label className="dash-form-label">Icône de Marque</label>
+              {/* ============================================================
+                  SECTION LOGO DU SPONSOR (UPLOAD PC + LECTEUR D'URL)
+                  ============================================================ */}
+              <div className="sponsor-logo-panel">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ImageIcon size={16} color="#00e5ff" />
+                    <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '12px', fontWeight: '800', color: '#fff', letterSpacing: '0.05em' }}>
+                      LOGO DU SPONSOR (IMPORT PC OU LECTEUR URL)
+                    </span>
+                  </div>
+                  {formData.logoUrl && (
+                    <span style={{ fontSize: '10.5px', color: '#22c55e', fontWeight: '700', fontFamily: 'monospace' }}>
+                      [LOGO ASSOCIE]
+                    </span>
+                  )}
+                </div>
+
+                {/* Si un logo est defini : afficher le panneau d'apercu avec bouton de suppression */}
+                {formData.logoUrl ? (
+                  <div className="sponsor-logo-preview-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div
+                        style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '8px',
+                          background: '#04060a',
+                          border: '1px solid rgba(0, 229, 255, 0.4)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4px'
+                        }}
+                      >
+                        <img
+                          src={formData.logoUrl}
+                          alt="Apercu logo sponsor"
+                          style={{ maxWidth: '48px', maxHeight: '48px', objectFit: 'contain' }}
+                        />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#fff' }}>
+                          Logo Actif Selectionne
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', wordBreak: 'break-all', maxWidth: '340px' }}>
+                          {formData.logoUrl}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="dash-btn danger sm"
+                      onClick={handleRemoveLogo}
+                      title="Supprimer ce logo et revenir a l'icone cyber"
+                    >
+                      <Trash2 size={13} />
+                      <span>Retirer</span>
+                    </button>
+                  </div>
+                ) : null}
+
+                {/* Deux methodes rapides pour ajouter le logo */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {/* Methode 1 : Lecteur d'URL Automatique */}
+                  <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00e5ff', fontSize: '12px', fontWeight: '700' }}>
+                        <Globe size={14} />
+                        <span>Lecteur d'URL Automatique</span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                        Lit le lien du sponsor et telecharge instantanement son logo officiel haute definition.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="dash-btn cyber sm"
+                      disabled={detectingLogo}
+                      onClick={handleDetectLogoFromUrl}
+                      style={{ width: '100%' }}
+                    >
+                      <RotateCw size={13} className={detectingLogo ? 'spin' : ''} />
+                      <span>{detectingLogo ? 'Scan en cours...' : 'Detecter le Logo via URL'}</span>
+                    </button>
+                  </div>
+
+                  {/* Methode 2 : Import depuis le PC */}
+                  <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e2e8f0', fontSize: '12px', fontWeight: '700' }}>
+                        <Upload size={14} />
+                        <span>Importer depuis mon PC</span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                        Selectionnez un fichier PNG transparent, SVG, WEBP ou JPG depuis votre ordinateur.
+                      </p>
+                    </div>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      style={{ display: 'none' }}
+                      id="sponsor-file-upload-input"
+                      onChange={handleUploadLogoFromPC}
+                    />
+
+                    <label
+                      htmlFor="sponsor-file-upload-input"
+                      className="dash-btn outline sm"
+                      style={{ width: '100%', cursor: uploadingLogo ? 'wait' : 'pointer' }}
+                    >
+                      <Upload size={13} className={uploadingLogo ? 'spin' : ''} />
+                      <span>{uploadingLogo ? 'Televersement...' : 'Parcourir mon PC'}</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Choix de l'Icone Cyber Vectorielle (Fallback si pas de logo) */}
+              <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                <label className="dash-form-label">
+                  Icone Vectorielle de Secours {formData.logoUrl ? '(Remplacee par le logo ci-dessus)' : '(Active)'}
+                </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                   {AVAILABLE_ICONS.map((ic) => (
                     <button
@@ -614,7 +866,8 @@ export const SponsorsAdminSection = ({ showToast }) => {
                         padding: '8px 10px',
                         cursor: 'pointer',
                         fontSize: '11px',
-                        fontWeight: '600'
+                        fontWeight: '600',
+                        transition: 'all 0.18s ease'
                       }}
                     >
                       {ic.icon}
@@ -627,7 +880,7 @@ export const SponsorsAdminSection = ({ showToast }) => {
               </div>
 
               {/* Choix de la couleur d'accent */}
-              <div>
+              <div className="dash-form-group" style={{ marginBottom: 0 }}>
                 <label className="dash-form-label">Couleur d'accentuation Cyber</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   {PRESET_COLORS.map((col) => (
@@ -657,51 +910,72 @@ export const SponsorsAdminSection = ({ showToast }) => {
                     value={formData.accentColor}
                     onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })}
                     style={{ width: '36px', height: '36px', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                    title="Couleur personnalisée"
+                    title="Couleur personnalisee"
                   />
                 </div>
               </div>
 
-              {/* Description */}
-              <div>
-                <label className="dash-form-label">Description détaillée (pour le modal fans)</label>
+              {/* Description detaillee (plein largeur, sans chevauchement) */}
+              <div className="dash-form-group" style={{ marginBottom: 0 }}>
+                <label className="dash-form-label">Description detaillee (pour le modal fans)</label>
                 <textarea
                   className="dash-form-input"
                   rows={3}
-                  placeholder="Présentation du partenariat, engagement pour la meute, détails techniques..."
+                  placeholder="Presentation du partenariat, engagement pour la meute, specifications de l'offre..."
                   value={formData.desc}
                   onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
+                  style={{ minHeight: '80px', resize: 'vertical' }}
                 />
               </div>
 
-              {/* Toggle Actif */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input
-                  type="checkbox"
-                  id="sponsor-is-active"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#e10613' }}
-                />
-                <label htmlFor="sponsor-is-active" style={{ fontSize: '13px', color: '#fff', cursor: 'pointer' }}>
-                  Afficher ce sponsor en direct sur le site (Actif)
-                </label>
+              {/* Toggle Actif / Masque stylise */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: '#0d111a',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '8px',
+                  padding: '12px 16px'
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>
+                    Visibilite du Sponsor sur le Site
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                    Si active, la marque apparait immediatement dans le bandeau defilant Hero et le modal officiel.
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={`sponsor-status-pill ${formData.isActive ? 'active' : 'inactive'}`}
+                  onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                >
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: formData.isActive ? '#22c55e' : '#ef4444' }} />
+                  <span>{formData.isActive ? 'EN DIRECT (ACTIF)' : 'MASQUE (INACTIF)'}</span>
+                </button>
               </div>
 
               {/* Boutons validation */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
                 <button
                   type="button"
                   className="dash-btn outline"
                   onClick={() => setModalOpen(false)}
+                  disabled={saving}
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   className="dash-btn primary"
+                  disabled={saving}
                 >
-                  {editingSponsor ? 'Enregistrer les Modifications' : 'Créer le Sponsor'}
+                  {saving ? <RotateCw size={14} className="spin" /> : <Check size={14} />}
+                  <span>{editingSponsor ? 'Enregistrer les Modifications' : 'Creer le Sponsor'}</span>
                 </button>
               </div>
             </form>

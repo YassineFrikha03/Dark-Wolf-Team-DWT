@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
 const Sponsor = require('../models/Sponsor');
 
 const defaultSponsors = [
@@ -216,6 +218,97 @@ router.delete('/:id', async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Partenaire sponsor supprimé avec succès !'
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/sponsors/fetch-logo - Extraire et sauvegarder le logo depuis l'URL du sponsor
+router.post('/fetch-logo', async (req, res, next) => {
+  try {
+    const { url } = req.body;
+    if (!url || !url.trim()) {
+      return res.status(400).json({ success: false, message: 'URL manquante.' });
+    }
+
+    let parsedUrl;
+    try {
+      const formatted = url.startsWith('http://') || url.startsWith('https://') ? url.trim() : `https://${url.trim()}`;
+      parsedUrl = new URL(formatted);
+    } catch (e) {
+      return res.status(400).json({ success: false, message: 'Format d\'URL invalide.' });
+    }
+
+    const domain = parsedUrl.hostname.replace(/^www\./, '');
+    const candidateUrls = [
+      `https://logo.clearbit.com/${domain}`,
+      `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+      `https://icons.duckduckgo.com/ip3/${domain}.ico`
+    ];
+
+    let downloadedBuffer = null;
+    let chosenContentType = 'image/png';
+
+    for (const cUrl of candidateUrls) {
+      try {
+        const fetchRes = await fetch(cUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+          signal: AbortSignal.timeout(4000)
+        });
+        if (fetchRes.ok) {
+          const contentType = fetchRes.headers.get('content-type') || '';
+          if (contentType.includes('image') || contentType.includes('octet-stream')) {
+            const arrayBuffer = await fetchRes.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            if (buffer.length > 250) {
+              downloadedBuffer = buffer;
+              chosenContentType = contentType;
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        // Essayer le candidat suivant
+      }
+    }
+
+    if (downloadedBuffer) {
+      const ext = chosenContentType.includes('svg') ? 'svg' : chosenContentType.includes('ico') ? 'ico' : 'png';
+      const cleanDomain = domain.replace(/[^a-zA-Z0-9]/g, '_');
+      const filename = `sponsor-logo-${cleanDomain}-${Date.now()}.${ext}`;
+      const uploadDir = path.join(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const destPath = path.join(uploadDir, filename);
+      fs.writeFileSync(destPath, downloadedBuffer);
+
+      // Copie de confort dans public/uploads du frontend
+      try {
+        const feUploads = path.join(__dirname, '../../dwt-frontend/public/uploads');
+        if (fs.existsSync(feUploads)) {
+          fs.writeFileSync(path.join(feUploads, filename), downloadedBuffer);
+        }
+      } catch (copyErr) {
+        // Ignorer
+      }
+
+      return res.status(200).json({
+        success: true,
+        logoUrl: `/uploads/${filename}`,
+        domain,
+        source: 'local-download'
+      });
+    }
+
+    // Fallback direct sur Google S2 favicon service
+    const fallbackUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+    return res.status(200).json({
+      success: true,
+      logoUrl: fallbackUrl,
+      domain,
+      source: 'google-s2'
     });
   } catch (error) {
     next(error);

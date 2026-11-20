@@ -176,7 +176,22 @@ export const SponsorsMarquee = ({ onOpenPartners }) => {
                 tabIndex={0}
               >
                 <div className="dwt-sponsor-icon-wrapper">
-                  {renderIcon(sponsor.iconName, accent)}
+                  {sponsor.logoUrl ? (
+                    <img
+                      src={sponsor.logoUrl}
+                      alt={sponsor.name}
+                      className="dwt-sponsor-logo-img"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextSibling) {
+                          e.currentTarget.nextSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <span style={{ display: sponsor.logoUrl ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {renderIcon(sponsor.iconName, accent)}
+                  </span>
                 </div>
 
                 <div className="dwt-sponsor-info">

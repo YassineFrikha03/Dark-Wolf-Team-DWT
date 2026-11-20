@@ -169,8 +169,23 @@ const PartnersModal = ({ isOpen, onClose, onOpenContact }) => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ padding: '8px', borderRadius: '8px', background: `${badgeColor}18` }}>
-                        {iconElem}
+                      <div style={{ padding: '8px', borderRadius: '8px', background: `${badgeColor}18`, width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {p.logoUrl ? (
+                          <img
+                            src={p.logoUrl}
+                            alt={p.name}
+                            style={{ maxWidth: '34px', maxHeight: '34px', objectFit: 'contain' }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              if (e.currentTarget.nextSibling) {
+                                e.currentTarget.nextSibling.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <span style={{ display: p.logoUrl ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {iconElem}
+                        </span>
                       </div>
                       <div>
                         <div style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '17px', fontWeight: '900', color: '#fff' }}>

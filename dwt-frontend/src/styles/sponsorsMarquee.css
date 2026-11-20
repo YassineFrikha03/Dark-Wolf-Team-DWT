@@ -163,6 +163,13 @@
   border-color: var(--sponsor-accent, var(--red, #cc2222));
 }
 
+.dwt-sponsor-logo-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
 /* Infos de marque */
 .dwt-sponsor-info {
   display: flex;
