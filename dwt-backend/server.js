@@ -84,6 +84,7 @@ const videoRoutes = require('./routes/videoRoutes');
 const countdownRoutes = require('./routes/countdownRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const customGearRoutes = require('./routes/customGearRoutes');
+const sponsorRoutes = require('./routes/sponsorRoutes');
 
 // Montage des routes d'API
 app.use('/api/auth', authRoutes);
@@ -103,6 +104,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/slides', slideRoutes);
+app.use('/api/sponsors', sponsorRoutes);
 app.use('/api/museum', museumRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/missions', missionRoutes);
@@ -116,7 +118,7 @@ app.use('/api/custom-gear', customGearRoutes);
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    name: 'Dark Wolf Team API 🐺🎮',
+    name: 'Dark Wolf Team API',
     status: 'online',
     version: '2.1.0',
     timestamp: new Date().toISOString(),

@@ -59,6 +59,7 @@ import { WolfLogo } from '../components/WolfLogo';
 import { CyberConfirmModal } from '../components/CyberConfirmModal';
 import { CyberToast } from '../components/CyberToast';
 import CustomGearAdminSection from '../components/CustomGearAdminSection';
+import SponsorsAdminSection from '../components/SponsorsAdminSection';
 import CustomizerModal from '../customizer/CustomizerModal';
 import API from '../services/api';
 import { getImageUrl } from '../utils/imageUrl';
@@ -2140,6 +2141,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     { label: 'Tableau de Bord', icon: <LayoutDashboard size={18} /> },
     { label: 'Compte à Rebours', icon: <Timer size={18} />, badge: activeCountdown?.isActive ? 'Actif' : undefined },
     { label: 'Affiches Cinématiques', icon: <SlidersHorizontal size={18} />, badge: slidesList.length },
+    { label: 'Sponsors & Marques', icon: <Shield size={18} /> },
     { label: 'Vidéos & Trailers', icon: <Film size={18} />, badge: videosList.length },
     { label: 'Gestion des Jeux', icon: <Gamepad2 size={18} />, badge: gamesList.length },
     { label: 'Museum (Archive)', icon: <Layers size={18} />, badge: museumList.length },
@@ -5620,6 +5622,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                 </div>
               )}
             </div>
+          )}
+
+          {/* TAB: GESTION DES SPONSORS & MARQUES PARTENAIRES */}
+          {activeNav === 'Sponsors & Marques' && (
+            <SponsorsAdminSection showToast={showToast} />
           )}
 
           {/* TAB: GESTION DES VIDÉOS, TRAILERS & PUBS PRODUITS */}

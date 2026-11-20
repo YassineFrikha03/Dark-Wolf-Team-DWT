@@ -1,24 +1,24 @@
 /* ==========================================================================
    SPONSORS MARQUEE - BANDEAU ANIMÉ DES MARQUES PARTENAIRES SOUS LE HERO
-   Dark Wolf Team Esport Design System
+   Thème Officiel Dark Wolf Team (Onyx #080808, Dark #0e0e0e, Crimson #cc2222)
    ========================================================================== */
 
 .dwt-sponsors-section {
   position: relative;
   width: 100%;
-  background: linear-gradient(180deg, #07090e 0%, #0a0d15 50%, #07090e 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  border-bottom: 1px solid rgba(225, 6, 19, 0.25);
-  padding: 16px 0;
+  background: var(--dark1, #0e0e0e);
+  border-top: 1px solid var(--gray1, #2a2a2a);
+  border-bottom: 2px solid var(--red, #cc2222);
+  padding: 14px 0 16px 0;
   overflow: hidden;
   z-index: 20;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
 /* Ligne supérieure d'information / badge */
 .dwt-sponsors-header-bar {
   max-width: 1400px;
-  margin: 0 auto 12px auto;
+  margin: 0 auto 10px auto;
   padding: 0 24px;
   display: flex;
   align-items: center;
@@ -33,11 +33,11 @@
 }
 
 .dwt-sponsors-live-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #e10613;
-  box-shadow: 0 0 10px #e10613;
+  background: var(--red, #cc2222);
+  box-shadow: 0 0 10px var(--red, #cc2222);
   animation: dwtPulseRed 1.8s infinite ease-in-out;
 }
 
@@ -47,46 +47,47 @@
     opacity: 1;
   }
   50% {
-    transform: scale(1.35);
-    opacity: 0.65;
+    transform: scale(1.4);
+    opacity: 0.6;
   }
 }
 
 .dwt-sponsors-title {
-  font-family: 'Orbitron', monospace;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: #94a3b8;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--gray3, #6b6b6b);
   text-transform: uppercase;
 }
 
 .dwt-sponsors-title strong {
-  color: #ffffff;
+  color: var(--white, #f0f0f0);
+  font-weight: 700;
 }
 
 .dwt-sponsors-modal-trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(225, 6, 19, 0.12);
-  border: 1px solid rgba(225, 6, 19, 0.35);
-  color: #ff4d4d;
-  font-family: 'Orbitron', monospace;
-  font-size: 10px;
+  background: rgba(204, 34, 34, 0.12);
+  border: 1px solid rgba(204, 34, 34, 0.4);
+  color: #ffffff;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.8px;
-  padding: 5px 12px;
-  border-radius: 999px;
+  letter-spacing: 0.14em;
+  padding: 5px 14px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.25s ease;
+  text-transform: uppercase;
 }
 
 .dwt-sponsors-modal-trigger:hover {
-  background: #e10613;
-  color: #ffffff;
-  border-color: #e10613;
-  box-shadow: 0 0 16px rgba(225, 6, 19, 0.5);
+  background: var(--red, #cc2222);
+  border-color: var(--red, #cc2222);
+  box-shadow: 0 0 16px rgba(204, 34, 34, 0.5);
   transform: translateY(-1px);
 }
 
@@ -95,16 +96,16 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  mask-image: linear-gradient(to right, transparent 0%, black 80px, black calc(100% - 80px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 80px, black calc(100% - 80px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 70px, black calc(100% - 70px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 70px, black calc(100% - 70px), transparent 100%);
 }
 
 .dwt-marquee-track {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: max-content;
-  animation: dwtMarqueeScroll 42s linear infinite;
+  animation: dwtMarqueeScroll 40s linear infinite;
   will-change: transform;
 }
 
@@ -125,49 +126,48 @@
 .dwt-sponsor-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: rgba(14, 18, 28, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px 18px;
-  min-width: 280px;
+  gap: 12px;
+  background: var(--dark2, #141414);
+  border: 1px solid var(--gray1, #2a2a2a);
+  border-radius: 6px;
+  padding: 10px 16px;
+  min-width: 275px;
   cursor: pointer;
   transition: all 0.25s ease;
-  backdrop-filter: blur(8px);
   user-select: none;
 }
 
 .dwt-sponsor-card:hover {
-  background: rgba(19, 25, 40, 0.95);
-  border-color: var(--sponsor-accent, #00e5ff);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px var(--sponsor-glow, rgba(0, 229, 255, 0.25));
+  background: var(--dark3, #1a1a1a);
+  border-color: var(--sponsor-accent, var(--red, #cc2222));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 14px var(--sponsor-glow, rgba(204, 34, 34, 0.25));
   transform: translateY(-2px);
 }
 
 /* Icône de marque */
 .dwt-sponsor-icon-wrapper {
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--black, #080808);
+  border: 1px solid var(--gray1, #2a2a2a);
   flex-shrink: 0;
   transition: all 0.25s ease;
 }
 
 .dwt-sponsor-card:hover .dwt-sponsor-icon-wrapper {
-  background: var(--sponsor-glow, rgba(0, 229, 255, 0.15));
-  border-color: var(--sponsor-accent, #00e5ff);
+  background: var(--sponsor-glow, rgba(204, 34, 34, 0.15));
+  border-color: var(--sponsor-accent, var(--red, #cc2222));
 }
 
 /* Infos de marque */
 .dwt-sponsor-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
@@ -179,17 +179,20 @@
 }
 
 .dwt-sponsor-name {
-  font-family: 'Orbitron', monospace;
-  font-size: 13px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: #ffffff;
+  color: var(--white, #f0f0f0);
   white-space: nowrap;
 }
 
 .dwt-sponsor-category {
-  font-size: 10px;
-  color: #94a3b8;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray3, #6b6b6b);
+  letter-spacing: 0.05em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -199,52 +202,51 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: 'Orbitron', monospace;
-  font-size: 9px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10.5px;
   font-weight: 700;
+  letter-spacing: 0.08em;
   padding: 2px 7px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--sponsor-accent, #00e5ff);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--sponsor-accent, var(--light, #d4d4d4));
   width: fit-content;
   white-space: nowrap;
-  letter-spacing: 0.4px;
+  margin-top: 2px;
 }
 
 .dwt-sponsor-arrow {
-  color: #64748b;
-  opacity: 0.6;
+  color: var(--gray2, #3d3d3d);
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .dwt-sponsor-card:hover .dwt-sponsor-arrow {
-  color: var(--sponsor-accent, #00e5ff);
-  opacity: 1;
+  color: var(--sponsor-accent, var(--red, #cc2222));
   transform: translateX(3px);
 }
 
 @media (max-width: 768px) {
   .dwt-sponsors-section {
-    padding: 12px 0;
+    padding: 10px 0 12px 0;
   }
   .dwt-sponsors-header-bar {
     padding: 0 16px;
     margin-bottom: 8px;
   }
   .dwt-sponsor-card {
-    min-width: 240px;
-    padding: 8px 14px;
+    min-width: 235px;
+    padding: 8px 12px;
   }
   .dwt-sponsor-icon-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
   .dwt-sponsor-name {
     font-size: 11.5px;
   }
   .dwt-sponsor-category {
-    font-size: 9.5px;
+    font-size: 10px;
   }
 }

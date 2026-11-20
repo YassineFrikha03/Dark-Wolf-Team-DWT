@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ExternalLink, ShieldCheck, Zap, Laptop, Headphones, MessageSquare, Copy, Check } from 'lucide-react';
 import { SOCIAL_LINKS } from '../config/socialLinks';
+import API from '../services/api';
+import { renderSponsorIcon } from './SponsorsAdminSection';
 
 const partnersList = [
   {
@@ -43,7 +45,19 @@ const partnersList = [
 ];
 
 const PartnersModal = ({ isOpen, onClose, onOpenContact }) => {
+  const [sponsorsList, setSponsorsList] = useState(partnersList);
   const [copiedCode, setCopiedCode] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    API.get('/sponsors?active=true')
+      .then((res) => {
+        if (res.data?.sponsors && res.data.sponsors.length > 0) {
+          setSponsorsList(res.data.sponsors);
+        }
+      })
+      .catch(() => {});
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -123,107 +137,113 @@ const PartnersModal = ({ isOpen, onClose, onOpenContact }) => {
 
         {/* Partners Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '16px' }}>
-          {partnersList.map((p, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                padding: '22px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '14px',
-                transition: 'all 0.25s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = p.badgeColor;
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ padding: '8px', borderRadius: '8px', background: `${p.badgeColor}18` }}>
-                      {p.icon}
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '17px', fontWeight: '900', color: '#fff' }}>
-                        {p.name}
+          {sponsorsList.map((p, idx) => {
+            const badgeColor = p.accentColor || p.badgeColor || '#00e5ff';
+            const promoCode = p.promoCode || p.code;
+            const targetUrl = p.websiteUrl || p.url || '#';
+            const iconElem = p.iconName ? renderSponsorIcon(p.iconName, badgeColor, 28) : p.icon || <Zap size={28} color={badgeColor} />;
+
+            return (
+              <div
+                key={p._id || idx}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '22px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px',
+                  transition: 'all 0.25s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = badgeColor;
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ padding: '8px', borderRadius: '8px', background: `${badgeColor}18` }}>
+                        {iconElem}
                       </div>
-                      <div style={{ fontSize: '11px', color: p.badgeColor, fontWeight: '700', textTransform: 'uppercase' }}>
-                        {p.category}
+                      <div>
+                        <div style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '17px', fontWeight: '900', color: '#fff' }}>
+                          {p.name}
+                        </div>
+                        <div style={{ fontSize: '11px', color: badgeColor, fontWeight: '700', textTransform: 'uppercase' }}>
+                          {p.category}
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.6 }}>
+                    {p.desc}
+                  </p>
+
+                  {p.perk && (
+                    <div
+                      style={{
+                        marginTop: '12px',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        background: 'rgba(0,0,0,0.3)',
+                        border: '1px dashed rgba(255,255,255,0.15)',
+                        fontSize: '12px',
+                        color: '#cbd5e1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span>{p.perk}</span>
+                      {promoCode && (
+                        <button
+                          type="button"
+                          onClick={() => copyCode(promoCode)}
+                          style={{
+                            background: copiedCode === promoCode ? '#22c55e' : '#e60000',
+                            border: 'none',
+                            color: '#fff',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          {copiedCode === promoCode ? <Check size={12} /> : <Copy size={12} />}
+                          {copiedCode === promoCode ? 'Copié' : 'Copier'}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.6 }}>
-                  {p.desc}
-                </p>
-
-                {p.perk && (
-                  <div
-                    style={{
-                      marginTop: '12px',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      background: 'rgba(0,0,0,0.3)',
-                      border: '1px dashed rgba(255,255,255,0.15)',
-                      fontSize: '12px',
-                      color: '#cbd5e1',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <span>{p.perk}</span>
-                    {p.code && (
-                      <button
-                        type="button"
-                        onClick={() => copyCode(p.code)}
-                        style={{
-                          background: copiedCode === p.code ? '#22c55e' : '#e60000',
-                          border: 'none',
-                          color: '#fff',
-                          borderRadius: '4px',
-                          padding: '4px 8px',
-                          fontSize: '11px',
-                          fontWeight: '800',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        {copiedCode === p.code ? <Check size={12} /> : <Copy size={12} />}
-                        {copiedCode === p.code ? 'Copié' : 'Copier'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <a
-                href={p.url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  padding: '9px 16px',
-                  borderRadius: '6px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  color: '#fff',
-                  fontSize: '12px',
+                <a
+                  href={targetUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: '9px 16px',
+                    borderRadius: '6px',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    color: '#fff',
+                    fontSize: '12px',
                   fontWeight: '700',
                   textDecoration: 'none',
                   transition: 'all 0.2s',
@@ -233,7 +253,8 @@ const PartnersModal = ({ isOpen, onClose, onOpenContact }) => {
                 <ExternalLink size={13} />
               </a>
             </div>
-          ))}
+          );
+        })}
         </div>
 
         {/* Partnership call to action */}
