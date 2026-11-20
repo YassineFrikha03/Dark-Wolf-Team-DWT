@@ -336,9 +336,9 @@ const generateUniqueGamertag = async (baseName) => {
 // @access  Public
 const googleAuth = (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
   const serverUrl = process.env.SERVER || 'http://localhost:5000';
-  const callbackUrl = `${serverUrl}/api/auth/google/callback`;
+  const callbackUrl = process.env.GOOGLE_CALLBACK_URL || `${serverUrl}/api/auth/google/callback`;
 
   if (!clientId || !process.env.GOOGLE_CLIENT_SECRET) {
     return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent("Google OAuth n'est pas encore configuré. Renseignez GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET dans dwt-backend/.env")}`);
@@ -352,9 +352,9 @@ const googleAuth = (req, res) => {
 // @route   GET /api/auth/google/callback
 // @access  Public
 const googleAuthCallback = async (req, res) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
   const serverUrl = process.env.SERVER || 'http://localhost:5000';
-  const callbackUrl = `${serverUrl}/api/auth/google/callback`;
+  const callbackUrl = process.env.GOOGLE_CALLBACK_URL || `${serverUrl}/api/auth/google/callback`;
   const { code, error } = req.query;
 
   if (error || !code) {
@@ -431,9 +431,9 @@ const googleAuthCallback = async (req, res) => {
 // @access  Public
 const discordAuth = (req, res) => {
   const clientId = process.env.DISCORD_CLIENT_ID;
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
   const serverUrl = process.env.SERVER || 'http://localhost:5000';
-  const callbackUrl = `${serverUrl}/api/auth/discord/callback`;
+  const callbackUrl = process.env.DISCORD_CALLBACK_URL || `${serverUrl}/api/auth/discord/callback`;
 
   if (!clientId || !process.env.DISCORD_CLIENT_SECRET) {
     return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent("Discord OAuth n'est pas encore configuré. Ajoutez DISCORD_CLIENT_ID et DISCORD_CLIENT_SECRET dans dwt-backend/.env")}`);
@@ -447,9 +447,9 @@ const discordAuth = (req, res) => {
 // @route   GET /api/auth/discord/callback
 // @access  Public
 const discordAuthCallback = async (req, res) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
   const serverUrl = process.env.SERVER || 'http://localhost:5000';
-  const callbackUrl = `${serverUrl}/api/auth/discord/callback`;
+  const callbackUrl = process.env.DISCORD_CALLBACK_URL || `${serverUrl}/api/auth/discord/callback`;
   const { code, error } = req.query;
 
   if (error || !code) {
@@ -532,7 +532,7 @@ const discordAuthCallback = async (req, res) => {
 // @access  Public
 const socialDemoLogin = async (req, res) => {
   const provider = (req.query.provider || 'google').toLowerCase();
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
 
   try {
     const demoEmail = provider === 'discord' ? 'gamer_discord@darkwolfteam.gg' : 'gamer_google@darkwolfteam.gg';
