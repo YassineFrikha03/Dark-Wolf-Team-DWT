@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageUrl';
-import { Check, ChevronLeft, ChevronRight, ShoppingBag, Eye } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
 const defaultColors = ['#e0e0e0', '#2a2a2a', '#2a2a4e'];
 

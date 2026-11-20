@@ -8,6 +8,7 @@ import IntroCinematic from './components/IntroCinematic';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import HeroSlider from './components/HeroSlider';
+import SponsorsMarquee from './components/SponsorsMarquee';
 import ShopSection from './components/ShopSection';
 import OrderPanel from './components/OrderPanel';
 import ProductDetailModal from './components/ProductDetailModal';
@@ -825,6 +826,9 @@ function AppContent() {
       <main>
         {/* Hero Section (Affiches Cinématiques reliées aux pages) */}
         <HeroSlider onNavigate={handleHeroNavigate} />
+
+        {/* Bandeau Animé des Sponsors & Marques Officielles */}
+        <SponsorsMarquee onOpenPartners={() => setIsPartnersOpen(true)} />
 
         {/* Featured Shop Collection */}
         <ShopSection

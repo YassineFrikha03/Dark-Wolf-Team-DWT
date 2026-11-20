@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
-import { loadGarmentModel, disposeHierarchy, hasWebGLSupport } from './models.js';
-import { isColorDark, getSafeContrastColor } from './state.js';
+import { loadGarmentModel, disposeHierarchy } from './models.js';
+import { getSafeContrastColor } from './state.js';
 
 /**
  * scene.js - Moteur de scène 3D Three.js pour DARK WOLF TEAM

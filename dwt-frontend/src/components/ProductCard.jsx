@@ -68,7 +68,7 @@ const ProductCard = ({ product, onQuickView }) => {
             title="Aperçu rapide du produit"
             onClick={(e) => {
               e.stopPropagation();
-              onQuickView && onQuickView(product);
+              if (onQuickView) onQuickView(product);
             }}
           >
             <Eye size={16} />
@@ -146,7 +146,7 @@ const ProductCard = ({ product, onQuickView }) => {
             title="Voir tous les détails"
             onClick={(e) => {
               e.stopPropagation();
-              onQuickView && onQuickView(product);
+              if (onQuickView) onQuickView(product);
             }}
           >
             <Eye size={15} />

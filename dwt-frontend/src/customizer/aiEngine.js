@@ -7,7 +7,7 @@
  * - Certification officielle de design DWT avec numéro de série
  */
 
-import { BRAND_COLORS, ESPORT_FONTS, ESPORT_ROLES } from './state.js';
+import { BRAND_COLORS, ESPORT_ROLES } from './state.js';
 
 // Archetypes esportifs officiels Dark Wolf Team (Harmonies visuelles et finitions pro)
 export const AI_PRESETS = [
@@ -349,6 +349,21 @@ export function generateConfigFromPrompt(userPrompt) {
     sleevesHex = '#00e5ff';
     collarHex = '#00e5ff';
     brandColor = BRAND_COLORS.find(c => c.id === 'c_cyan') || BRAND_COLORS[5];
+  } else if (hasBlue) {
+    bodyHex = '#0c1a30';
+    sleevesHex = '#1e3a8a';
+    collarHex = '#38bdf8';
+    brandColor = BRAND_COLORS.find(c => c.id === 'c_cyan') || BRAND_COLORS[5];
+  } else if (hasGreen) {
+    bodyHex = '#0a1f14';
+    sleevesHex = '#166534';
+    collarHex = '#22c55e';
+    brandColor = BRAND_COLORS.find(c => c.id === 'c_gold') || BRAND_COLORS[4];
+  } else if (hasPurple) {
+    bodyHex = '#1a0e2e';
+    sleevesHex = '#581c87';
+    collarHex = '#a855f7';
+    brandColor = BRAND_COLORS.find(c => c.id === 'c_red') || BRAND_COLORS[1];
   } else if (hasCarbon) {
     bodyHex = '#1e2430';
     sleevesHex = '#1e2430';
@@ -390,7 +405,7 @@ export function generateConfigFromPrompt(userPrompt) {
 
   // 5. EXTRACTION DU GAMERTAG / PSEUDO JOUEUR
   let gamertag = '';
-  const explicitTagMatch = raw.match(/(?:pseudo|nom|joueur|tag|gamertag)\s*[:=]?\s*([a-zA-Z0-9_\-]+)/i);
+  const explicitTagMatch = raw.match(/(?:pseudo|nom|joueur|tag|gamertag)\s*[:=]?\s*([a-zA-Z0-9_-]+)/i);
   if (explicitTagMatch && explicitTagMatch[1]) {
     gamertag = explicitTagMatch[1].toUpperCase().slice(0, 14);
   } else {
@@ -962,7 +977,7 @@ export function processAIAgentMessage(message, currentState) {
   }
 
   // 7. PSEUDO / GAMERTAG JOUEUR
-  const explicitTag = raw.match(/(?:pseudo|tag|gamertag|nom|flocage|flock|écris|ecris|mettre|met)\s*[:=]?\s*([a-zA-Z0-9_\-]{2,14})/i);
+  const explicitTag = raw.match(/(?:pseudo|tag|gamertag|nom|flocage|flock|écris|ecris|mettre|met)\s*[:=]?\s*([a-zA-Z0-9_-]{2,14})/i);
   if (explicitTag && explicitTag[1]) {
     const rawTag = explicitTag[1];
     // Éviter de capturer des mots-clés courants

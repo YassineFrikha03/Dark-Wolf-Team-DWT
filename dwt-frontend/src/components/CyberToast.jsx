@@ -84,6 +84,8 @@ export const CyberToast = ({
           <AlertTriangle size={20} />
         ) : isSuccess ? (
           <CheckCircle2 size={20} />
+        ) : isInfo ? (
+          <Info size={20} />
         ) : (
           <WolfLogo size={20} />
         )}

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { X, ExternalLink, Eye, Clock, Sparkles, ShoppingBag, Trophy, UserPlus, Film, Play } from 'lucide-react';
-import { getImageUrl } from '../utils/imageUrl';
 
 // Helper pour extraire l'URL d'intégration propre (YouTube ou MP4 téléversé)
 export const getCleanEmbedUrl = (url = '') => {

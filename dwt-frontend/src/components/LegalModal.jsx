@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, FileText, Cookie, Lock } from 'lucide-react';
+import { X, FileText, Cookie, Lock } from 'lucide-react';
 
 const LegalModal = ({ isOpen, initialTab = 'privacy', onClose }) => {
   const [tab, setTab] = useState(initialTab);
@@ -189,7 +189,7 @@ const LegalModal = ({ isOpen, initialTab = 'privacy', onClose }) => {
             </p>
             <div style={{ background: '#04060a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
               <div style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '14px', fontWeight: '700', color: '#22c55e' }}>
-                ✓ Cookies Essentiels (Toujours Actifs)
+                [ACTIF] Cookies Essentiels (Toujours Actifs)
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
                 Nécessaires pour le panier d'achat, l'authentification et la sécurité du formulaire.

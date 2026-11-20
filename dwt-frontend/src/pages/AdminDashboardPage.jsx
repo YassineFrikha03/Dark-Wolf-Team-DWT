@@ -83,7 +83,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
           onLogout();
         } else {
           logout?.();
-          onBackToSite ? onBackToSite() : (window.location.href = '/');
+          if (onBackToSite) {
+            onBackToSite();
+          } else {
+            window.location.href = '/';
+          }
         }
       }
     });
@@ -665,7 +669,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       await API.put('/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadNotifCount(0);
-      showToast('Toutes les notifications sont marquées comme lues ! ✓', 'success');
+      showToast('Toutes les notifications sont marquées comme lues ! ', 'success');
     } catch (err) {
       console.error(err);
     }
@@ -1642,7 +1646,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
         try {
           await API.delete(`/slides/${slideId}`);
           setSlidesList(prev => prev.filter(s => s._id !== slideId));
-          showToast('Affiche cinématique supprimée avec succès ! ✓', 'success');
+          showToast('Affiche cinématique supprimée avec succès ! ', 'success');
           fetchAllData();
         } catch (err) {
           showToast(err.response?.data?.message || 'Erreur lors de la suppression', 'error');
@@ -2299,7 +2303,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                           onClick={handleMarkAllNotifsRead}
                           style={{ background: 'none', border: 'none', color: 'var(--red-primary)', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}
                         >
-                          Tout marquer lu ✓
+                          Tout marquer lu 
                         </button>
                       )}
                     </div>
@@ -3987,7 +3991,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                     color: isReplied ? '#4ade80' : isUnread ? '#ff6666' : '#94a3b8',
                                     border: `1px solid ${isReplied ? '#4ade80' : isUnread ? 'var(--red-primary)' : '#475569'}`
                                   }}>
-                                    {isReplied ? 'RÉPONDU ✓' : isUnread ? 'NOUVEAU NON LU' : 'LU'}
+                                    {isReplied ? 'RÉPONDU ' : isUnread ? 'NOUVEAU NON LU' : 'LU'}
                                   </span>
                                 </div>
 
@@ -4143,7 +4147,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                     color: isAccepted ? '#4ade80' : isRejected ? '#f87171' : '#fbbf24',
                                     border: `1px solid ${isAccepted ? '#4ade80' : isRejected ? '#f87171' : '#fbbf24'}`
                                   }}>
-                                    {isAccepted ? 'ACCEPTÉ AU ROSTER ✓' : isRejected ? 'REFUSÉ' : 'NOUVELLE CANDIDATURE (EN ATTENTE)'}
+                                    {isAccepted ? 'ACCEPTÉ AU ROSTER ' : isRejected ? 'REFUSÉ' : 'NOUVELLE CANDIDATURE (EN ATTENTE)'}
                                   </span>
                                 </div>
 
@@ -4182,7 +4186,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                   style={{ padding: '8px 16px', fontSize: '13px', fontWeight: '800' }}
                                   onClick={() => handleUpdateAppStatus(app._id, 'accepted')}
                                 >
-                                  ✓ Accepter le Joueur
+                                   Accepter le Joueur
                                 </button>
                               )}
 
@@ -4930,7 +4934,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                               onConfirm: async () => {
                                 try {
                                   await API.delete(`/matches/${m._id}`);
-                                  showToast('Match supprimé avec succès ! ✓', 'success');
+                                  showToast('Match supprimé avec succès ! ', 'success');
                                   fetchAllData();
                                 } catch (err) {
                                   showToast(err.response?.data?.message || 'Erreur lors de la suppression du match', 'error');
@@ -4984,7 +4988,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                           onConfirm: async () => {
                             try {
                               await API.delete(`/news/${n._id}`);
-                              showToast('Article supprimé avec succès ! ✓', 'success');
+                              showToast('Article supprimé avec succès ! ', 'success');
                               fetchAllData();
                             } catch (err) {
                               showToast(err.response?.data?.message || 'Erreur suppression article', 'error');
@@ -7067,7 +7071,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                         className={`size-pill-btn ${isSelected ? 'active' : ''}`}
                         onClick={() => handleToggleSize(sz)}
                       >
-                        {sz} {isSelected && '✓'}
+                        {sz} {isSelected && ''}
                       </button>
                     );
                   })}
@@ -7673,7 +7677,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                   className="auth-submit-btn" 
                   style={{ width: 'auto', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  {editingPlayer ? 'Enregistrer les Modifications ✓' : 'Ajouter Joueur à l\'Équipe '}
+                  {editingPlayer ? 'Enregistrer les Modifications ' : 'Ajouter Joueur à l\'Équipe '}
                 </button>
               </div>
             </form>
@@ -9720,7 +9724,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                             style={{ fontSize: '11px', padding: '4px 8px', color: '#f87171' }}
                             onClick={handleDeselectAllRecipients}
                           >
-                            ✕ Désélectionner
+                             Désélectionner
                           </button>
                         </div>
                       </div>

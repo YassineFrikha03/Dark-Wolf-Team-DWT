@@ -20,7 +20,7 @@ export const WolfLogo = ({ size = 48, className = "", style = {} }) => (
   />
 );
 
-export const BrandTitle = ({ withTag = false, size = 52 }) => (
+export const BrandTitle = ({ size = 52 }) => (
   <div className="brand-logo-container">
     <div style={{ width: `${size}px`, height: `${size}px`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <WolfLogo size={size} className="brand-wolf-icon" style={{ transform: 'scale(1.22)' }} />

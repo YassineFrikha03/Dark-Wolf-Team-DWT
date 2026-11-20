@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { getImageUrl } from '../utils/imageUrl';
 import NewsDetailModal from './NewsDetailModal';
 import LiveMatchModal from './LiveMatchModal';
-import { Radio, Play, ChevronRight, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 
 const NewsSection = ({ news = [], matches = [], onOpenPredictions }) => {
   const mstripRef = useRef(null);

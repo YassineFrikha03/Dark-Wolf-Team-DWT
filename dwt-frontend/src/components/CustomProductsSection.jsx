@@ -4,13 +4,10 @@ import {
   Layers, 
   RotateCw, 
   Wand2, 
-  ShieldCheck, 
   Truck, 
   ArrowRight, 
   Sliders, 
-  Palette,
   Users,
-  CheckCircle2,
   Cpu
 } from 'lucide-react';
 import { customizerState } from '../customizer/state';

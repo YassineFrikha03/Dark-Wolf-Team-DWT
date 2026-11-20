@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Undo2,
@@ -10,10 +10,7 @@ import {
   Type,
   UserCheck,
   Layers,
-  Users,
   Sparkles,
-  Compass,
-  ShoppingBag,
   Image as ImageIcon,
   Bot
 } from 'lucide-react';
