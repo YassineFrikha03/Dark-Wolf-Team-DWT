@@ -9,10 +9,10 @@ const {
   sendLoginAlertEmail
 } = require('../config/mailer');
 
-// Générateur de token JWT
+// Générateur de token JWT (Expiration stricte après 12 heures)
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'dark_wolf_team_secret_key_2026', {
-    expiresIn: '30d'
+    expiresIn: process.env.JWT_EXPIRE || '12h'
   });
 };
 

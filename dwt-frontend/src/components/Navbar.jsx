@@ -35,6 +35,21 @@ const Navbar = ({
     const el = document.querySelector(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (onBackToSite) {
+      onBackToSite();
+      setTimeout(() => {
+        const targetEl = document.querySelector(id);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          targetEl.style.transition = 'box-shadow 0.6s ease, border-color 0.6s ease';
+          targetEl.style.boxShadow = '0 0 45px rgba(230, 0, 0, 0.5)';
+          setTimeout(() => { targetEl.style.boxShadow = ''; }, 2200);
+        }
+      }, 150);
+    } else {
+      window.location.href = `/${id}`;
     }
   };
 
@@ -162,11 +177,10 @@ const Navbar = ({
           <button 
             className="nb" 
             onClick={() => {
-              const customEl = document.querySelector('#custom-gear');
-              if (customEl) {
-                customEl.scrollIntoView({ behavior: 'smooth' });
-              } else if (onOpenCustomStudio) {
+              if (onOpenCustomStudio) {
                 onOpenCustomStudio();
+              } else {
+                scrollTo('#custom-gear');
               }
             }}
             style={{ 
@@ -207,19 +221,7 @@ const Navbar = ({
               href="#matches-live" 
               onClick={(e) => {
                 e.preventDefault();
-                const el = document.querySelector('#matches-live') || document.querySelector('#mstrip');
-                if (el) {
-                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  el.style.transition = 'all 0.5s ease';
-                  el.style.boxShadow = '0 0 45px rgba(230, 0, 0, 0.5)';
-                  el.style.borderColor = 'rgba(230, 0, 0, 0.8)';
-                  setTimeout(() => {
-                    el.style.boxShadow = '';
-                    el.style.borderColor = '';
-                  }, 2400);
-                } else {
-                  scrollTo('#news');
-                }
+                scrollTo('#matches-live');
               }}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
             >

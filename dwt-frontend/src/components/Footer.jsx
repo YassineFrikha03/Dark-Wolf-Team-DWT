@@ -36,7 +36,6 @@ const socials = [
 const Footer = ({
   onOpenMuseum,
   onOpenMembers,
-  onOpenAdmin,
   onOpenPlayer,
   onOpenAchievements,
   onOpenPartners,
@@ -44,9 +43,20 @@ const Footer = ({
   onSelectShopCategory,
   onOpenShop,
   onOpenCustomStudio,
+  onBackToSite,
 }) => {
   const scrollTo = (sel) => {
-    document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.querySelector(sel);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (onBackToSite) {
+      onBackToSite();
+      setTimeout(() => {
+        document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    }
   };
 
   const handleShopCat = (cat) => {
@@ -179,7 +189,6 @@ const Footer = ({
               </a>
             </li>
             <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a></li>
-            <li><a href="#admin" onClick={(e) => { e.preventDefault(); onOpenAdmin(); }} style={{ color: 'var(--wolf)' }}>Administration</a></li>
             <li>
               <a
                 href="#privacy"

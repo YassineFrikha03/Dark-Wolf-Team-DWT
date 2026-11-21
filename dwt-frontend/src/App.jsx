@@ -748,7 +748,6 @@ function AppContent() {
           <Footer
             onOpenMuseum={openMuseum}
             onOpenMembers={openMembers}
-            onOpenAdmin={goToAdmin}
             onOpenPlayer={goToPlayer}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
@@ -756,6 +755,7 @@ function AppContent() {
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
             onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
           />
           <OrderPanel
             isOpen={isCartOpen}
@@ -807,7 +807,6 @@ function AppContent() {
           <Footer
             onOpenMuseum={openMuseum}
             onOpenMembers={openMembers}
-            onOpenAdmin={goToAdmin}
             onOpenPlayer={goToPlayer}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
@@ -815,6 +814,7 @@ function AppContent() {
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
             onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
           />
         </div>
       )}
@@ -842,7 +842,6 @@ function AppContent() {
           <Footer
             onOpenMuseum={openMuseum}
             onOpenMembers={openMembers}
-            onOpenAdmin={goToAdmin}
             onOpenPlayer={goToPlayer}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
@@ -850,6 +849,7 @@ function AppContent() {
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
             onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
           />
         </div>
       )}
@@ -920,7 +920,6 @@ function AppContent() {
       <Footer
         onOpenMuseum={openMuseum}
         onOpenMembers={openMembers}
-        onOpenAdmin={goToAdmin}
         onOpenPlayer={goToPlayer}
         onOpenAchievements={() => setIsAchievementsOpen(true)}
         onOpenPartners={() => setIsPartnersOpen(true)}
