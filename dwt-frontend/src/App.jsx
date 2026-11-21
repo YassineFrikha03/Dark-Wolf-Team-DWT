@@ -391,20 +391,34 @@ function AppContent() {
 
     // Helper pour défiler et illuminer la section ciblée
     const scrollToSection = (sel) => {
-      const el = document.querySelector(sel);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        el.style.transition = 'box-shadow 0.6s ease, border-color 0.6s ease';
-        el.style.boxShadow = '0 0 50px rgba(230, 0, 0, 0.5)';
-        setTimeout(() => {
-          el.style.boxShadow = '';
-        }, 2200);
+      const executeScroll = () => {
+        const el = document.querySelector(sel);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.style.transition = 'box-shadow 0.6s ease, border-color 0.6s ease';
+          el.style.boxShadow = '0 0 50px rgba(230, 0, 0, 0.5)';
+          setTimeout(() => {
+            el.style.boxShadow = '';
+          }, 2200);
+        }
+      };
+
+      if (currentView !== 'site') {
+        setCurrentView('site');
+        window.history.pushState(null, '', '/');
+        setTimeout(executeScroll, 120);
+      } else {
+        executeScroll();
       }
     };
 
     // 1. Liens externes absolus
     if (rawTarget.startsWith('http://') || rawTarget.startsWith('https://')) {
       window.open(rawTarget, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (!rawTarget.startsWith('#') && !rawTarget.startsWith('/') && rawTarget.includes('.') && !rawTarget.includes(' ')) {
+      window.open(`https://${rawTarget}`, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -421,14 +435,15 @@ function AppContent() {
     // 3. Partenaires & Sponsors / Offre Dubby
     if (
       tLower === '#partners' || 
+      tLower === '/partners' || 
       tLower === '/partenaires' || 
+      tLower === '#partenaires' ||
       txtLower.includes('dubby') || 
       txtLower.includes('sponsor') || 
       txtLower.includes('partenaire') ||
       txtLower.includes('profiter de l\'offre')
     ) {
       setIsPartnersOpen(true);
-      document.body.style.overflow = 'hidden';
       return;
     }
 
@@ -439,13 +454,13 @@ function AppContent() {
     }
 
     // 5. Palmarès / Trophées
-    if (tLower === '#achievements' || tLower === '/achievements' || txtLower.includes('palmarès') || txtLower.includes('trophée') || txtLower.includes('achievement')) {
+    if (tLower === '#achievements' || tLower === '/achievements' || tLower === '#palmares' || tLower === '/palmares' || txtLower.includes('palmarès') || txtLower.includes('trophée') || txtLower.includes('achievement')) {
       setIsAchievementsOpen(true);
       return;
     }
 
     // 6. Espace Joueur & Fan Zone
-    if (tLower.startsWith('#player') || tLower.startsWith('/player') || tLower.startsWith('/espace-joueur') || txtLower.includes('fan zone') || txtLower.includes('espace joueur') || txtLower.includes('wolf pack')) {
+    if (tLower.startsWith('#player') || tLower.startsWith('/player') || tLower.startsWith('/espace-joueur') || tLower.startsWith('#espace-joueur') || txtLower.includes('fan zone') || txtLower.includes('espace joueur') || txtLower.includes('wolf pack')) {
       if (tLower.includes('pred') || txtLower.includes('pronostic')) {
         goToPlayer('Pronostics');
       } else if (tLower.includes('miss') || txtLower.includes('quête')) {
@@ -459,22 +474,46 @@ function AppContent() {
     }
 
     // 7. Panier / Cart
-    if (tLower === '#cart' || tLower === '/panier' || txtLower.includes('panier') || txtLower.includes('mon panier')) {
+    if (tLower === '#cart' || tLower === '/panier' || tLower === '/cart' || txtLower.includes('panier') || txtLower.includes('mon panier')) {
       setIsCartOpen(true);
       return;
     }
 
     // 8. Admin
-    if (tLower === '#admin' || tLower === '/admin' || txtLower === 'admin' || txtLower === 'dashboard') {
+    if (tLower === '#admin' || tLower === '/admin' || tLower === '/dashboard' || txtLower === 'admin' || txtLower === 'dashboard') {
       goToAdmin();
       return;
     }
 
-    // 9. Équipes / Rosters
+    // 9. Login / Connexion
+    if (tLower === '#login' || tLower === '/login' || tLower === '/connexion' || txtLower.includes('connexion') || txtLower.includes('se connecter')) {
+      setCurrentView('login');
+      window.history.pushState(null, '', '/login');
+      return;
+    }
+
+    // 10. Studio 3D Custom Vêtements
+    if (
+      tLower === '#custom' ||
+      tLower === '/custom' ||
+      tLower === '#studio' ||
+      tLower === '/studio' ||
+      tLower === '#custom-gear' ||
+      tLower.includes('custom') || 
+      txtLower.includes('custom') || 
+      txtLower.includes('studio 3d') || 
+      txtLower.includes('personnalis')
+    ) {
+      setIsCustomStudioOpen(true);
+      return;
+    }
+
+    // 11. Équipes / Rosters (Meet the Pack)
     if (
       tLower === '#teams' || 
       tLower === '/equipe' || 
       tLower === '/teams' || 
+      tLower === '/equipes' ||
       txtLower.includes('pack') || 
       txtLower.includes('équipe') || 
       txtLower.includes('roster') || 
@@ -494,7 +533,7 @@ function AppContent() {
       return;
     }
 
-    // 10. Tournois / Matchs Live
+    // 12. Tournois / Matchs Live
     if (
       tLower === '#matches-live' || 
       tLower === '#matches' || 
@@ -519,17 +558,18 @@ function AppContent() {
       return;
     }
 
-    // 11. Compte à rebours / Timer
+    // 13. Compte à rebours / Timer
     if (tLower === '#countdown' || tLower === '/countdown' || txtLower.includes('timer') || txtLower.includes('compte à rebours') || txtLower.includes('drop')) {
       scrollToSection('#countdown');
       return;
     }
 
-    // 12. Recrutement / Rejoindre
+    // 14. Recrutement / Rejoindre
     if (
       tLower === '#join' || 
       tLower === '/recrutement' || 
       tLower === '/join' || 
+      tLower === '/careers' ||
       txtLower.includes('rejoindre') || 
       txtLower.includes('join') || 
       txtLower.includes('recrutement') || 
@@ -540,33 +580,37 @@ function AppContent() {
       return;
     }
 
-    // 13. Contact
+    // 15. Contact
     if (tLower === '#contact' || tLower === '/contact' || txtLower.includes('contact') || txtLower.includes('nous écrire') || txtLower.includes('support')) {
       scrollToSection('#contact');
       return;
     }
 
-    // 14. Actualités / News
+    // 16. Actualités / News
     if (tLower === '#news' || tLower === '/actualites' || tLower === '/news' || txtLower.includes('news') || txtLower.includes('actualité') || txtLower.includes('scoop')) {
       scrollToSection('#news');
       return;
     }
 
-    // 15. Vidéos / Médias
+    // 17. Vidéos / Médias
     if (tLower === '#media' || tLower === '/media' || txtLower.includes('vidéo') || txtLower.includes('clip') || txtLower.includes('youtube')) {
       scrollToSection('#media');
       return;
     }
 
-    // 16. Réseaux Sociaux
+    // 18. Réseaux Sociaux
     if (tLower === '#social' || tLower === '/social' || txtLower.includes('réseaux') || txtLower.includes('social')) {
       scrollToSection('#social');
       return;
     }
 
-    // 17. Boutique officielle (Redirection vers la page individuelle Shop)
-    if (tLower.includes('pro-kit') || txtLower.includes('pro kit') || txtLower.includes('maillot')) {
+    // 19. Boutique officielle (Redirection vers la page individuelle Shop)
+    if (tLower.includes('pro-kit') || txtLower.includes('pro kit') || txtLower.includes('view pro kit') || txtLower.includes('maillot')) {
       goToShop('Pro Kit');
+      return;
+    }
+    if (tLower.includes('collabs') || txtLower.includes('collab')) {
+      goToShop('Collabs');
       return;
     }
     if (tLower.includes('best') || txtLower.includes('best seller')) {
@@ -575,10 +619,6 @@ function AppContent() {
     }
     if (tLower.includes('new') || txtLower.includes('nouveauté')) {
       goToShop('New Collection');
-      return;
-    }
-    if (tLower.includes('custom') || txtLower.includes('custom') || txtLower.includes('personnalis')) {
-      setIsCustomStudioOpen(true);
       return;
     }
     if (
@@ -598,9 +638,13 @@ function AppContent() {
     // Fallback: si rawTarget commence par #, scroller vers cet élément
     if (rawTarget.startsWith('#')) {
       scrollToSection(rawTarget.split(':')[0]);
-    } else {
-      goToShop('All');
+      return;
     }
+    if (rawTarget.startsWith('/')) {
+      window.location.href = rawTarget;
+      return;
+    }
+    goToShop('All');
   };
 
   return (

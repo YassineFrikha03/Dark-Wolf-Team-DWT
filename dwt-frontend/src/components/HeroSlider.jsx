@@ -143,6 +143,15 @@ const HeroSlider = ({ onNavigate }) => {
   return (
     <section className="hero">
       <div
+        className="hdrag"
+        id="hdrag"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      ></div>
+
+      <div
         className="hslides"
         id="hslides"
         style={{ transform: `translateX(-${cur * 100}%)` }}
@@ -174,6 +183,8 @@ const HeroSlider = ({ onNavigate }) => {
                       type="button"
                       className="bp" 
                       onClick={(e) => handleButtonClick(e, s.btn1Target, s.btn1Text)}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       title={`Accéder à : ${s.btn1Text}`}
                     >
                       {s.btn1Text}
@@ -184,6 +195,8 @@ const HeroSlider = ({ onNavigate }) => {
                       type="button"
                       className="bs" 
                       onClick={(e) => handleButtonClick(e, s.btn2Target, s.btn2Text)}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       title={`Accéder à : ${s.btn2Text}`}
                     >
                       {s.btn2Text}
@@ -195,15 +208,6 @@ const HeroSlider = ({ onNavigate }) => {
           );
         })}
       </div>
-
-      <div
-        className="hdrag"
-        id="hdrag"
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      ></div>
 
       <div className="hdots" id="hdots">
         {slides.map((_, idx) => (
