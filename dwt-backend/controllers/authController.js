@@ -1,12 +1,14 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
+const Application = require('../models/Application');
 const generateSecurityCode = require('../utils/generateCode');
 const {
   sendWelcomeEmail,
   sendAdminNewUserAlert,
   sendPasswordResetCodeEmail,
-  sendLoginAlertEmail
+  sendLoginAlertEmail,
+  sendRecruitmentInviteEmail
 } = require('../config/mailer');
 
 // Générateur de token JWT (Expiration stricte après 12 heures)
@@ -30,29 +32,57 @@ const register = async (req, res, next) => {
       });
     }
 
-    // Vérifier si l'email existe déjà
-    const emailExists = await User.findOne({ email: email.toLowerCase() });
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Verification si l'email existe deja
+    const emailExists = await User.findOne({ email: cleanEmail });
     if (emailExists) {
       return res.status(400).json({
         success: false,
-        message: 'Cette adresse email est déjà associée à un compte'
+        message: 'Cette adresse email est deja associee a un compte existant'
       });
     }
 
-    // Vérifier si le gamertag existe déjà
+    // Verification si le gamertag existe deja
     const gamertagExists = await User.findOne({ gamertag });
     if (gamertagExists) {
       return res.status(400).json({
         success: false,
-        message: 'Ce gamertag (pseudo) est déjà utilisé par un autre joueur'
+        message: 'Ce gamertag (pseudo) est deja utilise par un autre joueur'
       });
     }
 
-    // Créer le compte
+    // Regle de recrutement : L'inscription est reservee aux candidats acceptes par le staff
+    const acceptedApp = await Application.findOne({
+      email: cleanEmail,
+      status: 'accepted'
+    });
+
+    if (!acceptedApp) {
+      // Envoi automatique de l'email officiel contenant le formulaire de recrutement
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
+      const recruitmentUrl = `${frontendUrl}/recrutement?email=${encodeURIComponent(cleanEmail)}`;
+
+      sendRecruitmentInviteEmail(cleanEmail, recruitmentUrl).catch((err) =>
+        console.error('Erreur envoi email invitation recrutement :', err.message)
+      );
+
+      return res.status(403).json({
+        success: false,
+        needsRecruitment: true,
+        message: "L'inscription directe est fermee. Elle est reservee aux candidats ayant reussi le test d'acceptation du staff Dark Wolf Team. Un email officiel contenant le formulaire de candidature vient de vous etre envoye.",
+        recruitmentUrl
+      });
+    }
+
+    // Creer le compte
     const user = await User.create({
       gamertag,
-      email: email.toLowerCase(),
-      password
+      email: cleanEmail,
+      password,
+      role: 'player',
+      discordTag: acceptedApp.discordTag || '',
+      favoriteGame: acceptedApp.game || 'Valorant'
     });
 
     const token = generateToken(user._id);

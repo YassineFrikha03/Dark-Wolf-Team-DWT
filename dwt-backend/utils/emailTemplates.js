@@ -1,6 +1,7 @@
 /**
  * Templates HTML pour les emails de la Dark Wolf Team (DWT)
- * Design moderne, sombre & esport gaming
+ * Design moderne, sobre, sombre et esport gaming
+ * Contrainte stricte : ZERO emojis dans les templates et les sujets
  */
 
 const baseEmailWrapper = (title, content) => {
@@ -15,103 +16,180 @@ const baseEmailWrapper = (title, content) => {
       body {
         margin: 0;
         padding: 0;
-        background-color: #0d0f17;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #e2e8f0;
+        background-color: #07080c;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        color: #cbd5e1;
+      }
+      .wrapper {
+        width: 100%;
+        background-color: #07080c;
+        padding: 30px 10px;
+        box-sizing: border-box;
       }
       .container {
-        max-width: 600px;
-        margin: 30px auto;
-        background: linear-gradient(145deg, #131722 0%, #0b0e14 100%);
+        max-width: 620px;
+        margin: 0 auto;
+        background: linear-gradient(180deg, #0e121e 0%, #080a11 100%);
         border: 1px solid #1e293b;
-        border-radius: 16px;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
       }
       .header {
-        background: linear-gradient(90deg, #140505 0%, #1f0808 50%, #2a0b0b 100%);
-        padding: 30px 20px;
+        background: linear-gradient(90deg, #150505 0%, #200808 50%, #150505 100%);
+        padding: 28px 24px;
         text-align: center;
         border-bottom: 2px solid #cc2222;
       }
-      .logo-title {
+      .brand-title {
         margin: 0;
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 800;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         color: #ffffff;
         text-transform: uppercase;
       }
-      .logo-tag {
-        color: #ff6666;
-        font-size: 13px;
-        letter-spacing: 3px;
-        margin-top: 5px;
+      .brand-subtitle {
+        color: #ff4d4d;
+        font-size: 11px;
+        letter-spacing: 4px;
+        margin-top: 6px;
         text-transform: uppercase;
+        font-weight: 700;
       }
       .content {
-        padding: 35px 30px;
-        line-height: 1.6;
+        padding: 36px 30px;
+        line-height: 1.65;
         color: #cbd5e1;
+        font-size: 14px;
       }
-      .footer {
-        padding: 20px;
-        text-align: center;
-        font-size: 12px;
-        color: #64748b;
-        background-color: #07090e;
-        border-top: 1px solid #1e293b;
+      .content h2 {
+        color: #ffffff;
+        font-size: 20px;
+        margin-top: 0;
+        margin-bottom: 16px;
+        letter-spacing: 0.5px;
+      }
+      .content p {
+        margin: 0 0 16px 0;
+      }
+      .info-box {
+        background-color: #121826;
+        border-left: 4px solid #cc2222;
+        padding: 16px 18px;
+        border-radius: 0 8px 8px 0;
+        margin: 22px 0;
+      }
+      .info-box-success {
+        background-color: #0d1e18;
+        border-left: 4px solid #22c55e;
+        padding: 16px 18px;
+        border-radius: 0 8px 8px 0;
+        margin: 22px 0;
+      }
+      .info-box-blue {
+        background-color: #0e1a2b;
+        border-left: 4px solid #0284c7;
+        padding: 16px 18px;
+        border-radius: 0 8px 8px 0;
+        margin: 22px 0;
+      }
+      .credentials-box {
+        background: #080c14;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        padding: 18px;
+        margin: 22px 0;
+      }
+      .cred-row {
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .cred-label {
+        color: #94a3b8;
+        display: inline-block;
+        width: 130px;
+        font-weight: 600;
+      }
+      .cred-value {
+        color: #ffffff;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-weight: 700;
+        background: #151d2c;
+        padding: 3px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
       }
       .code-badge {
         display: inline-block;
-        background: #141824;
+        background: #101624;
         border: 2px dashed #cc2222;
         color: #ffffff;
-        font-size: 32px;
+        font-size: 30px;
         font-weight: 800;
         letter-spacing: 8px;
-        padding: 15px 30px;
-        border-radius: 12px;
-        margin: 25px 0;
+        padding: 14px 28px;
+        border-radius: 8px;
+        margin: 20px 0;
         text-align: center;
-        text-shadow: 0 0 10px rgba(204, 34, 34, 0.4);
+      }
+      .btn-container {
+        text-align: center;
+        margin: 28px 0;
       }
       .btn {
         display: inline-block;
         background: #cc2222;
-        border: 1px solid #ff3333;
+        border: 1px solid #e60000;
         color: #ffffff !important;
         text-decoration: none;
-        padding: 14px 28px;
+        padding: 13px 26px;
         border-radius: 6px;
         font-weight: 700;
-        font-size: 14px;
+        font-size: 13px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-top: 20px;
-        box-shadow: 0 4px 15px rgba(204, 34, 34, 0.4);
+        letter-spacing: 1.5px;
       }
-      .info-box {
-        background-color: #141824;
-        border-left: 4px solid #cc2222;
-        padding: 15px;
-        border-radius: 0 8px 8px 0;
-        margin: 20px 0;
+      .btn-green {
+        display: inline-block;
+        background: #16a34a;
+        border: 1px solid #22c55e;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 13px 26px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .footer {
+        padding: 22px;
+        text-align: center;
+        font-size: 11px;
+        color: #64748b;
+        background-color: #05060a;
+        border-top: 1px solid #172033;
+      }
+      .footer p {
+        margin: 4px 0;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="header">
-        <h1 class="logo-title">DARK WOLF TEAM</h1>
-        <div class="logo-tag">Esports Gaming Community</div>
-      </div>
-      <div class="content">
-        ${content}
-      </div>
-      <div class="footer">
-        <p>© ${new Date().getFullYear()} Dark Wolf Team. Tous droits réservés.</p>
-        <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre directement.</p>
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <div class="brand-title">DARK WOLF TEAM</div>
+          <div class="brand-subtitle">Organisation Esport Professionnelle</div>
+        </div>
+        <div class="content">
+          ${content}
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} Dark Wolf Team. Tous droits reserves.</p>
+          <p>Notification automatique du systeme DWT. Merci de ne pas repondre directement a ce message.</p>
+        </div>
       </div>
     </div>
   </body>
@@ -119,158 +197,258 @@ const baseEmailWrapper = (title, content) => {
   `;
 };
 
-// 1. Email de Bienvenue (Sign up)
+// 1. Email Invitation Recrutement (quand inscription refusee car non accepte)
+const recruitmentInviteTemplate = (email, recruitmentUrl) => {
+  const content = `
+    <h2>Acces Restreint : Inscription sur Selection</h2>
+    <p>Bonjour,</p>
+    <p>Vous avez tente de creer un compte membre sur la plateforme officielle de la <strong>Dark Wolf Team</strong> avec l'adresse <code>${email}</code>.</p>
+    <div class="info-box">
+      <p style="margin: 0; color: #ffffff; font-weight: 600;">L'inscription directe est reservee aux joueurs ayant ete retenus apres les tests de recrutement officiels de notre structure esport.</p>
+    </div>
+    <p>Si vous souhaitez integrer l'un de nos rosters competitifs (Valorant, CS2, League of Legends, Rocket League, Rainbow Six Siege), vous devez obligatoirement soumettre votre dossier de candidature.</p>
+    <p>Une fois votre candidature deposee, le staff l'etudiera afin de planifier la date et l'heure de votre test pratique de recrutement.</p>
+    <div class="btn-container">
+      <a href="${recruitmentUrl}" class="btn">Remplir le Formulaire de Recrutement</a>
+    </div>
+    <p style="font-size: 12px; color: #94a3b8; text-align: center;">
+      Lien direct d'acces au dossier de candidature :<br>
+      <a href="${recruitmentUrl}" style="color: #ff6666;">${recruitmentUrl}</a>
+    </p>
+  `;
+  return baseEmailWrapper('Recrutement Dark Wolf Team - Dossier de Candidature', content);
+};
+
+// 2. Email Confirmation Candidature (envoye au candidat apres soumission)
+const applicationSubmittedTemplate = (gamertag, game) => {
+  const content = `
+    <h2>Candidature Recue : Roster ${game}</h2>
+    <p>Bonjour <strong>${gamertag}</strong>,</p>
+    <p>Nous vous confirmons la bonne reception de votre dossier de candidature pour rejoindre l'equipe <strong>${game}</strong> de la Dark Wolf Team.</p>
+    <div class="info-box-blue">
+      <p style="margin: 0;"><strong>Statut du dossier :</strong> En cours d'examen par la direction esport.</p>
+      <p style="margin: 6px 0 0 0; font-size: 12px; color: #94a3b8;">Le staff esport evalue vos statistiques, votre experience et vos disponibilites.</p>
+    </div>
+    <p>Si votre profil est preselectionne, vous recevrez une convocation officielle par email contenant la date, l'heure et les consignes pour votre test de recrutement.</p>
+    <p>Assurez-vous que votre compte Discord reste joignable.</p>
+  `;
+  return baseEmailWrapper(`Candidature Recue - Dark Wolf Team (${game})`, content);
+};
+
+// 3. Email Alerte Admin Nouvelle Candidature
+const adminNewApplicationTemplate = (app) => {
+  const content = `
+    <h2>Nouvelle Candidature Joueur Recue</h2>
+    <p>Un nouveau postulant vient de deposer un dossier pour integrer la meute :</p>
+    <div class="info-box">
+      <p style="margin: 3px 0;"><strong>Gamertag :</strong> ${app.gamertag}</p>
+      <p style="margin: 3px 0;"><strong>Jeu :</strong> ${app.game}</p>
+      <p style="margin: 3px 0;"><strong>Rang :</strong> ${app.rank}</p>
+      <p style="margin: 3px 0;"><strong>Role prefere :</strong> ${app.rolePreference || 'Non precise'}</p>
+      <p style="margin: 3px 0;"><strong>Age :</strong> ${app.age} ans</p>
+      <p style="margin: 3px 0;"><strong>Email :</strong> ${app.email}</p>
+      <p style="margin: 3px 0;"><strong>Discord :</strong> ${app.discordTag}</p>
+      ${app.trackerUrl ? `<p style="margin: 3px 0;"><strong>Tracker / Portfolio :</strong> <a href="${app.trackerUrl}" style="color: #ff6666;">${app.trackerUrl}</a></p>` : ''}
+    </div>
+    <div style="background: #080c14; padding: 14px; border-radius: 6px; margin: 16px 0;">
+      <strong style="color: #ffffff;">Motivation et parcours :</strong>
+      <p style="margin: 6px 0 0 0; color: #cbd5e1; font-style: italic;">"${app.experience}"</p>
+    </div>
+    <p>Veuillez vous rendre sur l'Admin Dashboard pour evaluer cette candidature et planifier la date de son test.</p>
+    <div class="btn-container">
+      <a href="${process.env.FRONTEND_URL || 'http://localhost:5190'}/admin" class="btn">Acceder au Dashboard Admin</a>
+    </div>
+  `;
+  return baseEmailWrapper(`Nouvelle Candidature : ${app.gamertag} (${app.game})`, content);
+};
+
+// 4. Email Convocation au Test de Recrutement
+const testScheduledTemplate = (gamertag, game, testDate, testTime, testLocation, notes) => {
+  const formattedDate = testDate ? new Date(testDate).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : 'Date confirmee';
+
+  const content = `
+    <h2>Convocation Officielle au Test de Recrutement</h2>
+    <p>Bonjour <strong>${gamertag}</strong>,</p>
+    <p>Apres analyse de votre dossier, le staff de la <strong>Dark Wolf Team</strong> a le plaisir de vous convoquer pour votre test pratique de recrutement pour le roster <strong>${game}</strong>.</p>
+    <div class="info-box-blue">
+      <p style="margin: 4px 0;"><strong>Date du test :</strong> ${formattedDate}</p>
+      <p style="margin: 4px 0;"><strong>Heure :</strong> ${testTime || 'A determiner'}</p>
+      <p style="margin: 4px 0;"><strong>Lieu / Plateforme :</strong> ${testLocation || 'Serveur Discord Vocal Dark Wolf Team'}</p>
+    </div>
+    ${notes ? `
+    <div style="background: #090e18; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 0 6px 6px 0; margin: 18px 0;">
+      <strong style="color: #ffffff;">Consignes et instructions du staff :</strong>
+      <p style="margin: 6px 0 0 0; color: #cbd5e1;">${notes}</p>
+    </div>` : ''}
+    <p><strong>Rappels importants pour le test :</strong></p>
+    <ul style="margin: 0 0 16px 0; padding-left: 20px; color: #cbd5e1;">
+      <li>Etre connecte sur le salon Discord au moins 10 minutes avant l'heure fixee.</li>
+      <li>Disposer d'un micro operationnel et d'une connexion internet stable.</li>
+      <li>Adopter une communication claire et un esprit d'equipe irreprochable.</li>
+    </ul>
+    <p>A l'issue de cette session de test, l'administration prendra sa decision definitive.</p>
+  `;
+  return baseEmailWrapper(`Convocation Test Recrutement DWT - ${game}`, content);
+};
+
+// 5. Email Acceptation Candidature avec Identifiants generes
+const applicationAcceptedTemplate = (gamertag, game, email, generatedPassword, loginUrl) => {
+  const content = `
+    <h2 style="color: #4ade80;">Bienvenue dans la Meute : Candidature Retenue</h2>
+    <p>Bonjour <strong>${gamertag}</strong>,</p>
+    <p>Nous avons le plaisir de vous annoncer que suite a votre test de recrutement, la direction esport a valide votre integration au sein de la <strong>Dark Wolf Team</strong> sur le roster <strong>${game}</strong>.</p>
+    <div class="info-box-success">
+      <p style="margin: 0; color: #ffffff; font-weight: 700;">Votre profil joueur a ete cree et votre Espace Joueur officiel est desormais actif.</p>
+    </div>
+    <p>Voici vos identifiants temporaires de connexion pour acceder a votre Espace Joueur :</p>
+    <div class="credentials-box">
+      <div class="cred-row">
+        <span class="cred-label">Identifiant / Email :</span>
+        <span class="cred-value">${email}</span>
+      </div>
+      <div class="cred-row">
+        <span class="cred-label">Mot de passe :</span>
+        <span class="cred-value">${generatedPassword}</span>
+      </div>
+      <div class="cred-row">
+        <span class="cred-label">Rôle assigné :</span>
+        <span class="cred-value" style="color: #4ade80;">JOUEUR OFFICIEL (ROSTER ${game.toUpperCase()})</span>
+      </div>
+    </div>
+    <div class="btn-container">
+      <a href="${loginUrl}" class="btn-green">Connexion a l'Espace Joueur</a>
+    </div>
+    <p style="font-size: 12px; color: #94a3b8;">
+      Pour des raisons de securite, nous vous recommandons de modifier ce mot de passe temporaire des votre premiere connexion dans les parametres de votre profil.
+    </p>
+    <p>Bienvenue dans l'aventure competitive Dark Wolf Team.</p>
+  `;
+  return baseEmailWrapper('Admission Officielle - Dark Wolf Team', content);
+};
+
+// 6. Email Refus Candidature (Remerciement et encouragements)
+const applicationRejectedTemplate = (gamertag, game, feedbackMessage) => {
+  const content = `
+    <h2>Decision concernant votre candidature Dark Wolf Team</h2>
+    <p>Bonjour <strong>${gamertag}</strong>,</p>
+    <p>Nous tenons a vous remercier chaleureusement pour votre implication lors du processus de recrutement et pour votre participation au test pour le roster <strong>${game}</strong>.</p>
+    <p>Apres concertation avec le staff technique, nous sommes au regret de vous informer que nous n'avons pas retenu votre dossier pour la composition de cette saison.</p>
+    ${feedbackMessage ? `
+    <div class="info-box">
+      <strong style="color: #ffffff;">Remarques de l'equipe technique :</strong>
+      <p style="margin: 6px 0 0 0; color: #cbd5e1;">${feedbackMessage}</p>
+    </div>` : ''}
+    <p>Cette decision ne remet aucunement en cause votre potentiel. Le niveau d'exigence et le nombre tres restreint de places disponibles ont motive ce choix.</p>
+    <p>Nous vous encourageons vivement a poursuivre vos entrainements competitifs et a postuler de nouveau lors de nos prochaines sessions de recrutement.</p>
+    <p>Nous vous souhaitons le meilleur pour vos futurs defis esportifs.</p>
+  `;
+  return baseEmailWrapper('Information sur votre candidature Dark Wolf Team', content);
+};
+
+// 7. Statut generique
+const applicationStatusUpdateTemplate = (gamertag, game, status, message) => {
+  if (status === 'accepted') {
+    return applicationAcceptedTemplate(gamertag, game, 'Votre email de candidature', 'Fourni separement', `${process.env.FRONTEND_URL || 'http://localhost:5190'}/login`);
+  }
+  return applicationRejectedTemplate(gamertag, game, message);
+};
+
+// 8. Email de Bienvenue Standard (Utilisateur cree par admin ou confirmation)
 const welcomeTemplate = (gamertag) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">Bienvenue dans la Meute, ${gamertag} ! 🎮</h2>
-    <p>Ton compte au sein de la <strong>Dark Wolf Team</strong> a été créé avec succès.</p>
-    <p>Tu as désormais accès à notre communauté esport, aux annonces exclusives, au suivi des matchs en direct et aux candidatures pour nos rosters compétitifs.</p>
+    <h2>Bienvenue dans la Meute, ${gamertag}</h2>
+    <p>Votre compte au sein de la <strong>Dark Wolf Team</strong> est actif.</p>
+    <p>Vous avez desormais acces a notre plateforme esport, au suivi des matchs en direct, a la boutique officielle et a la communaute.</p>
     <div class="info-box">
-      <strong>Règles de la Meute :</strong>
+      <strong>Principes fondamentaux de la Meute :</strong>
       <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-        <li>Fair-play et respect mutuel en toutes circonstances.</li>
-        <li>Engagement lors des entraînements et des compétitions.</li>
-        <li>Représente fièrement les couleurs de DWT !</li>
+        <li>Fair-play et respect strict en toutes circonstances.</li>
+        <li>Engagement et rigueur lors des echeances competitives.</li>
+        <li>Representation fidele des valeurs de la Dark Wolf Team.</li>
       </ul>
     </div>
-    <div style="text-align: center; margin-top: 30px;">
-      <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" class="btn">Accéder au site officiel</a>
+    <div class="btn-container">
+      <a href="${process.env.FRONTEND_URL || 'http://localhost:5190'}" class="btn">Acceder au Site Officiel</a>
     </div>
   `;
   return baseEmailWrapper('Bienvenue chez Dark Wolf Team', content);
 };
 
-// 2. Email Notification Nouvel Inscrit (pour Admin)
+// 9. Email Notification Nouvel Inscrit (pour Admin)
 const adminNewUserAlertTemplate = (newUser) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">🚨 Nouveau Membre Enregistré</h2>
-    <p>Un nouvel utilisateur vient de rejoindre la plateforme <strong>Dark Wolf Team</strong> :</p>
+    <h2>Nouveau Membre Enregistre</h2>
+    <p>Un utilisateur vient d'etre cree sur la plateforme :</p>
     <div class="info-box">
       <p style="margin: 4px 0;"><strong>Gamertag :</strong> ${newUser.gamertag}</p>
       <p style="margin: 4px 0;"><strong>Email :</strong> ${newUser.email}</p>
-      <p style="margin: 4px 0;"><strong>Rôle :</strong> ${newUser.role || 'user'}</p>
+      <p style="margin: 4px 0;"><strong>Role :</strong> ${newUser.role || 'user'}</p>
       <p style="margin: 4px 0;"><strong>Date :</strong> ${new Date().toLocaleString('fr-FR')}</p>
     </div>
   `;
-  return baseEmailWrapper('Nouveau membre inscrit', content);
+  return baseEmailWrapper('Nouveau membre enregistre - DWT', content);
 };
 
-// 3. Email Code de Sécurité (Mot de passe oublié)
+// 10. Email Code de Securite (Mot de passe oublie)
 const passwordResetCodeTemplate = (gamertag, code, resetLink) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0; font-size: 22px;">Réinitialisation de ton mot de passe 🔒</h2>
+    <h2>Reinitialisation de votre mot de passe</h2>
     <p>Bonjour <strong>${gamertag}</strong>,</p>
-    <p>Nous avons reçu une demande de réinitialisation de mot de passe pour ton compte <strong>Dark Wolf Team</strong>.</p>
-    <p>Tu peux modifier ton mot de passe en utilisant soit ton <strong>code de sécurité à 6 chiffres</strong>, soit en cliquant directement sur le <strong>bouton d'accès immédiat</strong> :</p>
-    
-    <div style="text-align: center; margin: 25px 0;">
+    <p>Une demande de reinitialisation de mot de passe a ete enregistree pour votre compte <strong>Dark Wolf Team</strong>.</p>
+    <p>Voici votre code de securite a usage unique :</p>
+    <div style="text-align: center; margin: 20px 0;">
       <div class="code-badge">${code}</div>
     </div>
-
     ${resetLink ? `
-    <div style="text-align: center; margin: 25px 0 15px 0;">
-      <a href="${resetLink}" class="btn" style="background: #cc2222; border: 1px solid #ff3333; color: #ffffff !important; padding: 14px 28px; border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none; display: inline-block; letter-spacing: 1px;">
-        MODIFIER MON MOT DE PASSE EN 1 CLIC 🔑
-      </a>
+    <div class="btn-container">
+      <a href="${resetLink}" class="btn">Reinitialiser mon mot de passe</a>
     </div>
-    <p style="font-size: 11px; color: #94a3b8; text-align: center; word-break: break-all; margin-top: 10px;">
-      Ou clique directement sur ce lien sécurisé :<br/>
-      <a href="${resetLink}" style="color: #ff6666; text-decoration: underline;">${resetLink}</a>
-    </p>
-    ` : ''}
-
-    <div class="info-box" style="border-left-color: #cc2222; background-color: #141824;">
-      <p style="margin: 0; color: #ff6666;">⚠️ <strong>Attention :</strong> Ce code et ce lien expirent dans <strong>15 minutes</strong>.</p>
-      <p style="margin: 6px 0 0 0; color: #94a3b8;">Si tu n'es pas à l'origine de cette demande, ignore simplement cet email, ton compte reste sécurisé.</p>
+    <p style="font-size: 11px; color: #94a3b8; text-align: center; word-break: break-all;">
+      Lien direct : <a href="${resetLink}" style="color: #ff6666;">${resetLink}</a>
+    </p>` : ''}
+    <div class="info-box">
+      <p style="margin: 0; color: #ff6666; font-size: 12px;"><strong>Important :</strong> Ce code expire dans 15 minutes. Si vous n'etes pas a l'origine de cette demande, vous pouvez ignorer ce message.</p>
     </div>
   `;
-  return baseEmailWrapper('Code de sécurité - Dark Wolf Team', content);
+  return baseEmailWrapper('Reinitialisation de mot de passe - Dark Wolf Team', content);
 };
 
-
-// 4. Email Notification de Connexion (Login Alert)
+// 11. Email Alerte Connexion
 const loginAlertTemplate = (gamertag, ipAddress, userAgent) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">Nouvelle connexion détectée 🛡️</h2>
+    <h2>Nouvelle connexion detectee</h2>
     <p>Bonjour <strong>${gamertag}</strong>,</p>
-    <p>Une connexion à ton compte Dark Wolf Team vient d'avoir lieu :</p>
+    <p>Une connexion a ete effectuee sur votre compte Dark Wolf Team :</p>
     <div class="info-box">
       <p style="margin: 4px 0;"><strong>Date :</strong> ${new Date().toLocaleString('fr-FR')}</p>
-      <p style="margin: 4px 0;"><strong>Adresse IP :</strong> ${ipAddress || 'Inconnue'}</p>
+      <p style="margin: 4px 0;"><strong>Adresse IP :</strong> ${ipAddress || 'Non precisee'}</p>
       <p style="margin: 4px 0;"><strong>Appareil :</strong> ${userAgent || 'Navigateur standard'}</p>
     </div>
-    <p>Si c'était toi, aucune action n'est requise. Si ce n'était pas toi, change immédiatement ton mot de passe !</p>
+    <p>Si vous n'etes pas a l'origine de cette connexion, modifiez immediatement votre mot de passe depuis les parametres.</p>
   `;
   return baseEmailWrapper('Alerte de connexion - Dark Wolf Team', content);
 };
 
-// 5. Email Confirmation Candidature (Pour le joueur)
-const applicationSubmittedTemplate = (gamertag, game) => {
-  const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">Candidature Reçue ! 🏆</h2>
-    <p>Bonjour <strong>${gamertag}</strong>,</p>
-    <p>Nous confirmons la bonne réception de ta candidature pour rejoindre le roster <strong>${game}</strong> de la Dark Wolf Team.</p>
-    <div class="info-box">
-      <p style="margin: 0;">Notre staff esport examine actuellement ton profil et tes performances. Tu recevras une réponse très prochainement par email ou sur Discord.</p>
-    </div>
-    <p>Prépare tes clips et tiens-toi prêt pour d'éventuels tryouts !</p>
-  `;
-  return baseEmailWrapper('Candidature Dark Wolf Team reçue', content);
-};
-
-// 6. Email Alerte Admin Nouvelle Candidature
-const adminNewApplicationTemplate = (app) => {
-  const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">🎯 Nouvelle Candidature Reçue</h2>
-    <p>Un joueur postule pour rejoindre l'équipe :</p>
-    <div class="info-box">
-      <p style="margin: 4px 0;"><strong>Gamertag :</strong> ${app.gamertag}</p>
-      <p style="margin: 4px 0;"><strong>Jeu :</strong> ${app.game}</p>
-      <p style="margin: 4px 0;"><strong>Rang :</strong> ${app.rank}</p>
-      <p style="margin: 4px 0;"><strong>Discord :</strong> ${app.discordTag}</p>
-      <p style="margin: 4px 0;"><strong>Âge :</strong> ${app.age} ans</p>
-      <p style="margin: 4px 0;"><strong>Email :</strong> ${app.email}</p>
-    </div>
-  `;
-  return baseEmailWrapper('Nouvelle candidature de joueur DWT', content);
-};
-
-// 7. Email Statut Candidature (Acceptée ou Refusée)
-const applicationStatusUpdateTemplate = (gamertag, game, status, message) => {
-  const isAccepted = status === 'accepted';
-  const content = `
-    <h2 style="color: ${isAccepted ? '#4ade80' : '#f87171'}; margin-top: 0;">
-      ${isAccepted ? 'Félicitations ! Candidature Acceptée 🐺' : 'Mise à jour concernant ta candidature'}
-    </h2>
-    <p>Bonjour <strong>${gamertag}</strong>,</p>
-    ${isAccepted 
-      ? `<p>Le staff de la <strong>Dark Wolf Team</strong> a le plaisir de t'annoncer que ta candidature pour le roster <strong>${game}</strong> a été <strong>RETENUE</strong> !</p>`
-      : `<p>Nous avons étudié avec attention ta candidature pour le roster <strong>${game}</strong>. Malheureusement, nous ne pouvons donner une suite favorable pour cette session.</p>`
-    }
-    ${message ? `<div class="info-box"><strong>Message du Staff :</strong><p style="margin: 6px 0 0 0;">${message}</p></div>` : ''}
-    ${isAccepted 
-      ? `<p>Rejoins vite notre serveur Discord pour débuter ton intégration et rencontrer tes coéquipiers !</p>`
-      : `<p>Continue de t'entraîner et n'hésite pas à retenter ta chance lors des prochains recrutements !</p>`
-    }
-  `;
-  return baseEmailWrapper('Statut de candidature DWT', content);
-};
-
-// 8. Newsletter Broadcast Template
+// 12. Newsletter Broadcast
 const newsletterBroadcastTemplate = (subject, contentBody) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">${subject}</h2>
+    <h2>${subject}</h2>
     <div style="margin: 20px 0;">
       ${contentBody}
     </div>
-    <div style="text-align: center; margin-top: 30px;">
-      <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" class="btn">Voir sur le site officiel</a>
+    <div class="btn-container">
+      <a href="${process.env.FRONTEND_URL || 'http://localhost:5190'}" class="btn">Voir sur le site officiel</a>
     </div>
   `;
   return baseEmailWrapper(subject, content);
 };
 
-// 9. Email Confirmation de Commande Boutique (Client)
+// 13. Confirmation Commande Store
 const orderConfirmationTemplate = (order) => {
   const itemsHtml = order.orderItems
     .map(
@@ -278,22 +456,21 @@ const orderConfirmationTemplate = (order) => {
       <tr style="border-bottom: 1px solid #1e293b;">
         <td style="padding: 10px 5px;"><strong>${item.name}</strong> ${item.size ? `(Taille: ${item.size})` : ''}</td>
         <td style="padding: 10px 5px; text-align: center;">x${item.qty}</td>
-        <td style="padding: 10px 5px; text-align: right; color: #a5b4fc;">${(item.price * item.qty).toFixed(2)} €</td>
+        <td style="padding: 10px 5px; text-align: right; color: #cbd5e1;">${(item.price * item.qty).toFixed(2)} EUR</td>
       </tr>
     `
     )
     .join('');
 
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">Merci pour ta commande ! 🐺🛍️</h2>
+    <h2>Confirmation de votre commande</h2>
     <p>Bonjour <strong>${order.shippingAddress.fullName}</strong>,</p>
-    <p>Nous avons bien reçu ta commande <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong> sur le store officiel de la Dark Wolf Team.</p>
-    
-    <table style="width: 100%; border-collapse: collapse; margin: 20px 0; color: #cbd5e1;">
+    <p>Votre commande <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong> a ete validee avec succes sur le Dark Wolf Store.</p>
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0; color: #cbd5e1; font-size: 13px;">
       <thead>
-        <tr style="border-bottom: 2px solid #6366f1; text-align: left; color: #94a3b8; font-size: 13px;">
+        <tr style="border-bottom: 2px solid #cc2222; text-align: left; color: #94a3b8;">
           <th style="padding: 8px 5px;">PRODUIT</th>
-          <th style="padding: 8px 5px; text-align: center;">QTÉ</th>
+          <th style="padding: 8px 5px; text-align: center;">QTE</th>
           <th style="padding: 8px 5px; text-align: right;">PRIX</th>
         </tr>
       </thead>
@@ -301,63 +478,59 @@ const orderConfirmationTemplate = (order) => {
         ${itemsHtml}
       </tbody>
     </table>
-
     <div class="info-box">
-      <p style="margin: 4px 0; display: flex; justify-content: space-between;"><span>Sous-total :</span> <strong>${order.itemsPrice.toFixed(2)} €</strong></p>
-      <p style="margin: 4px 0; display: flex; justify-content: space-between;"><span>Livraison :</span> <strong>${order.shippingPrice.toFixed(2)} €</strong></p>
-      <hr style="border: 0; border-top: 1px solid #334155; margin: 8px 0;" />
-      <p style="margin: 4px 0; font-size: 18px; color: #4ade80; display: flex; justify-content: space-between;"><span>TOTAL :</span> <strong>${order.totalPrice.toFixed(2)} €</strong></p>
+      <p style="margin: 4px 0;">Sous-total : ${order.itemsPrice.toFixed(2)} EUR</p>
+      <p style="margin: 4px 0;">Livraison : ${order.shippingPrice.toFixed(2)} EUR</p>
+      <p style="margin: 6px 0 0 0; font-size: 16px; color: #4ade80; font-weight: 700;">TOTAL : ${order.totalPrice.toFixed(2)} EUR</p>
     </div>
-
     <p><strong>Adresse de livraison :</strong><br>
     ${order.shippingAddress.address}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}, ${order.shippingAddress.country}</p>
-    <p>Tu recevras un autre email avec le numéro de suivi dès que ton colis sera expédié !</p>
   `;
-  return baseEmailWrapper('Confirmation de commande Dark Wolf Store', content);
+  return baseEmailWrapper('Confirmation de commande - Dark Wolf Store', content);
 };
 
-// 10. Email Expédition de Commande (Client)
+// 14. Expedition Commande
 const orderShippedTemplate = (order) => {
   const content = `
-    <h2 style="color: #4ade80; margin-top: 0;">Ta commande est en route ! 🚀📦</h2>
+    <h2 style="color: #4ade80;">Votre commande a ete expediee</h2>
     <p>Bonjour <strong>${order.shippingAddress.fullName}</strong>,</p>
-    <p>Bonne nouvelle ! Ta commande <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong> vient d'être expédiée par la meute.</p>
-    
-    <div class="info-box">
+    <p>Votre commande <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong> est desormais en cours d'acheminement.</p>
+    <div class="info-box-blue">
       <p style="margin: 4px 0;"><strong>Transporteur :</strong> Standard Esports Express</p>
-      <p style="margin: 4px 0;"><strong>Numéro de suivi :</strong> <span style="color: #a5b4fc; font-weight: bold;">${order.trackingNumber || 'En cours de synchronisation'}</span></p>
-      <p style="margin: 4px 0;"><strong>Statut :</strong> Expédiée</p>
+      <p style="margin: 4px 0;"><strong>Numero de suivi :</strong> <span style="font-family: monospace; font-weight: bold; color: #38bdf8;">${order.trackingNumber || 'En cours de synchronisation'}</span></p>
+      <p style="margin: 4px 0;"><strong>Statut :</strong> Expediee</p>
     </div>
-
-    <p>Merci de ton soutien à la Dark Wolf Team ! Arbore fièrement nos couleurs. 🐺</p>
   `;
-  return baseEmailWrapper('Commande expédiée - Dark Wolf Store', content);
+  return baseEmailWrapper('Expedition de votre commande - Dark Wolf Store', content);
 };
 
-// 11. Alerte Admin Nouvelle Commande
+// 15. Alerte Admin Commande
 const adminNewOrderAlertTemplate = (order) => {
   const content = `
-    <h2 style="color: #ffffff; margin-top: 0;">💰 Nouvelle Commande sur le Store !</h2>
-    <p>Une commande vient d'être passée d'un montant de <strong>${order.totalPrice.toFixed(2)} €</strong>.</p>
+    <h2>Nouvelle Commande sur le Store</h2>
+    <p>Une commande vient d'etre enregistree d'un montant de <strong>${order.totalPrice.toFixed(2)} EUR</strong>.</p>
     <div class="info-box">
-      <p style="margin: 4px 0;"><strong>N° Commande :</strong> #${order._id}</p>
+      <p style="margin: 4px 0;"><strong>Numero :</strong> #${order._id}</p>
       <p style="margin: 4px 0;"><strong>Client :</strong> ${order.shippingAddress.fullName} (${order.shippingAddress.email})</p>
       <p style="margin: 4px 0;"><strong>Articles :</strong> ${order.orderItems.length} article(s)</p>
-      <p style="margin: 4px 0;"><strong>Total :</strong> ${order.totalPrice.toFixed(2)} €</p>
       <p style="margin: 4px 0;"><strong>Paiement :</strong> ${order.paymentMethod}</p>
     </div>
   `;
-  return baseEmailWrapper('Nouvelle commande sur le Dark Wolf Store', content);
+  return baseEmailWrapper('Nouvelle commande - Dark Wolf Store', content);
 };
 
 module.exports = {
+  recruitmentInviteTemplate,
+  applicationSubmittedTemplate,
+  adminNewApplicationTemplate,
+  testScheduledTemplate,
+  applicationAcceptedTemplate,
+  applicationRejectedTemplate,
+  applicationStatusUpdateTemplate,
   welcomeTemplate,
   adminNewUserAlertTemplate,
   passwordResetCodeTemplate,
   loginAlertTemplate,
-  applicationSubmittedTemplate,
-  adminNewApplicationTemplate,
-  applicationStatusUpdateTemplate,
   newsletterBroadcastTemplate,
   orderConfirmationTemplate,
   orderShippedTemplate,

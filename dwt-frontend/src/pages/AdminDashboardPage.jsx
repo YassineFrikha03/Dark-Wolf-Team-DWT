@@ -231,6 +231,18 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const [replyEmailText, setReplyEmailText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
 
+  // Planification des Tests de Recrutement & Mots de passe générés
+  const [selectedAppForTest, setSelectedAppForTest] = useState(null);
+  const [showScheduleTestModal, setShowScheduleTestModal] = useState(false);
+  const [testFormData, setTestFormData] = useState({
+    testDate: '',
+    testTime: '20:30',
+    testLocation: 'Serveur Discord Vocal DWT - Salon Tryouts 1',
+    testNotes: ''
+  });
+  const [schedulingTest, setSchedulingTest] = useState(false);
+  const [passwordAlertModal, setPasswordAlertModal] = useState(null);
+
   // Gestion Équipement Custom (Studio Custom & Fixation des Prix)
   const [customGearList, setCustomGearList] = useState([]);
   const [previewStudioModal, setPreviewStudioModal] = useState(false);
@@ -1099,14 +1111,72 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     }
   };
 
+  const handleOpenScheduleTest = (app) => {
+    setSelectedAppForTest(app);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().split('T')[0];
+
+    setTestFormData({
+      testDate: app.testDate ? new Date(app.testDate).toISOString().split('T')[0] : dateStr,
+      testTime: app.testTime || '20:30',
+      testLocation: app.testLocation || 'Serveur Discord Vocal DWT - Salon Tryouts 1',
+      testNotes: app.testNotes || 'Merci de vous connecter 10 minutes à l avance avec votre micro opérationnel.'
+    });
+    setShowScheduleTestModal(true);
+  };
+
+  const handleConfirmScheduleTest = async (e) => {
+    e.preventDefault();
+    if (!selectedAppForTest?._id || !testFormData.testDate || !testFormData.testTime) {
+      showToast('Veuillez renseigner la date et l heure du test', 'error');
+      return;
+    }
+    setSchedulingTest(true);
+    try {
+      const res = await API.put(`/applications/${selectedAppForTest._id}/schedule-test`, testFormData);
+      showToast(res.data?.message || `Test planifié pour ${selectedAppForTest.gamertag} ! Convocation envoyée par email.`, 'success');
+      setShowScheduleTestModal(false);
+      setSelectedAppForTest(null);
+      fetchAllData();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Erreur lors de la planification du test', 'error');
+    } finally {
+      setSchedulingTest(false);
+    }
+  };
+
   const handleUpdateAppStatus = async (appId, newStatus) => {
     try {
-      const res = await API.put(`/applications/${appId}/status`, { status: newStatus });
-      setRecruitmentList(prev => prev.map(a => a._id === appId ? { ...a, status: newStatus } : a));
+      let customMsg = '';
+      if (newStatus === 'rejected') {
+        const promptVal = window.prompt("Message du staff ou motif d'encouragement pour le candidat (optionnel) :");
+        if (promptVal === null) return;
+        customMsg = promptVal;
+      } else if (newStatus === 'accepted') {
+        const confirmAccept = window.confirm("Confirmez-vous l'admission de ce candidat au sein du roster ? Un mot de passe de compte joueur sera généré et envoyé avec ses identifiants par email officiel.");
+        if (!confirmAccept) return;
+      }
+
+      const res = await API.put(`/applications/${appId}/status`, {
+        status: newStatus,
+        customMessage: customMsg
+      });
+
+      const genPass = res.data?.generatedPassword;
+      setRecruitmentList(prev => prev.map(a => a._id === appId ? { ...a, status: newStatus, generatedPassword: genPass } : a));
+
       if (newStatus === 'accepted') {
-        showToast(res.data?.message || 'Candidature acceptée ! Le joueur a été ajouté au roster officiel et son espace de communication est actif. ', 'success');
+        showToast(res.data?.message || 'Candidature validée ! Le joueur a été intégré au roster et son compte est actif.', 'success');
+        if (genPass) {
+          setPasswordAlertModal({
+            gamertag: res.data?.application?.gamertag || 'Nouveau Joueur',
+            email: res.data?.application?.email,
+            password: genPass
+          });
+        }
       } else {
-        showToast(`Candidature mise à jour (${newStatus}).`, 'info');
+        showToast(`Candidature refusée. Un email officiel de remerciement a été envoyé au candidat.`, 'info');
       }
       fetchAllData();
     } catch (err) {
@@ -4700,11 +4770,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                   fontWeight: '800',
                                   padding: '1px 6px',
                                   borderRadius: '4px',
-                                  background: app.status === 'accepted' ? 'rgba(74, 222, 128, 0.15)' : app.status === 'rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(251, 191, 36, 0.15)',
-                                  color: app.status === 'accepted' ? '#4ade80' : app.status === 'rejected' ? '#f87171' : '#fbbf24',
-                                  border: `1px solid ${app.status === 'accepted' ? '#4ade80' : app.status === 'rejected' ? '#f87171' : '#fbbf24'}`
+                                  background: app.status === 'accepted' ? 'rgba(74, 222, 128, 0.15)' : app.status === 'test_scheduled' ? 'rgba(56, 189, 248, 0.15)' : app.status === 'rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                                  color: app.status === 'accepted' ? '#4ade80' : app.status === 'test_scheduled' ? '#38bdf8' : app.status === 'rejected' ? '#f87171' : '#fbbf24',
+                                  border: `1px solid ${app.status === 'accepted' ? '#4ade80' : app.status === 'test_scheduled' ? '#38bdf8' : app.status === 'rejected' ? '#f87171' : '#fbbf24'}`
                                 }}>
-                                  {app.status === 'accepted' ? 'ACCEPTÉ' : app.status === 'rejected' ? 'REFUSÉ' : 'EN ATTENTE'}
+                                  {app.status === 'accepted' ? 'ACCEPTE (JOUEUR OFFICIEL)' : app.status === 'test_scheduled' ? 'TEST PROGRAMME' : app.status === 'rejected' ? 'REFUSE' : 'EN ATTENTE D EXAMEN'}
                                 </span>
                               </div>
                               <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
@@ -4713,32 +4783,93 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                               <div style={{ fontSize: '12px', color: '#cbd5e1', background: '#090d16', padding: '8px 12px', borderRadius: '6px', marginTop: '6px' }}>
                                 "{app.experience}"
                               </div>
+
+                              {/* Détails du Test de Recrutement si programmé */}
+                              {app.testDate && (
+                                <div style={{
+                                  marginTop: '8px',
+                                  padding: '8px 12px',
+                                  borderRadius: '6px',
+                                  background: 'rgba(56, 189, 248, 0.08)',
+                                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                                  fontSize: '11px',
+                                  color: '#cbd5e1'
+                                }}>
+                                  <div style={{ color: '#38bdf8', fontWeight: '800', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Calendar size={13} />
+                                    <span>CONVOCATION TEST : {new Date(app.testDate).toLocaleDateString('fr-FR')} à {app.testTime}</span>
+                                  </div>
+                                  <div>Lieu : <strong style={{ color: '#fff' }}>{app.testLocation || 'Serveur Discord Vocal DWT'}</strong></div>
+                                  {app.testNotes && <div style={{ color: '#94a3b8', marginTop: '2px' }}>Instructions : {app.testNotes}</div>}
+                                </div>
+                              )}
+
+                              {/* Identifiants si accepté */}
+                              {app.status === 'accepted' && (
+                                <div style={{
+                                  marginTop: '8px',
+                                  padding: '8px 12px',
+                                  borderRadius: '6px',
+                                  background: 'rgba(74, 222, 128, 0.08)',
+                                  border: '1px solid rgba(74, 222, 128, 0.3)',
+                                  fontSize: '11px',
+                                  color: '#cbd5e1'
+                                }}>
+                                  <div style={{ color: '#4ade80', fontWeight: '800', marginBottom: '2px' }}>
+                                    COMPTE JOUEUR ACTIF DANS LE ROSTER {app.game?.toUpperCase()}
+                                  </div>
+                                  <div>Email : <strong style={{ color: '#fff' }}>{app.email}</strong> {app.generatedPassword ? <span>• Mot de passe généré : <code style={{ color: '#4ade80', background: '#0a1420', padding: '1px 5px', borderRadius: '3px' }}>{app.generatedPassword}</code></span> : ''}</div>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                             {app.status !== 'accepted' && (
                               <button
                                 type="button"
                                 className="btn-dash-approve"
-                                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '800' }}
-                                onClick={() => handleUpdateAppStatus(app._id, 'accepted')}
+                                style={{
+                                  padding: '6px 12px',
+                                  fontSize: '11px',
+                                  fontWeight: '800',
+                                  background: 'rgba(56, 189, 248, 0.15)',
+                                  border: '1px solid #38bdf8',
+                                  color: '#38bdf8',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px'
+                                }}
+                                onClick={() => handleOpenScheduleTest(app)}
                               >
-                                Accepter
+                                <Calendar size={13} /> {app.status === 'test_scheduled' ? 'Modifier Test' : 'Planifier Test'}
                               </button>
                             )}
+
+                            {app.status !== 'accepted' && (
+                              <button
+                                type="button"
+                                className="btn-dash-approve"
+                                style={{ padding: '6px 12px', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '5px' }}
+                                onClick={() => handleUpdateAppStatus(app._id, 'accepted')}
+                              >
+                                <CheckCircle2 size={13} /> Valider (Test Réussi)
+                              </button>
+                            )}
+
                             <button
                               type="button"
                               className="btn-dash-approve"
-                              style={{ padding: '6px 14px', fontSize: '12px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid #38bdf8', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}
+                              style={{ padding: '6px 12px', fontSize: '11px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#fff', display: 'flex', alignItems: 'center', gap: '5px' }}
                               onClick={() => handleStartChatWithCandidate(app)}
                             >
                               <MessageSquare size={13} /> Discuter
                             </button>
+
                             {app.status !== 'rejected' && (
                               <button
                                 type="button"
                                 className="btn-dash-reject"
-                                style={{ padding: '6px 14px', fontSize: '12px' }}
+                                style={{ padding: '6px 12px', fontSize: '11px' }}
                                 onClick={() => handleUpdateAppStatus(app._id, 'rejected')}
                               >
                                 Refuser
@@ -7765,6 +7896,192 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: PLANIFIER LE TEST DE RECRUTEMENT */}
+      {showScheduleTestModal && selectedAppForTest && (
+        <div className="dash-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowScheduleTestModal(false); }}>
+          <div className="dash-modal-box" style={{ maxWidth: '620px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <h3 className="dash-modal-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={20} color="var(--red-primary)" /> Planifier le Test : {selectedAppForTest.gamertag}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  Roster visé : <strong style={{ color: '#fff' }}>{selectedAppForTest.game}</strong> • Email candidat : <strong style={{ color: '#fff' }}>{selectedAppForTest.email}</strong>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowScheduleTestModal(false)}
+                className="dash-more-btn"
+                style={{ padding: '6px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmScheduleTest}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                <div className="dash-form-group">
+                  <label className="dash-form-label">Date du Test *</label>
+                  <input
+                    type="date"
+                    className="dash-form-input"
+                    value={testFormData.testDate}
+                    onChange={(e) => setTestFormData({ ...testFormData, testDate: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="dash-form-group">
+                  <label className="dash-form-label">Heure du Test *</label>
+                  <input
+                    type="time"
+                    className="dash-form-input"
+                    value={testFormData.testTime}
+                    onChange={(e) => setTestFormData({ ...testFormData, testTime: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="dash-form-group" style={{ marginBottom: '14px' }}>
+                <label className="dash-form-label">Lieu / Salon Discord de Convocation *</label>
+                <input
+                  type="text"
+                  className="dash-form-input"
+                  placeholder="Ex: Serveur Discord Vocal DWT - Salon Tryouts 1"
+                  value={testFormData.testLocation}
+                  onChange={(e) => setTestFormData({ ...testFormData, testLocation: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="dash-form-group" style={{ marginBottom: '20px' }}>
+                <label className="dash-form-label">Instructions / Notes pour le candidat (Optionnel)</label>
+                <textarea
+                  className="dash-form-input"
+                  rows={3}
+                  placeholder="Ex: Merci de vous connecter 10 minutes à l'avance avec votre micro configuré et le jeu mis à jour."
+                  value={testFormData.testNotes}
+                  onChange={(e) => setTestFormData({ ...testFormData, testNotes: e.target.value })}
+                />
+              </div>
+
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '6px',
+                background: 'rgba(56, 189, 248, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.25)',
+                color: '#cbd5e1',
+                fontSize: '12px',
+                marginBottom: '20px',
+                lineHeight: 1.5
+              }}>
+                Un email officiel au design Dark Wolf Team contenant la date, l'heure, le salon Discord et vos consignes sera automatiquement envoyé à <strong style={{ color: '#fff' }}>{selectedAppForTest.email}</strong>.
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  className="btn-dash-approve"
+                  style={{ background: '#1c2438', color: '#fff', border: '1px solid #334155' }}
+                  onClick={() => setShowScheduleTestModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="auth-submit-btn"
+                  style={{ width: 'auto', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  disabled={schedulingTest}
+                >
+                  <Send size={16} />
+                  <span>{schedulingTest ? 'Convocation en cours...' : 'Confirmer & Envoyer la Convocation'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: IDENTIFIANTS DU JOUEUR ADMIS */}
+      {passwordAlertModal && (
+        <div className="dash-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setPasswordAlertModal(null); }}>
+          <div className="dash-modal-box" style={{ maxWidth: '520px', textAlign: 'center' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'rgba(34, 197, 94, 0.15)',
+              border: '1px solid #22c55e',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              color: '#4ade80'
+            }}>
+              <CheckCircle2 size={32} />
+            </div>
+
+            <h3 className="dash-modal-title" style={{ margin: '0 0 8px 0', fontSize: '20px' }}>
+              Candidat Admis dans le Roster
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '13px', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+              Le compte joueur officiel de <strong>{passwordAlertModal.gamertag}</strong> a été créé et activé avec le rôle joueur. L'email officiel contenant ses identifiants lui a été transmis.
+            </p>
+
+            <div style={{
+              background: '#090d16',
+              border: '1px solid #1e293b',
+              borderRadius: '8px',
+              padding: '16px',
+              textAlign: 'left',
+              marginBottom: '20px',
+              fontSize: '13px'
+            }}>
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ color: '#64748b', display: 'inline-block', width: '120px' }}>Identifiant :</span>
+                <strong style={{ color: '#fff' }}>{passwordAlertModal.email}</strong>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ color: '#64748b', display: 'inline-block', width: '120px' }}>Mot de passe :</span>
+                  <code style={{ color: '#4ade80', fontSize: '15px', fontWeight: 'bold', background: '#141824', padding: '3px 8px', borderRadius: '4px' }}>
+                    {passwordAlertModal.password}
+                  </code>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(passwordAlertModal.password);
+                    showToast('Mot de passe copié !', 'success');
+                  }}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#fff',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Copier
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-dash-approve"
+              style={{ width: '100%', padding: '10px', fontSize: '13px', fontWeight: '700' }}
+              onClick={() => setPasswordAlertModal(null)}
+            >
+              Fermer
+            </button>
           </div>
         </div>
       )}

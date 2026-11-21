@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
 import { DiscordIcon, GoogleIcon } from './SocialIcons';
 
-const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
+const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRecruitment }) => {
   const [tab, setTab] = useState(initialTab); // 'login' | 'register' | 'recovery'
   const { login } = useAuth();
 
@@ -19,11 +19,13 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [recruitmentNotice, setRecruitmentNotice] = useState(null);
 
   React.useEffect(() => {
     if (initialTab) setTab(initialTab);
     setErrorMsg('');
     setSuccessMsg('');
+    setRecruitmentNotice(null);
     setRecoveryStep(1);
     setRecoveryCode('');
   }, [initialTab, isOpen]);
@@ -52,6 +54,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+    setRecruitmentNotice(null);
     setLoading(true);
     try {
       const res = await API.post('/auth/register', regData);
@@ -61,7 +64,15 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
         setLoginData({ identifier: regData.email, password: regData.password });
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Erreur lors de la création du compte.');
+      if (err.response?.status === 403 && err.response?.data?.needsRecruitment) {
+        setRecruitmentNotice({
+          message: err.response.data.message,
+          email: regData.email,
+          url: err.response.data.recruitmentUrl
+        });
+      } else {
+        setErrorMsg(err.response?.data?.message || err.message || 'Erreur lors de la création du compte.');
+      }
     } finally {
       setLoading(false);
     }
@@ -322,7 +333,54 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
 
         {/* TAB 2: REGISTER */}
         {tab === 'register' && (
-          <form id="rform" onSubmit={handleRegisterSubmit}>
+          <div>
+            {recruitmentNotice ? (
+              <div
+                style={{
+                  background: 'rgba(230, 0, 0, 0.1)',
+                  border: '1px solid #cc2222',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  marginBottom: '16px',
+                  lineHeight: 1.5,
+                  fontSize: '13px',
+                  color: '#cbd5e1'
+                }}
+              >
+                <div style={{ color: '#ff6666', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontSize: '12px' }}>
+                  Inscription Fermée (Sur Test de Sélection)
+                </div>
+                <p style={{ margin: '0 0 12px 0' }}>{recruitmentNotice.message}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenRecruitment) {
+                      onOpenRecruitment(recruitmentNotice.email);
+                    } else {
+                      window.location.href = `/recrutement?email=${encodeURIComponent(recruitmentNotice.email)}`;
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    background: '#cc2222',
+                    border: '1px solid #ff3333',
+                    color: '#fff',
+                    padding: '10px 16px',
+                    borderRadius: '6px',
+                    fontWeight: '700',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Remplir le Formulaire de Recrutement
+                </button>
+              </div>
+            ) : null}
+
+            <form id="rform" onSubmit={handleRegisterSubmit}>
             <div className="mfld">
               <label className="mlbl">Username</label>
               <input
@@ -418,6 +476,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess }) => {
               </button>
             </div>
           </form>
+          </div>
         )}
 
         {/* TAB 3: RÉCUPÉRATION DU MOT DE PASSE */}

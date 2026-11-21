@@ -6,7 +6,7 @@ import API from '../services/api';
 import { Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { DiscordIcon, GoogleIcon } from '../components/SocialIcons';
 
-const LoginPage = () => {
+const LoginPage = ({ onOpenRecruitment }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, setSession } = useAuth();
@@ -193,9 +193,36 @@ const LoginPage = () => {
           <GoogleIcon size={18} /> Se connecter avec Google
         </button>
 
-        {/* Register Footer Link matching mockup */}
-        <div className="auth-footer-link">
-          Pas encore de compte ? <Link to="/register">Inscrivez-vous</Link>
+        {/* Register Footer Link */}
+        <div className="auth-footer-link" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+          <div style={{ color: '#94a3b8', fontSize: '12px' }}>
+            Inscriptions fermées : réservées aux candidats acceptés.
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const emailVal = identifier.includes('@') ? identifier : '';
+              if (onOpenRecruitment) {
+                onOpenRecruitment(emailVal);
+              } else {
+                window.location.href = emailVal ? `/recrutement?email=${encodeURIComponent(emailVal)}` : '/recrutement';
+              }
+            }}
+            style={{
+              background: 'rgba(230, 0, 0, 0.1)',
+              border: '1px solid var(--red-primary)',
+              color: '#ffffff',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}
+          >
+            Postuler au Recrutement Joueur
+          </button>
         </div>
       </div>
     </div>

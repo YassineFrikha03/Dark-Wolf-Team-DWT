@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Application = require('../models/Application');
 const Player = require('../models/Player');
 const User = require('../models/User');
@@ -6,10 +7,13 @@ const Notification = require('../models/Notification');
 const {
   sendApplicationSubmittedEmail,
   sendAdminApplicationAlert,
+  sendTestScheduledEmail,
+  sendApplicationAcceptedEmail,
+  sendApplicationRejectedEmail,
   sendApplicationStatusEmail
 } = require('../config/mailer');
 
-// @desc    Soumettre une candidature pour rejoindre l'équipe (Tryout / Recrutement)
+// @desc    Soumettre une candidature pour rejoindre l'equipe (Tryout / Recrutement)
 // @route   POST /api/applications
 // @access  Public
 const submitApplication = async (req, res, next) => {
@@ -33,48 +37,52 @@ const submitApplication = async (req, res, next) => {
       });
     }
 
-    // Vérifier si une candidature existe déjà pour cet email ou discord
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Verifier si une candidature existe deja pour cet email ou discord
     let application = await Application.findOne({
-      $or: [{ email: email.toLowerCase() }, { discordTag }]
+      $or: [{ email: cleanEmail }, { discordTag }]
     });
 
     if (application) {
-      // Mettre à jour la candidature existante avec les nouvelles informations
-      application.gamertag = gamertag;
-      application.email = email.toLowerCase();
-      application.discordTag = discordTag;
-      application.age = age;
+      application.gamertag = gamertag.trim();
+      application.email = cleanEmail;
+      application.discordTag = discordTag.trim();
+      application.age = Number(age);
       application.game = game;
       application.rank = rank;
-      application.rolePreference = rolePreference || 'Dueliste';
+      application.rolePreference = rolePreference || 'Flexible';
       application.experience = experience;
       if (trackerUrl) application.trackerUrl = trackerUrl;
-      application.status = 'pending';
+      // Remettre en pending si ce n'etait pas deja accepte
+      if (application.status !== 'accepted') {
+        application.status = 'pending';
+      }
       await application.save();
     } else {
       application = await Application.create({
-        gamertag,
-        email: email.toLowerCase(),
-        discordTag,
-        age,
+        gamertag: gamertag.trim(),
+        email: cleanEmail,
+        discordTag: discordTag.trim(),
+        age: Number(age),
         game,
         rank,
-        rolePreference,
+        rolePreference: rolePreference || 'Flexible',
         experience,
-        trackerUrl
+        trackerUrl: trackerUrl || ''
       });
     }
 
-    // Créer une notification immédiate pour le Dashboard Admin
+    // Creer une notification pour le Dashboard Admin
     await Notification.create({
       recipientRole: 'admin',
       type: 'message',
-      title: `🐺 Nouvelle Candidature : ${gamertag}`,
-      message: `[${game} - ${rank}] ${gamertag} a postulé pour intégrer la meute. Email : ${email}`,
+      title: `Nouvelle Candidature : ${application.gamertag}`,
+      message: `[${game} - ${rank}] ${application.gamertag} a postule pour integrer la structure. Email : ${cleanEmail}`,
       metadata: {
         applicationId: application._id,
-        gamertag,
-        email: email.toLowerCase(),
+        gamertag: application.gamertag,
+        email: cleanEmail,
         game,
         rank,
         discordTag
@@ -83,7 +91,7 @@ const submitApplication = async (req, res, next) => {
 
     // Envoi des notifications par email via Nodemailer
     sendApplicationSubmittedEmail(application).catch((err) =>
-      console.error('Erreur email confirmation joueur :', err.message)
+      console.error('Erreur email confirmation candidat :', err.message)
     );
     sendAdminApplicationAlert(application).catch((err) =>
       console.error('Erreur email alerte admin recrutement :', err.message)
@@ -91,7 +99,65 @@ const submitApplication = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Ta candidature a été envoyée avec succès au staff Dark Wolf Team ! Elle est visible dans le dashboard admin. 🐺🎯',
+      message: 'Votre candidature a ete transmise avec succes a la direction esport Dark Wolf Team. Vous recevrez une reponse par email.',
+      application
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Planifier la date et l'heure du test de recrutement
+// @route   PUT /api/applications/:id/schedule-test
+// @access  Prive (Admin/Staff)
+const scheduleTest = async (req, res, next) => {
+  try {
+    const { testDate, testTime, testLocation, testNotes } = req.body;
+
+    if (!testDate || !testTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Veuillez renseigner la date et l heure du test de recrutement'
+      });
+    }
+
+    const application = await Application.findById(req.params.id);
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidature introuvable'
+      });
+    }
+
+    application.testDate = new Date(testDate);
+    application.testTime = String(testTime).trim();
+    if (testLocation) application.testLocation = String(testLocation).trim();
+    if (testNotes !== undefined) application.testNotes = String(testNotes).trim();
+    application.status = 'test_scheduled';
+
+    await application.save();
+
+    // Envoi automatique de l'email officiel de convocation au joueur
+    sendTestScheduledEmail(application).catch((err) =>
+      console.error('Erreur envoi email convocation test :', err.message)
+    );
+
+    // Creer notification admin
+    await Notification.create({
+      recipientRole: 'admin',
+      type: 'message',
+      title: `Test de recrutement planifie : ${application.gamertag}`,
+      message: `Test fixe au ${application.testDate.toLocaleDateString('fr-FR')} a ${application.testTime} pour ${application.gamertag} (${application.game}).`,
+      metadata: {
+        applicationId: application._id,
+        gamertag: application.gamertag,
+        game: application.game
+      }
+    }).catch(() => null);
+
+    res.status(200).json({
+      success: true,
+      message: `Test de recrutement planifie avec succes pour ${application.gamertag}. L'email officiel de convocation a ete envoye a ${application.email}.`,
       application
     });
   } catch (error) {
@@ -101,7 +167,7 @@ const submitApplication = async (req, res, next) => {
 
 // @desc    Obtenir toutes les candidatures avec filtres
 // @route   GET /api/applications
-// @access  Privé (Admin/Staff)
+// @access  Prive (Admin/Staff)
 const getApplications = async (req, res, next) => {
   try {
     const { status, game, search } = req.query;
@@ -129,9 +195,9 @@ const getApplications = async (req, res, next) => {
   }
 };
 
-// @desc    Obtenir les détails d'une candidature
+// @desc    Obtenir les details d'une candidature
 // @route   GET /api/applications/:id
-// @access  Privé (Admin/Staff)
+// @access  Prive (Admin/Staff)
 const getApplicationById = async (req, res, next) => {
   try {
     const application = await Application.findById(req.params.id);
@@ -151,17 +217,17 @@ const getApplicationById = async (req, res, next) => {
   }
 };
 
-// @desc    Mettre à jour le statut d'une candidature (acceptée / refusée / en examen) + envoi d'email
+// @desc    Mettre a jour le statut d'une candidature (acceptee / refusee / en examen)
 // @route   PUT /api/applications/:id/status
-// @access  Privé (Admin/Staff)
+// @access  Prive (Admin/Staff)
 const updateApplicationStatus = async (req, res, next) => {
   try {
     const { status, adminNotes, notifyCandidate, customMessage } = req.body;
 
-    if (!['pending', 'under_review', 'accepted', 'rejected'].includes(status)) {
+    if (!['pending', 'test_scheduled', 'under_review', 'accepted', 'rejected'].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: 'Statut invalide (pending, under_review, accepted, rejected)'
+        message: 'Statut invalide (pending, test_scheduled, under_review, accepted, rejected)'
       });
     }
 
@@ -175,15 +241,21 @@ const updateApplicationStatus = async (req, res, next) => {
 
     application.status = status;
     if (adminNotes !== undefined) application.adminNotes = adminNotes;
-    await application.save();
 
     let createdPlayer = null;
     let userAccount = null;
+    let generatedPassword = null;
 
-    // Si la candidature est acceptée : intégration automatique au roster et ouverture de la communication
+    // Si la candidature est acceptee : generation du compte joueur et integration complete
     if (status === 'accepted') {
-      // 1. Ajouter le joueur à la liste officielle des joueurs (Player) s'il n'existe pas encore
       const cleanGamertag = application.gamertag.trim();
+      const cleanEmail = application.email.toLowerCase().trim();
+
+      // Generation d'un mot de passe temporaire securise
+      generatedPassword = 'DWT-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+      application.generatedPassword = generatedPassword;
+
+      // 1. Creation ou mise a jour du Player officiel pour le roster
       let existingPlayer = await Player.findOne({
         gamertag: { $regex: new RegExp(`^${cleanGamertag}$`, 'i') }
       });
@@ -195,7 +267,7 @@ const updateApplicationStatus = async (req, res, next) => {
           nationality: 'FR',
           game: application.game || 'Valorant',
           role: application.rolePreference || 'Dueliste',
-          rank: application.rank || 'Compétitif',
+          rank: application.rank || 'Competitif',
           avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80',
           bio: application.experience
             ? (application.experience.length > 150 ? application.experience.slice(0, 147) + '...' : application.experience)
@@ -209,8 +281,7 @@ const updateApplicationStatus = async (req, res, next) => {
       }
       createdPlayer = existingPlayer;
 
-      // 2. Vérifier ou créer le compte utilisateur (User) avec le rôle 'player'
-      const cleanEmail = application.email.toLowerCase().trim();
+      // 2. Creation ou mise a jour du compte User (Role: player)
       userAccount = await User.findOne({
         $or: [
           { email: cleanEmail },
@@ -220,16 +291,15 @@ const updateApplicationStatus = async (req, res, next) => {
 
       if (userAccount) {
         userAccount.role = 'player';
+        userAccount.password = generatedPassword; // Le hook pre('save') hash automatiquement le mot de passe
         if (application.discordTag) userAccount.discordTag = application.discordTag;
         if (application.game) userAccount.favoriteGame = application.game;
         await userAccount.save();
       } else {
-        // Créer un compte pour que le joueur puisse se connecter à l'espace joueur (PlayerDashboard)
-        const tempPassword = 'DWT2026!player';
         userAccount = await User.create({
           gamertag: cleanGamertag,
           email: cleanEmail,
-          password: tempPassword,
+          password: generatedPassword,
           role: 'player',
           discordTag: application.discordTag || '',
           favoriteGame: application.game || 'Valorant',
@@ -237,7 +307,7 @@ const updateApplicationStatus = async (req, res, next) => {
         });
       }
 
-      // 3. Ouvrir l'espace de communication entre l'Admin et le Joueur
+      // 3. Ouvrir l'espace de messagerie entre l'Admin et le Joueur
       let adminSenderId = req.user?._id;
       if (!adminSenderId) {
         const adminUser = await User.findOne({ role: 'admin' });
@@ -245,38 +315,48 @@ const updateApplicationStatus = async (req, res, next) => {
       }
 
       if (adminSenderId && userAccount?._id) {
-        const welcomeText = `🐺 Bienvenue dans la meute Dark Wolf Team, ${cleanGamertag} ! Ta candidature pour le roster ${application.game} a été validée avec succès. Cet espace de messagerie privé te permet d'échanger en direct avec le staff. Prépare-toi pour les scrims et tournois !`;
+        const welcomeText = `Bienvenue dans la meute Dark Wolf Team, ${cleanGamertag}. Votre candidature pour le roster ${application.game} a ete validee avec succes suite a votre test. Cet espace de messagerie securise vous permet d'echanger directement avec le staff. Preparez-vous pour les prochains entrainements et matchs officiels.`;
         
         await Message.create({
           sender: adminSenderId,
           receiver: userAccount._id,
           content: welcomeText
-        });
+        }).catch(() => null);
 
         await Notification.create({
           recipient: userAccount._id,
           recipientRole: 'user',
           type: 'message',
-          title: '🐺 Félicitations, tu rejoins la Dark Wolf Team !',
-          message: `Ta candidature sur ${application.game} a été acceptée par le staff ! Rendez-vous sur ton Espace Joueur.`,
+          title: 'Admission confirmee dans la Dark Wolf Team',
+          message: `Votre candidature sur ${application.game} a ete acceptee. Vos coordonnees et votre Espace Joueur sont desormais actifs.`,
           metadata: { senderId: adminSenderId }
-        }).catch(err => console.error('Erreur notification joueur :', err.message));
+        }).catch(() => null);
+      }
+
+      // 4. Envoi de l'email officiel avec les identifiants generes
+      if (notifyCandidate !== false) {
+        sendApplicationAcceptedEmail(application, generatedPassword).catch((err) =>
+          console.error('Erreur email admission candidat :', err.message)
+        );
+      }
+    } else if (status === 'rejected') {
+      // Envoi de l'email de refus poli et remerciement
+      if (notifyCandidate !== false) {
+        sendApplicationRejectedEmail(application, customMessage || adminNotes).catch((err) =>
+          console.error('Erreur email refus candidature :', err.message)
+        );
       }
     }
 
-    // Notifier le candidat par email si demandé (par défaut oui si accepted/rejected)
-    if (notifyCandidate !== false && (status === 'accepted' || status === 'rejected')) {
-      sendApplicationStatusEmail(application, customMessage || adminNotes).catch((err) =>
-        console.error('Erreur email statut candidature :', err.message)
-      );
-    }
+    await application.save();
 
     res.status(200).json({
       success: true,
       message: status === 'accepted'
-        ? `Candidature acceptée ! Le joueur ${application.gamertag} a été automatiquement ajouté au roster officiel et son espace de communication est activé. 🐺🎮`
-        : `Statut de la candidature mis à jour (${status}) et notification par email envoyée !`,
+        ? `Candidature validee avec succes. Le joueur ${application.gamertag} a ete integre au roster et un mot de passe a ete genere (${generatedPassword}). L'email officiel lui a ete transmis.`
+        : `Statut de la candidature mis a jour (${status}) et notification transmise au candidat.`,
       application,
+      generatedPassword: generatedPassword || application.generatedPassword,
       player: createdPlayer,
       user: userAccount
     });
@@ -287,7 +367,7 @@ const updateApplicationStatus = async (req, res, next) => {
 
 // @desc    Supprimer une candidature
 // @route   DELETE /api/applications/:id
-// @access  Privé (Admin)
+// @access  Prive (Admin)
 const deleteApplication = async (req, res, next) => {
   try {
     const application = await Application.findByIdAndDelete(req.params.id);
@@ -300,7 +380,7 @@ const deleteApplication = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Candidature supprimée'
+      message: 'Candidature supprimee avec succes'
     });
   } catch (error) {
     next(error);
@@ -309,6 +389,7 @@ const deleteApplication = async (req, res, next) => {
 
 module.exports = {
   submitApplication,
+  scheduleTest,
   getApplications,
   getApplicationById,
   updateApplicationStatus,

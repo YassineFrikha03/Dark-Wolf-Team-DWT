@@ -21,7 +21,7 @@ const applicationSchema = new mongoose.Schema(
     age: {
       type: Number,
       required: [true, "L'âge est obligatoire"],
-      min: [13, 'L\'âge minimum est de 13 ans']
+      min: [13, "L'âge minimum est de 13 ans"]
     },
     game: {
       type: String,
@@ -37,7 +37,7 @@ const applicationSchema = new mongoose.Schema(
     },
     experience: {
       type: String,
-      required: [true, 'L\'expérience et la motivation sont obligatoires']
+      required: [true, "L'expérience et la motivation sont obligatoires"]
     },
     trackerUrl: {
       type: String,
@@ -45,8 +45,28 @@ const applicationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'under_review', 'accepted', 'rejected'],
+      enum: ['pending', 'test_scheduled', 'under_review', 'accepted', 'rejected'],
       default: 'pending'
+    },
+    testDate: {
+      type: Date,
+      default: null
+    },
+    testTime: {
+      type: String,
+      default: ''
+    },
+    testLocation: {
+      type: String,
+      default: 'Serveur Discord Vocal Dark Wolf Team'
+    },
+    testNotes: {
+      type: String,
+      default: ''
+    },
+    generatedPassword: {
+      type: String,
+      default: ''
     },
     adminNotes: {
       type: String,

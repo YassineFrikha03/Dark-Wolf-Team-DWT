@@ -32,6 +32,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import PlayerDashboardPage from './pages/PlayerDashboardPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import RecruitmentPage from './pages/RecruitmentPage';
 import ShopPage from './pages/ShopPage';
 import CustomizerModal from './customizer/CustomizerModal';
 
@@ -45,6 +46,7 @@ function AppContent() {
     if (path === '/espace-joueur' || hash === '#espace-joueur' || path === '/player' || hash === '#player') return 'player';
     if (path === '/login') return 'login';
     if (path === '/forgot-password' || path === '/reset-password') return 'forgot-password';
+    if (path === '/recrutement' || path === '/candidature' || hash === '#recrutement') return 'recruitment';
     if (path === '/shop' || path === '/boutique' || hash === '#shop-page' || path === '/custom' || path === '/studio') return 'shop';
     return 'site';
   });
@@ -179,6 +181,12 @@ function AppContent() {
       setCurrentView('login');
     } else if (path === '/forgot-password' || path === '/reset-password') {
       setCurrentView('forgot-password');
+    } else if (path === '/recrutement' || path === '/candidature' || hash === '#recrutement') {
+      try {
+        sessionStorage.setItem('dwt_intro_seen', 'true');
+      } catch {}
+      setHasSeenIntro(true);
+      setCurrentView('recruitment');
     } else if (path === '/custom' || path === '/studio') {
       try {
         sessionStorage.setItem('dwt_intro_seen', 'true');
@@ -275,6 +283,16 @@ function AppContent() {
     window.history.pushState(null, '', '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     fetchData(); // refresh data modified in admin or player dashboard
+  };
+
+  const goToRecruitment = (email = '') => {
+    try {
+      sessionStorage.setItem('dwt_intro_seen', 'true');
+    } catch {}
+    setHasSeenIntro(true);
+    setCurrentView('recruitment');
+    window.history.pushState(null, '', email ? `/recrutement?email=${encodeURIComponent(email)}` : '/recrutement');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Keyboard shortcut: Escape closes open modal
@@ -802,7 +820,7 @@ function AppContent() {
             onBackToSite={goToSite}
           />
           <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 60px' }}>
-            <LoginPage />
+            <LoginPage onOpenRecruitment={goToRecruitment} />
           </main>
           <Footer
             onOpenMuseum={openMuseum}
@@ -838,6 +856,41 @@ function AppContent() {
           />
           <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 60px' }}>
             <ForgotPasswordPage />
+          </main>
+          <Footer
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onOpenPlayer={goToPlayer}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
+          />
+        </div>
+      )}
+
+      {currentView === 'recruitment' && (
+        <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', flexDirection: 'column' }}>
+          <Navbar
+            onOpenAuth={openAuth}
+            onOpenMuseum={openMuseum}
+            onOpenMembers={openMembers}
+            onToggleCart={() => setIsCartOpen(!isCartOpen)}
+            onOpenFanPortal={openFanPortal}
+            onOpenPlayer={goToPlayer}
+            onOpenAdmin={goToAdmin}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenPartners={() => setIsPartnersOpen(true)}
+            onSelectShopCategory={handleSelectShopCategory}
+            onOpenShop={goToShop}
+            onOpenCustomStudio={handleOpenCustomStudio}
+            onBackToSite={goToSite}
+          />
+          <main style={{ flex: 1 }}>
+            <RecruitmentPage onBackToSite={goToSite} />
           </main>
           <Footer
             onOpenMuseum={openMuseum}
@@ -910,7 +963,7 @@ function AppContent() {
         <CountdownSection />
 
         {/* Join Us */}
-        <JoinSection />
+        <JoinSection onOpenRecruitment={goToRecruitment} />
 
         {/* Contact DWT */}
         <ContactSection />
@@ -959,6 +1012,7 @@ function AppContent() {
         isOpen={authModal.isOpen}
         initialTab={authModal.tab}
         onClose={closeAuth}
+        onOpenRecruitment={goToRecruitment}
         onSuccess={(loggedUser) => {
           if (loggedUser?.role === 'admin' || loggedUser?.role === 'moderator') {
             goToAdmin();
