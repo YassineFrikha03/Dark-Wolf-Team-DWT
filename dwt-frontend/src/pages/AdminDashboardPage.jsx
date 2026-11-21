@@ -243,6 +243,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const [schedulingTest, setSchedulingTest] = useState(false);
   const [passwordAlertModal, setPasswordAlertModal] = useState(null);
 
+  // Espace Dédié Indépendant Recrutement & Tests
+  const [recruitmentStatusFilter, setRecruitmentStatusFilter] = useState('all');
+  const [recruitmentGameFilter, setRecruitmentGameFilter] = useState('all');
+  const [recruitmentSearchQuery, setRecruitmentSearchQuery] = useState('');
+
   // Gestion Équipement Custom (Studio Custom & Fixation des Prix)
   const [customGearList, setCustomGearList] = useState([]);
   const [previewStudioModal, setPreviewStudioModal] = useState(false);
@@ -658,8 +663,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       setUnreadNotifCount(prev => Math.max(0, prev - 1));
 
       if (notif.metadata?.applicationId || notif.title?.includes('Candidature')) {
-        setActiveNav('Gestion des Joueurs');
-        setPlayerSubTab('candidatures');
+        setActiveNav('Recrutement & Tests');
       } else if (notif.metadata?.contactId || notif.title?.includes('Contact')) {
         setActiveNav('Messagerie & Contact');
         setMsgSubTab('contact');
@@ -1181,6 +1185,19 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
       fetchAllData();
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur lors de la mise à jour de la candidature', 'error');
+    }
+  };
+
+  const handleDeleteApplication = async (appId) => {
+    const confirmDelete = window.confirm('Êtes-vous sûr de vouloir supprimer définitivement cette candidature ?');
+    if (!confirmDelete) return;
+    try {
+      await API.delete(`/applications/${appId}`);
+      setRecruitmentList(prev => prev.filter(a => a._id !== appId));
+      showToast('Candidature supprimée avec succès', 'info');
+      fetchAllData();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Erreur lors de la suppression de la candidature', 'error');
     }
   };
 
@@ -2205,10 +2222,12 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   };
 
   const pendingAppsCount = recruitmentList.filter(a => a.status === 'pending').length;
-  const totalUnreadMessages = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0) + contactUnreadCount + pendingAppsCount;
+  const totalUnreadMessages = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0) + contactUnreadCount;
 
   const sidebarLinks = [
     { label: 'Tableau de Bord', icon: <LayoutDashboard size={18} /> },
+    { label: 'Recrutement & Tests', icon: <UserCheck size={18} />, badge: pendingAppsCount },
+    { label: 'Gestion des Joueurs', icon: <Users size={18} /> },
     { label: 'Compte à Rebours', icon: <Timer size={18} />, badge: activeCountdown?.isActive ? 'Actif' : undefined },
     { label: 'Affiches Cinématiques', icon: <SlidersHorizontal size={18} />, badge: slidesList.length },
     { label: 'Sponsors & Marques', icon: <Shield size={18} /> },
@@ -2218,7 +2237,6 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     { label: 'Boutique & Ventes', icon: <ShoppingBag size={18} /> },
     { label: 'Studio Custom', icon: <Palette size={18} />, badge: customGearList.length },
     { label: 'Messagerie & Contact', icon: <MessageSquare size={18} />, badge: totalUnreadMessages },
-    { label: 'Gestion des Joueurs', icon: <Users size={18} />, badge: pendingAppsCount },
     { label: 'Tournois', icon: <Trophy size={18} /> },
     { label: 'Actualités', icon: <FileText size={18} /> },
     { label: 'Paramètres', icon: <Settings size={18} /> },
@@ -2706,8 +2724,27 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
 
               {/* Candidatures Recrutement */}
               <div className="dash-card">
-                <div className="dash-card-header">
-                  <span className="dash-card-title">Candidatures Recrutement ({recruitmentList.filter(a => a.status === 'pending').length})</span>
+                <div className="dash-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="dash-card-title">Candidatures Recrutement ({recruitmentList.filter(a => a.status === 'pending').length} en attente)</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav('Recrutement & Tests')}
+                    style={{
+                      background: 'rgba(56, 189, 248, 0.15)',
+                      border: '1px solid #38bdf8',
+                      color: '#38bdf8',
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <UserCheck size={13} /> Ouvrir l'Espace Recrutement & Tests
+                  </button>
                 </div>
                 <div className="dash-list-col">
                   {recruitmentList.length === 0 ? (
@@ -4292,6 +4329,542 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
               )}
             </div>
           )}
+
+          {/* TAB RECRUTEMENT & TESTS: ESPACE INDEPENDANT DEDIE */}
+          {activeNav === 'Recrutement & Tests' && (() => {
+            const allRecruitmentGames = Array.from(
+              new Set([
+                ...gamesList.map((g) => g.name),
+                ...recruitmentList.map((a) => a.game)
+              ].filter(Boolean))
+            );
+
+            const filteredRecruitmentList = recruitmentList.filter((app) => {
+              if (recruitmentStatusFilter !== 'all' && app.status !== recruitmentStatusFilter) return false;
+              if (
+                recruitmentGameFilter !== 'all' &&
+                (app.game || '').toLowerCase() !== recruitmentGameFilter.toLowerCase()
+              ) {
+                return false;
+              }
+              if (recruitmentSearchQuery.trim()) {
+                const q = recruitmentSearchQuery.toLowerCase();
+                const matchG = (app.gamertag || '').toLowerCase().includes(q);
+                const matchE = (app.email || '').toLowerCase().includes(q);
+                const matchD = (app.discordTag || '').toLowerCase().includes(q);
+                const matchR = (app.rank || '').toLowerCase().includes(q);
+                const matchGame = (app.game || '').toLowerCase().includes(q);
+                if (!matchG && !matchE && !matchD && !matchR && !matchGame) return false;
+              }
+              return true;
+            });
+
+            const totalApps = recruitmentList.length;
+            const pendingApps = recruitmentList.filter((a) => a.status === 'pending').length;
+            const scheduledApps = recruitmentList.filter((a) => a.status === 'test_scheduled').length;
+            const acceptedApps = recruitmentList.filter((a) => a.status === 'accepted').length;
+            const rejectedApps = recruitmentList.filter((a) => a.status === 'rejected').length;
+
+            return (
+              <div className="dash-card">
+                {/* Header Espace Recrutement */}
+                <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
+                  <div>
+                    <h2 className="dash-card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <UserCheck size={24} color="var(--red-primary)" />
+                      <span>Espace Recrutement & Tests de Sélection ({totalApps})</span>
+                    </h2>
+                    <div style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px', maxWidth: '750px', lineHeight: 1.5 }}>
+                      Gérez les candidatures reçues, fixez la date et l'heure du test pratique avec envoi automatique de convocation par email au joueur, et validez l'admission officielle au sein du roster Dark Wolf Team.
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="dash-more-btn"
+                      onClick={fetchAllData}
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '12px' }}
+                      title="Actualiser les candidatures"
+                    >
+                      <RefreshCw size={14} /> Actualiser
+                    </button>
+                    <a
+                      href="/recrutement"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-dash-approve"
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '12px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid #38bdf8', color: '#38bdf8', textDecoration: 'none' }}
+                    >
+                      <ExternalLink size={14} /> Voir Formulaire Public
+                    </a>
+                  </div>
+                </div>
+
+                {/* 5 Stats Cards Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', margin: '20px 0' }}>
+                  <div
+                    onClick={() => setRecruitmentStatusFilter('all')}
+                    style={{
+                      background: recruitmentStatusFilter === 'all' ? 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(10,14,24,0.9))' : '#0a0d14',
+                      border: recruitmentStatusFilter === 'all' ? '1px solid rgba(255,255,255,0.4)' : '1px solid #1a2336',
+                      borderRadius: '8px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Total Dossiers</div>
+                    <div style={{ fontSize: '24px', fontWeight: '900', color: '#ffffff', marginTop: '4px' }}>{totalApps}</div>
+                  </div>
+
+                  <div
+                    onClick={() => setRecruitmentStatusFilter('pending')}
+                    style={{
+                      background: recruitmentStatusFilter === 'pending' ? 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(10,14,24,0.9))' : '#0a0d14',
+                      border: recruitmentStatusFilter === 'pending' ? '1px solid #fbbf24' : '1px solid #1a2336',
+                      borderRadius: '8px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', color: '#fbbf24', textTransform: 'uppercase', fontWeight: '700' }}>En Attente d'Examen</div>
+                    <div style={{ fontSize: '24px', fontWeight: '900', color: '#fbbf24', marginTop: '4px' }}>{pendingApps}</div>
+                  </div>
+
+                  <div
+                    onClick={() => setRecruitmentStatusFilter('test_scheduled')}
+                    style={{
+                      background: recruitmentStatusFilter === 'test_scheduled' ? 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(10,14,24,0.9))' : '#0a0d14',
+                      border: recruitmentStatusFilter === 'test_scheduled' ? '1px solid #38bdf8' : '1px solid #1a2336',
+                      borderRadius: '8px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', fontWeight: '700' }}>Tests Programmés</div>
+                    <div style={{ fontSize: '24px', fontWeight: '900', color: '#38bdf8', marginTop: '4px' }}>{scheduledApps}</div>
+                  </div>
+
+                  <div
+                    onClick={() => setRecruitmentStatusFilter('accepted')}
+                    style={{
+                      background: recruitmentStatusFilter === 'accepted' ? 'linear-gradient(135deg, rgba(74,222,128,0.15), rgba(10,14,24,0.9))' : '#0a0d14',
+                      border: recruitmentStatusFilter === 'accepted' ? '1px solid #4ade80' : '1px solid #1a2336',
+                      borderRadius: '8px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', color: '#4ade80', textTransform: 'uppercase', fontWeight: '700' }}>Admis au Roster</div>
+                    <div style={{ fontSize: '24px', fontWeight: '900', color: '#4ade80', marginTop: '4px' }}>{acceptedApps}</div>
+                  </div>
+
+                  <div
+                    onClick={() => setRecruitmentStatusFilter('rejected')}
+                    style={{
+                      background: recruitmentStatusFilter === 'rejected' ? 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(10,14,24,0.9))' : '#0a0d14',
+                      border: recruitmentStatusFilter === 'rejected' ? '1px solid #f87171' : '1px solid #1a2336',
+                      borderRadius: '8px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', color: '#f87171', textTransform: 'uppercase', fontWeight: '700' }}>Refusés</div>
+                    <div style={{ fontSize: '24px', fontWeight: '900', color: '#f87171', marginTop: '4px' }}>{rejectedApps}</div>
+                  </div>
+                </div>
+
+                {/* Toolbar Filtres & Recherche */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  background: '#090d16',
+                  border: '1px solid #1e293b',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  marginBottom: '20px'
+                }}>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {[
+                      { key: 'all', label: 'Toutes' },
+                      { key: 'pending', label: 'En attente' },
+                      { key: 'test_scheduled', label: 'Tests fixés' },
+                      { key: 'accepted', label: 'Admis' },
+                      { key: 'rejected', label: 'Refusés' },
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setRecruitmentStatusFilter(tab.key)}
+                        style={{
+                          background: recruitmentStatusFilter === tab.key ? 'var(--red-primary)' : 'rgba(255,255,255,0.05)',
+                          border: recruitmentStatusFilter === tab.key ? '1px solid #ff3333' : '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff',
+                          padding: '6px 14px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Gamepad2 size={16} color="#94a3b8" />
+                      <select
+                        className="dash-form-select"
+                        style={{ padding: '6px 10px', fontSize: '12px', width: 'auto', minWidth: '140px' }}
+                        value={recruitmentGameFilter}
+                        onChange={(e) => setRecruitmentGameFilter(e.target.value)}
+                      >
+                        <option value="all">Tous les jeux</option>
+                        {allRecruitmentGames.map((g) => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ position: 'relative', width: '220px' }}>
+                      <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                      <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={recruitmentSearchQuery}
+                        onChange={(e) => setRecruitmentSearchQuery(e.target.value)}
+                        className="dash-form-input"
+                        style={{ padding: '6px 10px 6px 30px', fontSize: '12px', width: '100%' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Liste des Candidatures */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {filteredRecruitmentList.length === 0 ? (
+                    <div className="dash-empty-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                      Aucune candidature ne correspond aux critères sélectionnés.
+                    </div>
+                  ) : (
+                    filteredRecruitmentList.map((app) => (
+                      <div
+                        key={app._id}
+                        style={{
+                          background: 'linear-gradient(145deg, #0d1220 0%, #080b12 100%)',
+                          border: app.status === 'test_scheduled'
+                            ? '1px solid rgba(56, 189, 248, 0.4)'
+                            : app.status === 'accepted'
+                            ? '1px solid rgba(74, 222, 128, 0.4)'
+                            : '1px solid #1a2336',
+                          borderRadius: '8px',
+                          padding: '18px 20px',
+                          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.4)'
+                        }}
+                      >
+                        {/* Top Line: Gamertag, Game, Status, Date */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px', marginBottom: '14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '8px',
+                              background: '#151d2e',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              fontSize: '14px',
+                              fontWeight: '800'
+                            }}>
+                              {app.gamertag?.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span style={{ color: '#fff', fontSize: '18px', fontWeight: '800' }}>{app.gamertag}</span>
+                                <span style={{
+                                  background: 'rgba(230, 0, 0, 0.2)',
+                                  border: '1px solid var(--red-primary)',
+                                  color: '#ff6666',
+                                  fontSize: '11px',
+                                  fontWeight: '800',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px'
+                                }}>
+                                  {app.game}
+                                </span>
+                                <span style={{
+                                  background: 'rgba(255, 255, 255, 0.08)',
+                                  color: '#cbd5e1',
+                                  fontSize: '11px',
+                                  fontWeight: '700',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px'
+                                }}>
+                                  Rang: {app.rank}
+                                </span>
+                              </div>
+                              <div style={{ color: '#64748b', fontSize: '12px', marginTop: '2px' }}>
+                                Rôle souhaité : <strong style={{ color: '#94a3b8' }}>{app.rolePreference || 'Flexible'}</strong> • Âge : <strong style={{ color: '#94a3b8' }}>{app.age} ans</strong>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              padding: '3px 10px',
+                              borderRadius: '4px',
+                              background: app.status === 'accepted' ? 'rgba(74, 222, 128, 0.15)' : app.status === 'test_scheduled' ? 'rgba(56, 189, 248, 0.15)' : app.status === 'rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                              color: app.status === 'accepted' ? '#4ade80' : app.status === 'test_scheduled' ? '#38bdf8' : app.status === 'rejected' ? '#f87171' : '#fbbf24',
+                              border: `1px solid ${app.status === 'accepted' ? '#4ade80' : app.status === 'test_scheduled' ? '#38bdf8' : app.status === 'rejected' ? '#f87171' : '#fbbf24'}`
+                            }}>
+                              {app.status === 'accepted' ? 'ADMIS AU ROSTER' : app.status === 'test_scheduled' ? 'TEST PROGRAMME' : app.status === 'rejected' ? 'REFUSE' : 'EN ATTENTE D EXAMEN'}
+                            </span>
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>
+                              Déposé le {new Date(app.createdAt).toLocaleDateString('fr-FR')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Coordonnées & Liens */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '12px', fontSize: '12px', color: '#cbd5e1' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Mail size={14} color="#64748b" />
+                            <span>Email : <strong style={{ color: '#fff' }}>{app.email}</strong></span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Shield size={14} color="#64748b" />
+                            <span>Discord : <strong style={{ color: '#fff' }}>{app.discordTag || '-'}</strong></span>
+                          </div>
+                          {app.trackerUrl && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <ExternalLink size={14} color="#38bdf8" />
+                              <a href={app.trackerUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>
+                                Profil Tracker / VOD
+                              </a>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Expérience & Motivations */}
+                        <div style={{
+                          background: '#070a10',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: '6px',
+                          padding: '10px 14px',
+                          fontSize: '12px',
+                          color: '#cbd5e1',
+                          marginBottom: '14px',
+                          lineHeight: 1.5
+                        }}>
+                          <strong style={{ color: '#94a3b8', display: 'block', marginBottom: '4px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>
+                            Expérience & Motivations du Candidat :
+                          </strong>
+                          "{app.experience}"
+                        </div>
+
+                        {/* BLOC CONVOCATION TEST (SI FIXÉ) */}
+                        {app.testDate && (
+                          <div style={{
+                            background: 'rgba(56, 189, 248, 0.08)',
+                            border: '1px solid rgba(56, 189, 248, 0.35)',
+                            borderRadius: '6px',
+                            padding: '12px 16px',
+                            marginBottom: '14px',
+                            fontSize: '12px'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
+                              <div style={{ color: '#38bdf8', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                <Calendar size={16} />
+                                <span>TEST FIXE LE : {new Date(app.testDate).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} à {app.testTime}</span>
+                              </div>
+                              <span style={{ color: '#4ade80', fontSize: '11px', fontWeight: '700' }}>
+                                ✓ Email officiel envoyé au candidat
+                              </span>
+                            </div>
+                            <div style={{ color: '#cbd5e1', fontSize: '12px' }}>
+                              Lieu / Salon : <strong style={{ color: '#fff' }}>{app.testLocation || 'Serveur Discord Vocal DWT'}</strong>
+                            </div>
+                            {app.testNotes && (
+                              <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '4px' }}>
+                                Consignes du staff : {app.testNotes}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* BLOC COMPTE JOUEUR CRÉÉ (SI ACCEPTÉ) */}
+                        {app.status === 'accepted' && (
+                          <div style={{
+                            background: 'rgba(74, 222, 128, 0.08)',
+                            border: '1px solid rgba(74, 222, 128, 0.35)',
+                            borderRadius: '6px',
+                            padding: '12px 16px',
+                            marginBottom: '14px',
+                            fontSize: '12px'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '4px' }}>
+                              <div style={{ color: '#4ade80', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                <CheckCircle2 size={16} />
+                                <span>JOUEUR OFFICIEL ADMIS AU ROSTER {app.game?.toUpperCase()}</span>
+                              </div>
+                              <span style={{ color: '#4ade80', fontSize: '11px', fontWeight: '700' }}>
+                                ✓ Espace Joueur & Roster Activés
+                              </span>
+                            </div>
+                            <div style={{ color: '#cbd5e1', fontSize: '12px' }}>
+                              Identifiant de connexion : <strong style={{ color: '#fff' }}>{app.email}</strong>
+                              {app.generatedPassword ? (
+                                <span style={{ marginLeft: '14px' }}>
+                                  Mot de passe généré : <code style={{ color: '#4ade80', background: '#0a1420', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{app.generatedPassword}</code>
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ACTION BUTTONS BAR */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+                          {/* Bouton Fixer la date et l'heure du test */}
+                          {app.status !== 'accepted' && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenScheduleTest(app)}
+                              style={{
+                                background: '#0284c7',
+                                border: '1px solid #38bdf8',
+                                color: '#ffffff',
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 10px rgba(2, 132, 199, 0.4)'
+                              }}
+                            >
+                              <Calendar size={14} />
+                              <span>{app.testDate ? 'Modifier le Test' : 'Fixer la date et l\'heure du test'}</span>
+                            </button>
+                          )}
+
+                          {/* Bouton Valider le Test (Accepter dans la Team) */}
+                          {app.status !== 'accepted' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAppStatus(app._id, 'accepted')}
+                              style={{
+                                background: '#16a34a',
+                                border: '1px solid #22c55e',
+                                color: '#ffffff',
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 10px rgba(22, 163, 74, 0.4)'
+                              }}
+                            >
+                              <CheckCircle2 size={14} />
+                              <span>Valider le Test (Accepter dans la Team)</span>
+                            </button>
+                          )}
+
+                          {/* Bouton Discuter */}
+                          <button
+                            type="button"
+                            onClick={() => handleStartChatWithCandidate(app)}
+                            style={{
+                              background: '#1c2438',
+                              border: '1px solid #334155',
+                              color: '#ffffff',
+                              padding: '8px 14px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <MessageSquare size={14} />
+                            <span>Discuter</span>
+                          </button>
+
+                          {/* Bouton Refuser */}
+                          {app.status !== 'rejected' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAppStatus(app._id, 'rejected')}
+                              style={{
+                                background: 'rgba(239, 68, 68, 0.12)',
+                                border: '1px solid #ef4444',
+                                color: '#f87171',
+                                padding: '8px 14px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                            >
+                              <X size={14} />
+                              <span>Refuser</span>
+                            </button>
+                          )}
+
+                          {/* Bouton Supprimer */}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteApplication(app._id)}
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              color: '#64748b',
+                              padding: '8px 10px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            title="Supprimer la candidature"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* TAB 4: GESTION DES JOUEURS & SÉLECTION PAR JEU */}
           {activeNav === 'Gestion des Joueurs' && (() => {
