@@ -60,6 +60,22 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       default: 'Serveur Discord Vocal Dark Wolf Team'
     },
+    testRoom: {
+      type: String,
+      default: 'Salle de Test #01 - Alpha (Public)'
+    },
+    discordUrl: {
+      type: String,
+      default: 'https://discord.gg/darkwolfteam'
+    },
+    assignedTester: {
+      type: String,
+      default: 'Staff Dark Wolf Team'
+    },
+    assignedTesterEmail: {
+      type: String,
+      default: ''
+    },
     testNotes: {
       type: String,
       default: ''

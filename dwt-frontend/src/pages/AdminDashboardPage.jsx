@@ -22,6 +22,7 @@ import {
   Package,
   Layers,
   AlertTriangle,
+  AlertCircle,
   Edit3,
   Send,
   UserCheck,
@@ -237,7 +238,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const [testFormData, setTestFormData] = useState({
     testDate: '',
     testTime: '20:30',
-    testLocation: 'Serveur Discord Vocal DWT - Salon Tryouts 1',
+    testLocation: 'Serveur Discord Vocal DWT',
+    testRoom: 'Salle de Test #01 - Alpha (Public)',
+    discordUrl: 'https://discord.gg/darkwolfteam',
+    assignedTester: 'Staff Dark Wolf Team',
+    assignedTesterEmail: '',
     testNotes: ''
   });
   const [schedulingTest, setSchedulingTest] = useState(false);
@@ -247,6 +252,9 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const [recruitmentStatusFilter, setRecruitmentStatusFilter] = useState('all');
   const [recruitmentGameFilter, setRecruitmentGameFilter] = useState('all');
   const [recruitmentSearchQuery, setRecruitmentSearchQuery] = useState('');
+
+  // Filtre par Jeu pour les Tournois & Matchs
+  const [tournamentGameFilter, setTournamentGameFilter] = useState('all');
 
   // Gestion Équipement Custom (Studio Custom & Fixation des Prix)
   const [customGearList, setCustomGearList] = useState([]);
@@ -1115,17 +1123,69 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     }
   };
 
+  const PUBLIC_TEST_ROOMS = [
+    'Salle de Test #01 - Alpha (Public)',
+    'Salle de Test #02 - Bravo (Public)',
+    'Salle de Test #03 - Charlie (Public)',
+    'Salle de Test #04 - Delta (Public)',
+    'Salle de Test #05 - Echo (Public)'
+  ];
+  const RESERVED_TEST_ROOMS = [
+    'Arène Privée #01 - Staff & Tryouts (Réservée)',
+    'Arène Privée #02 - Staff & Tryouts (Réservée)'
+  ];
+
   const handleOpenScheduleTest = (app) => {
     setSelectedAppForTest(app);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().split('T')[0];
+    const initialTime = app.testTime || '20:30';
+
+    // Roster players pour ce jeu
+    const gamePlayers = playersList.filter(
+      (p) => (p.game || '').toLowerCase() === (app.game || '').toLowerCase()
+    );
+    const defaultTester =
+      gamePlayers.length > 0
+        ? `${gamePlayers[0].gamertag} (${gamePlayers[0].role || 'Capitaine'} ${app.game})`
+        : 'Direction Esport Dark Wolf Team';
+
+    // Sélection aléatoire d'une salle publique avec vérification de non-conflit
+    const checkConflict = (room, date, time) => {
+      return recruitmentList.some(
+        (a) =>
+          a._id !== app._id &&
+          a.status === 'test_scheduled' &&
+          a.testRoom === room &&
+          a.testDate &&
+          new Date(a.testDate).toISOString().split('T')[0] === date &&
+          a.testTime === time
+      );
+    };
+
+    let chosenRoom = app.testRoom;
+    if (!chosenRoom) {
+      // Tirage aléatoire parmi les salles publiques libres
+      const availablePublicRooms = PUBLIC_TEST_ROOMS.filter(
+        (r) => !checkConflict(r, dateStr, initialTime)
+      );
+      if (availablePublicRooms.length > 0) {
+        chosenRoom = availablePublicRooms[Math.floor(Math.random() * availablePublicRooms.length)];
+      } else {
+        chosenRoom = RESERVED_TEST_ROOMS[0];
+      }
+    }
 
     setTestFormData({
       testDate: app.testDate ? new Date(app.testDate).toISOString().split('T')[0] : dateStr,
-      testTime: app.testTime || '20:30',
-      testLocation: app.testLocation || 'Serveur Discord Vocal DWT - Salon Tryouts 1',
-      testNotes: app.testNotes || 'Merci de vous connecter 10 minutes à l avance avec votre micro opérationnel.'
+      testTime: initialTime,
+      testLocation: app.testLocation || 'Serveur Discord Vocal Dark Wolf Team',
+      testRoom: chosenRoom,
+      discordUrl: app.discordUrl || 'https://discord.gg/darkwolfteam',
+      assignedTester: app.assignedTester || defaultTester,
+      assignedTesterEmail: app.assignedTesterEmail || '',
+      testNotes: app.testNotes || 'Merci de vous connecter 10 minutes à l avance avec micro configuré.'
     });
     setShowScheduleTestModal(true);
   };
@@ -1139,7 +1199,13 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     setSchedulingTest(true);
     try {
       const res = await API.put(`/applications/${selectedAppForTest._id}/schedule-test`, testFormData);
-      showToast(res.data?.message || `Test planifié pour ${selectedAppForTest.gamertag} ! Convocation envoyée par email.`, 'success');
+      if (res.data?.warning) {
+        showToast(res.data.warning, 'warning', 6000);
+      }
+      showToast(
+        res.data?.message || `Test planifié pour ${selectedAppForTest.gamertag} ! Rendez-vous notifié à l'admin et au testeur.`,
+        'success'
+      );
       setShowScheduleTestModal(false);
       setSelectedAppForTest(null);
       fetchAllData();
@@ -5459,7 +5525,17 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
           })()}
 
           {/* TAB 5: TOURNOIS */}
-          {activeNav === 'Tournois' && (
+          {activeNav === 'Tournois' && (() => {
+            const availableTournamentGames = Array.from(
+              new Set(matches.map((m) => m.game).filter(Boolean))
+            );
+            const filteredMatches = matches.filter(
+              (m) =>
+                tournamentGameFilter === 'all' ||
+                (m.game || '').toLowerCase() === tournamentGameFilter.toLowerCase()
+            );
+
+            return (
             <div className="dash-card">
               <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '14px' }}>
                 <div>
@@ -5478,7 +5554,7 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
               </div>
 
               {/* Quick Status Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', margin: '20px 0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', margin: '20px 0 14px' }}>
                 <div style={{ background: '#0a0d14', border: '1px solid #1a2336', borderRadius: '8px', padding: '14px' }}>
                   <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Matchs en Direct</div>
                   <div style={{ fontSize: '22px', fontWeight: '900', color: '#ff4d4d', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -5500,8 +5576,61 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                 </div>
               </div>
 
+              {/* Tri et Filtre des Tournois par Jeu */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', marginRight: '6px' }}>
+                  Filtrer par Jeu :
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setTournamentGameFilter('all')}
+                  style={{
+                    background: tournamentGameFilter === 'all' ? 'var(--red-primary)' : '#111726',
+                    color: '#fff',
+                    border: tournamentGameFilter === 'all' ? '1px solid var(--red-glow)' : '1px solid #1f293d',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Tous les Jeux ({matches.length})
+                </button>
+                {availableTournamentGames.map((gameName) => {
+                  const count = matches.filter(
+                    (m) => (m.game || '').toLowerCase() === gameName.toLowerCase()
+                  ).length;
+                  const active = tournamentGameFilter.toLowerCase() === gameName.toLowerCase();
+                  return (
+                    <button
+                      key={gameName}
+                      type="button"
+                      onClick={() => setTournamentGameFilter(gameName)}
+                      style={{
+                        background: active ? 'var(--red-primary)' : '#111726',
+                        color: '#fff',
+                        border: active ? '1px solid var(--red-glow)' : '1px solid #1f293d',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {gameName} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="dash-list-col">
-                {matches.map((m) => {
+                {filteredMatches.length === 0 ? (
+                  <div className="dash-empty-state">
+                    Aucun tournoi ni match programmé pour {tournamentGameFilter === 'all' ? 'le moment' : tournamentGameFilter}.
+                  </div>
+                ) : (
+                  filteredMatches.map((m) => {
                   const isLive = m.status === 'live';
                   const isFinished = m.status === 'finished';
 
@@ -5654,10 +5783,11 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                       </div>
                     </div>
                   );
-                })}
+                }))}
               </div>
             </div>
-          )}
+          );
+        })()}
 
           {/* TAB 6: ACTUALITES */}
           {activeNav === 'Actualités' && (
@@ -8520,31 +8650,189 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                 </div>
               </div>
 
+              {/* Sélection et Détection de Conflit de la Salle de Test Discord */}
+              {(() => {
+                const isCurrentRoomConflict = recruitmentList.some(
+                  (a) =>
+                    a._id !== selectedAppForTest._id &&
+                    a.status === 'test_scheduled' &&
+                    a.testRoom === testFormData.testRoom &&
+                    a.testDate &&
+                    new Date(a.testDate).toISOString().split('T')[0] === testFormData.testDate &&
+                    a.testTime === testFormData.testTime
+                );
+
+                return (
+                  <div className="dash-form-group" style={{ marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label className="dash-form-label" style={{ margin: 0 }}>
+                        Salle de Test Discord *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const freePublicRooms = PUBLIC_TEST_ROOMS.filter(
+                            (r) =>
+                              !recruitmentList.some(
+                                (a) =>
+                                  a._id !== selectedAppForTest._id &&
+                                  a.status === 'test_scheduled' &&
+                                  a.testRoom === r &&
+                                  a.testDate &&
+                                  new Date(a.testDate).toISOString().split('T')[0] === testFormData.testDate &&
+                                  a.testTime === testFormData.testTime
+                              )
+                          );
+                          const chosen = freePublicRooms.length > 0
+                            ? freePublicRooms[Math.floor(Math.random() * freePublicRooms.length)]
+                            : RESERVED_TEST_ROOMS[0];
+                          setTestFormData({ ...testFormData, testRoom: chosen });
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#38bdf8',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <RefreshCw size={12} /> Tirer une salle publique aléatoire
+                      </button>
+                    </div>
+
+                    <select
+                      className="dash-form-input"
+                      value={testFormData.testRoom}
+                      onChange={(e) => setTestFormData({ ...testFormData, testRoom: e.target.value })}
+                      style={{
+                        borderColor: isCurrentRoomConflict ? '#ef4444' : undefined,
+                        background: isCurrentRoomConflict ? 'rgba(239, 68, 68, 0.05)' : undefined
+                      }}
+                      required
+                    >
+                      <optgroup label="Salles Publiques Aléatoires">
+                        {PUBLIC_TEST_ROOMS.map((room) => {
+                          const booked = recruitmentList.some(
+                            (a) =>
+                              a._id !== selectedAppForTest._id &&
+                              a.status === 'test_scheduled' &&
+                              a.testRoom === room &&
+                              a.testDate &&
+                              new Date(a.testDate).toISOString().split('T')[0] === testFormData.testDate &&
+                              a.testTime === testFormData.testTime
+                          );
+                          return (
+                            <option key={room} value={room}>
+                              {room} {booked ? '[OCCUPÉE POUR CE CRÉNEAU]' : '[LIBRE]'}
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                      <optgroup label="Salles Privées Réservées (Staff & Tryouts)">
+                        {RESERVED_TEST_ROOMS.map((room) => (
+                          <option key={room} value={room}>
+                            {room}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+
+                    {isCurrentRoomConflict && (
+                      <div
+                        style={{
+                          marginTop: '6px',
+                          color: '#f87171',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <AlertCircle size={14} /> Attention : Cette salle est déjà réservée par un autre test à cette date et heure ! Veuillez changer de salle.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Lien Discord Officiel */}
               <div className="dash-form-group" style={{ marginBottom: '14px' }}>
-                <label className="dash-form-label">Lieu / Salon Discord de Convocation *</label>
+                <label className="dash-form-label">Lien d'Invitation Discord Dark Wolf Team *</label>
                 <input
-                  type="text"
+                  type="url"
                   className="dash-form-input"
-                  placeholder="Ex: Serveur Discord Vocal DWT - Salon Tryouts 1"
-                  value={testFormData.testLocation}
-                  onChange={(e) => setTestFormData({ ...testFormData, testLocation: e.target.value })}
+                  placeholder="https://discord.gg/darkwolfteam"
+                  value={testFormData.discordUrl}
+                  onChange={(e) => setTestFormData({ ...testFormData, discordUrl: e.target.value })}
                   required
                 />
               </div>
 
-              <div className="dash-form-group" style={{ marginBottom: '20px' }}>
-                <label className="dash-form-label">Instructions / Notes pour le candidat (Optionnel)</label>
+              {/* Membre / Testeur Assigné */}
+              {(() => {
+                const candidateGamePlayers = playersList.filter(
+                  (p) => (p.game || '').toLowerCase() === (selectedAppForTest.game || '').toLowerCase()
+                );
+
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                    <div className="dash-form-group">
+                      <label className="dash-form-label">Membre / Testeur Assigné *</label>
+                      <select
+                        className="dash-form-input"
+                        value={testFormData.assignedTester}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTestFormData({
+                            ...testFormData,
+                            assignedTester: val
+                          });
+                        }}
+                        required
+                      >
+                        <option value="Direction Esport Dark Wolf Team">Direction Esport Dark Wolf Team (Admin)</option>
+                        {candidateGamePlayers.map((player) => (
+                          <option key={player._id} value={`${player.gamertag} (${player.role || 'Joueur'} ${selectedAppForTest.game})`}>
+                            {player.gamertag} - {player.role || 'Capitaine'} ({selectedAppForTest.game})
+                          </option>
+                        ))}
+                        <option value="Capitaine Roster DWT">Capitaine Roster DWT</option>
+                        <option value="Coach Principal DWT">Coach Principal DWT</option>
+                      </select>
+                    </div>
+
+                    <div className="dash-form-group">
+                      <label className="dash-form-label">Email du Testeur (Optionnel)</label>
+                      <input
+                        type="email"
+                        className="dash-form-input"
+                        placeholder="Pour recevoir sa convocation par email"
+                        value={testFormData.assignedTesterEmail}
+                        onChange={(e) => setTestFormData({ ...testFormData, assignedTesterEmail: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="dash-form-group" style={{ marginBottom: '18px' }}>
+                <label className="dash-form-label">Instructions / Notes pour le candidat & le testeur</label>
                 <textarea
                   className="dash-form-input"
-                  rows={3}
-                  placeholder="Ex: Merci de vous connecter 10 minutes à l'avance avec votre micro configuré et le jeu mis à jour."
+                  rows={2}
+                  placeholder="Ex: Merci de vous connecter 10 minutes à l'avance avec votre micro configuré et le jeu mis à jour. Test 1v1 + match scrim 5v5."
                   value={testFormData.testNotes}
                   onChange={(e) => setTestFormData({ ...testFormData, testNotes: e.target.value })}
                 />
               </div>
 
               <div style={{
-                padding: '10px 14px',
+                padding: '12px 14px',
                 borderRadius: '6px',
                 background: 'rgba(56, 189, 248, 0.08)',
                 border: '1px solid rgba(56, 189, 248, 0.25)',
@@ -8553,7 +8841,12 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                 marginBottom: '20px',
                 lineHeight: 1.5
               }}>
-                Un email officiel au design Dark Wolf Team contenant la date, l'heure, le salon Discord et vos consignes sera automatiquement envoyé à <strong style={{ color: '#fff' }}>{selectedAppForTest.email}</strong>.
+                <div style={{ fontWeight: '800', color: '#38bdf8', marginBottom: '4px' }}>
+                  Synchronisation des Convocations & Calendrier :
+                </div>
+                • Convocation officielle au joueur envoyée par email à <strong style={{ color: '#fff' }}>{selectedAppForTest.email}</strong>.<br />
+                • Rendez-vous notifié dans le planning administrateur avec verrouillage de salle.<br />
+                • Alerte et notification envoyées au membre/testeur désigné pour éviter toute erreur de présence.
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>

@@ -5,12 +5,16 @@ const {
   getMatchById,
   createMatch,
   updateMatch,
-  deleteMatch
+  deleteMatch,
+  rsvpMatch
 } = require('../controllers/matchController');
 const { protect, authorize } = require('../middlewares/auth');
 
 router.get('/', getMatches);
 router.get('/:id', getMatchById);
+
+// RSVP pour les joueurs
+router.post('/:id/rsvp', protect, rsvpMatch);
 
 // Gestion des matchs par les admins / staff
 router.post('/', protect, authorize('admin', 'moderator'), createMatch);

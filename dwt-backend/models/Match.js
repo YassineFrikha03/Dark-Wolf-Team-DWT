@@ -53,7 +53,17 @@ const matchSchema = new mongoose.Schema(
     mvp: {
       type: String,
       default: ''
-    }
+    },
+    isScrim: {
+      type: Boolean,
+      default: false
+    },
+    confirmedPlayers: [
+      {
+        type: String,
+        trim: true
+      }
+    ]
   },
   { timestamps: true }
 );

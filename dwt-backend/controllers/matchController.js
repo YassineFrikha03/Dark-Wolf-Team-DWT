@@ -132,10 +132,55 @@ const deleteMatch = async (req, res, next) => {
   }
 };
 
+// @desc    Confirmer ou annuler sa présence à un match / scrim (RSVP)
+// @route   POST /api/matches/:id/rsvp
+// @access  Privé (Joueur / Membre)
+const rsvpMatch = async (req, res, next) => {
+  try {
+    const { status, gamertag } = req.body;
+    const playerGamertag = gamertag || req.user?.gamertag;
+
+    if (!playerGamertag) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gamertag requis pour confirmer la présence'
+      });
+    }
+
+    const match = await Match.findById(req.params.id);
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match introuvable'
+      });
+    }
+
+    const currentConfirmed = match.confirmedPlayers || [];
+    if (status === 'confirmed') {
+      if (!currentConfirmed.includes(playerGamertag)) {
+        match.confirmedPlayers = [...currentConfirmed, playerGamertag];
+      }
+    } else {
+      match.confirmedPlayers = currentConfirmed.filter((g) => g !== playerGamertag);
+    }
+
+    await match.save();
+
+    res.status(200).json({
+      success: true,
+      message: status === 'confirmed' ? 'Présence confirmée avec succès' : 'Absence enregistrée',
+      confirmedPlayers: match.confirmedPlayers
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMatches,
   getMatchById,
   createMatch,
   updateMatch,
-  deleteMatch
+  deleteMatch,
+  rsvpMatch
 };

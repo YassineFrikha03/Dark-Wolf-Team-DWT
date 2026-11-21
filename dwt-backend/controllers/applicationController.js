@@ -8,6 +8,8 @@ const {
   sendApplicationSubmittedEmail,
   sendAdminApplicationAlert,
   sendTestScheduledEmail,
+  sendAdminTestAppointmentEmail,
+  sendTesterConvocationEmail,
   sendApplicationAcceptedEmail,
   sendApplicationRejectedEmail,
   sendApplicationStatusEmail
@@ -112,7 +114,16 @@ const submitApplication = async (req, res, next) => {
 // @access  Prive (Admin/Staff)
 const scheduleTest = async (req, res, next) => {
   try {
-    const { testDate, testTime, testLocation, testNotes } = req.body;
+    const {
+      testDate,
+      testTime,
+      testLocation,
+      testRoom,
+      discordUrl,
+      assignedTester,
+      assignedTesterEmail,
+      testNotes
+    } = req.body;
 
     if (!testDate || !testTime) {
       return res.status(400).json({
@@ -129,35 +140,94 @@ const scheduleTest = async (req, res, next) => {
       });
     }
 
-    application.testDate = new Date(testDate);
+    const parsedDate = new Date(testDate);
+    const chosenRoom = testRoom ? String(testRoom).trim() : 'Salle de Test #01 - Alpha (Public)';
+
+    // Verification de conflit d'occupation de salle
+    const conflictingApp = await Application.findOne({
+      _id: { $ne: application._id },
+      status: 'test_scheduled',
+      testRoom: chosenRoom,
+      testTime: String(testTime).trim(),
+      testDate: {
+        $gte: new Date(new Date(parsedDate).setHours(0, 0, 0, 0)),
+        $lte: new Date(new Date(parsedDate).setHours(23, 59, 59, 999))
+      }
+    });
+
+    let roomWarning = null;
+    if (conflictingApp) {
+      roomWarning = `Attention : la salle ${chosenRoom} a deja un test planifie a ${testTime} avec ${conflictingApp.gamertag}.`;
+    }
+
+    application.testDate = parsedDate;
     application.testTime = String(testTime).trim();
     if (testLocation) application.testLocation = String(testLocation).trim();
+    application.testRoom = chosenRoom;
+    if (discordUrl) application.discordUrl = String(discordUrl).trim();
+    if (assignedTester) application.assignedTester = String(assignedTester).trim();
+    if (assignedTesterEmail) application.assignedTesterEmail = String(assignedTesterEmail).trim();
     if (testNotes !== undefined) application.testNotes = String(testNotes).trim();
     application.status = 'test_scheduled';
 
     await application.save();
 
-    // Envoi automatique de l'email officiel de convocation au joueur
+    // 1. Envoi de l'email officiel de convocation au candidat
     sendTestScheduledEmail(application).catch((err) =>
-      console.error('Erreur envoi email convocation test :', err.message)
+      console.error('Erreur envoi email convocation candidat :', err.message)
     );
 
-    // Creer notification admin
+    // 2. Envoi de l'email de confirmation de rendez-vous a l'administrateur
+    sendAdminTestAppointmentEmail(application).catch((err) =>
+      console.error('Erreur envoi email rendez-vous admin :', err.message)
+    );
+
+    // 3. Envoi de la convocation au testeur assigne si renseigne
+    if (application.assignedTesterEmail) {
+      sendTesterConvocationEmail(
+        application,
+        application.assignedTesterEmail,
+        application.assignedTester
+      ).catch((err) =>
+        console.error('Erreur envoi email convocation testeur :', err.message)
+      );
+    }
+
+    // 4. Creer notification pour l'administrateur
     await Notification.create({
       recipientRole: 'admin',
       type: 'message',
-      title: `Test de recrutement planifie : ${application.gamertag}`,
-      message: `Test fixe au ${application.testDate.toLocaleDateString('fr-FR')} a ${application.testTime} pour ${application.gamertag} (${application.game}).`,
+      title: `Rendez-vous Test : ${application.gamertag} (${application.game})`,
+      message: `Test fixe le ${application.testDate.toLocaleDateString('fr-FR')} a ${application.testTime} dans la salle ${application.testRoom}. Testeur : ${application.assignedTester}.`,
       metadata: {
         applicationId: application._id,
         gamertag: application.gamertag,
-        game: application.game
+        game: application.game,
+        testRoom: application.testRoom,
+        testTime: application.testTime
       }
     }).catch(() => null);
 
+    // 5. Creer notification pour le testeur assigne
+    if (application.assignedTester) {
+      await Notification.create({
+        recipientRole: 'player',
+        type: 'message',
+        title: `Mission Testeur : ${application.gamertag} (${application.game})`,
+        message: `Vous etes assigne pour tester ${application.gamertag} le ${application.testDate.toLocaleDateString('fr-FR')} a ${application.testTime} (${application.testRoom}).`,
+        metadata: {
+          applicationId: application._id,
+          gamertag: application.gamertag,
+          game: application.game,
+          testRoom: application.testRoom
+        }
+      }).catch(() => null);
+    }
+
     res.status(200).json({
       success: true,
-      message: `Test de recrutement planifie avec succes pour ${application.gamertag}. L'email officiel de convocation a ete envoye a ${application.email}.`,
+      message: `Test de recrutement planifie avec succes pour ${application.gamertag}. Les convocations par email ont ete transmises au candidat, a l'administration et au testeur assigne.`,
+      warning: roomWarning,
       application
     });
   } catch (error) {

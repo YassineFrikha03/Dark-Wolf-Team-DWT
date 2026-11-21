@@ -21,12 +21,154 @@ const DEFAULT_GAMES = [
   'Counter-Strike 2',
   'League of Legends',
   'Rocket League',
-  'Rainbow Six Siege'
+  'Rainbow Six Siege',
+  'Fortnite',
+  'Apex Legends',
+  'EA Sports FC'
 ];
+
+export const GAME_RANKS_CONFIG = {
+  Valorant: [
+    'Radiant',
+    'Immortel 3',
+    'Immortel 2',
+    'Immortel 1',
+    'Ascendant 3',
+    'Ascendant 2',
+    'Ascendant 1',
+    'Diamant 3',
+    'Diamant 2',
+    'Diamant 1',
+    'Platine 3',
+    'Platine 2',
+    'Platine 1',
+    'Or 3',
+    'Or 2',
+    'Or 1',
+    'Argent 3',
+    'Argent 2',
+    'Argent 1',
+    'Bronze 3',
+    'Bronze 2',
+    'Bronze 1',
+    'Fer 3',
+    'Fer 2',
+    'Fer 1',
+    'Autre (préciser)'
+  ],
+  'Counter-Strike 2': [
+    'The Global Elite',
+    'Supreme Master First Class',
+    'Legendary Eagle Master',
+    'Legendary Eagle',
+    'Distinguished Master Guardian (DMG)',
+    'Master Guardian Elite (MGE)',
+    'Master Guardian II (MG2)',
+    'Master Guardian I (MG1)',
+    'Gold Nova Master',
+    'Gold Nova III',
+    'Gold Nova II',
+    'Gold Nova I',
+    'Silver Elite Master',
+    'Silver I - IV',
+    'Premier Rating 25,000+ CS',
+    'Premier Rating 20,000 - 24,999 CS',
+    'Premier Rating 15,000 - 19,999 CS',
+    'Faceit Level 10 (2000+ ELO)',
+    'Faceit Level 8 - 9',
+    'Faceit Level 1 - 7',
+    'Autre (préciser)'
+  ],
+  'League of Legends': [
+    'Challenger',
+    'Grandmaster',
+    'Master',
+    'Diamant I - IV',
+    'Émeraude I - IV',
+    'Platine I - IV',
+    'Or I - IV',
+    'Argent I - IV',
+    'Bronze I - IV',
+    'Fer I - IV',
+    'Autre (préciser)'
+  ],
+  'Rocket League': [
+    'Supersonic Legend (SSL)',
+    'Grand Champion III',
+    'Grand Champion II',
+    'Grand Champion I',
+    'Champion III',
+    'Champion II',
+    'Champion I',
+    'Diamant III - I',
+    'Platine III - I',
+    'Or III - I',
+    'Argent III - I',
+    'Bronze III - I',
+    'Autre (préciser)'
+  ],
+  'Rainbow Six Siege': [
+    'Champion',
+    'Diamant I - V',
+    'Émeraude I - V',
+    'Platine I - V',
+    'Or I - V',
+    'Argent I - V',
+    'Bronze I - V',
+    'Cuivre I - V',
+    'Autre (préciser)'
+  ],
+  Fortnite: [
+    'Unreal',
+    'Champion',
+    'Élite',
+    'Diamant III - I',
+    'Platine III - I',
+    'Or III - I',
+    'Argent III - I',
+    'Bronze III - I',
+    'Autre (préciser)'
+  ],
+  'Apex Legends': [
+    'Apex Predator',
+    'Master',
+    'Diamant I - IV',
+    'Platine I - IV',
+    'Or I - IV',
+    'Argent I - IV',
+    'Bronze I - IV',
+    'Rookie',
+    'Autre (préciser)'
+  ],
+  'EA Sports FC': [
+    'Division Élite',
+    'Division 1',
+    'Division 2 - 4',
+    'Division 5 - 10',
+    'Rang 1 FUT Champions (19-20 V)',
+    'Rang 2 - 3 FUT Champions (16-18 V)',
+    'Rang 4 - 5 FUT Champions (11-15 V)',
+    'Autre (préciser)'
+  ]
+};
+
+export const GAME_ROLES_CONFIG = {
+  Valorant: ['Dueliste', 'Initiateur', 'Contrôleur', 'Sentinelle', 'In-Game Leader (IGL)', 'Flex', 'Coach / Analyste'],
+  'Counter-Strike 2': ['Entry Fragger', 'Sniper (AWP)', 'Rifler', 'In-Game Leader (IGL)', 'Support', 'Lurker', 'Coach'],
+  'League of Legends': ['Toplaner', 'Jungler', 'Midlaner', 'ADC (Botlane)', 'Support', 'Shotcaller / IGL'],
+  'Rocket League': ['Buteur / Striker', 'Gardien / Goalkeeper', 'Milieu / Playmaker', 'Flex'],
+  'Rainbow Six Siege': ['Entry Fragger', 'Roamer', 'Anchor', 'Support / Hard Breach', 'In-Game Leader (IGL)'],
+  Fortnite: ['Fragger', 'Support', 'In-Game Leader (IGL)', 'Tarper / Builder'],
+  'Apex Legends': ['Fragger / Entry', 'Recon / Scout', 'Anchor / Defense', 'In-Game Leader (IGL)'],
+  'EA Sports FC': ['Joueur Compétitif 1v1', 'Attaquant', 'Milieu de terrain', 'Défenseur']
+};
 
 const RecruitmentPage = ({ onBackToSite }) => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [availableGames, setAvailableGames] = useState(DEFAULT_GAMES);
+  const [customRankInput, setCustomRankInput] = useState('');
 
   const [formData, setFormData] = useState({
     gamertag: '',
@@ -34,8 +176,8 @@ const RecruitmentPage = ({ onBackToSite }) => {
     discordTag: '',
     age: '',
     game: 'Valorant',
-    rank: '',
-    rolePreference: 'Flexible',
+    rank: GAME_RANKS_CONFIG['Valorant']?.[0] || 'Radiant',
+    rolePreference: GAME_ROLES_CONFIG['Valorant']?.[0] || 'Dueliste',
     trackerUrl: '',
     experience: ''
   });
@@ -44,14 +186,57 @@ const RecruitmentPage = ({ onBackToSite }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [submittedApp, setSubmittedApp] = useState(null);
 
-  // Pre-remplir l'email depuis l'URL (?email=...)
+  // Charger la liste des jeux disponibles depuis l'API MongoDB
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const res = await API.get('/games');
+        const dbGames = (res.data?.games || []).map((g) => g.name).filter(Boolean);
+        if (dbGames.length > 0) {
+          const combined = Array.from(new Set([...dbGames, ...DEFAULT_GAMES]));
+          setAvailableGames(combined);
+        }
+      } catch (err) {
+        // Fallback sur DEFAULT_GAMES
+      }
+    };
+    fetchGames();
+  }, []);
+
+  // Pre-remplir l'email et le jeu depuis l'URL (?email=...&game=...)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const emailParam = params.get('email');
+    const gameParam = params.get('game');
     if (emailParam) {
       setFormData((prev) => ({ ...prev, email: emailParam.trim() }));
     }
-  }, [location.search]);
+    if (gameParam && availableGames.some((g) => g.toLowerCase() === gameParam.toLowerCase())) {
+      const matchedGame = availableGames.find((g) => g.toLowerCase() === gameParam.toLowerCase()) || gameParam;
+      const initialRanks = GAME_RANKS_CONFIG[matchedGame] || ['Non classé', 'Autre (préciser)'];
+      const initialRoles = GAME_ROLES_CONFIG[matchedGame] || ['Titulaire', 'Remplaçant', 'Capitaine', 'Flex'];
+      setFormData((prev) => ({
+        ...prev,
+        game: matchedGame,
+        rank: initialRanks[0],
+        rolePreference: initialRoles[0]
+      }));
+    }
+  }, [location.search, availableGames]);
+
+  const handleGameChange = (e) => {
+    const newGame = e.target.value;
+    const gameRanks = GAME_RANKS_CONFIG[newGame] || ['Non classé', 'Autre (préciser)'];
+    const gameRoles = GAME_ROLES_CONFIG[newGame] || ['Titulaire', 'Remplaçant', 'Capitaine', 'Flex'];
+    setFormData((prev) => ({
+      ...prev,
+      game: newGame,
+      rank: gameRanks[0],
+      rolePreference: gameRoles[0]
+    }));
+    setCustomRankInput('');
+    if (errorMsg) setErrorMsg('');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,13 +248,18 @@ const RecruitmentPage = ({ onBackToSite }) => {
     e.preventDefault();
     setErrorMsg('');
 
+    const finalRank =
+      formData.rank === 'Autre (préciser)'
+        ? customRankInput.trim() || 'Non classé'
+        : formData.rank;
+
     if (
       !formData.gamertag.trim() ||
       !formData.email.trim() ||
       !formData.discordTag.trim() ||
       !formData.age ||
       !formData.game ||
-      !formData.rank.trim() ||
+      !finalRank.trim() ||
       !formData.experience.trim()
     ) {
       setErrorMsg('Veuillez remplir tous les champs obligatoires du formulaire.');
@@ -86,6 +276,7 @@ const RecruitmentPage = ({ onBackToSite }) => {
     try {
       const res = await API.post('/applications', {
         ...formData,
+        rank: finalRank,
         age: Number(formData.age)
       });
 
@@ -458,12 +649,12 @@ const RecruitmentPage = ({ onBackToSite }) => {
                     <select
                       name="game"
                       value={formData.game}
-                      onChange={handleChange}
+                      onChange={handleGameChange}
                       className="auth-text-input"
-                      style={{ background: '#090d16', color: '#fff' }}
+                      style={{ background: '#090d16', color: '#fff', cursor: 'pointer' }}
                       required
                     >
-                      {DEFAULT_GAMES.map((g) => (
+                      {availableGames.map((g) => (
                         <option key={g} value={g}>
                           {g}
                         </option>
@@ -472,36 +663,61 @@ const RecruitmentPage = ({ onBackToSite }) => {
                   </div>
                 </div>
 
-                {/* Rang compétitif */}
+                {/* Rang compétitif adapté dynamiquement au jeu sélectionné */}
                 <div className="auth-input-group">
-                  <label className="auth-input-label">Rang actuel en jeu *</label>
+                  <label className="auth-input-label">
+                    Rang officiel sur {formData.game} *
+                  </label>
                   <div className="input-with-icon-wrap">
                     <Shield size={18} className="input-left-icon" />
-                    <input
-                      type="text"
+                    <select
                       name="rank"
-                      placeholder="Ex: Radiant / Faceit Level 10 / Challenger"
                       value={formData.rank}
                       onChange={handleChange}
                       className="auth-text-input"
+                      style={{ background: '#090d16', color: '#fff', cursor: 'pointer' }}
                       required
-                    />
+                    >
+                      {(GAME_RANKS_CONFIG[formData.game] || ['Non classé', 'Autre (préciser)']).map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                  {formData.rank === 'Autre (préciser)' && (
+                    <div style={{ marginTop: '8px' }}>
+                      <input
+                        type="text"
+                        placeholder="Précisez votre rang / rating exact (ex: Premier 18500, Faceit lvl 9...)"
+                        value={customRankInput}
+                        onChange={(e) => setCustomRankInput(e.target.value)}
+                        className="auth-text-input"
+                        required
+                        style={{ borderColor: 'var(--red-primary)' }}
+                      />
+                    </div>
+                  )}
                 </div>
 
-                {/* Rôle / Préférence */}
+                {/* Rôle / Préférence adapté au jeu */}
                 <div className="auth-input-group">
-                  <label className="auth-input-label">Rôle / Poste préféré</label>
+                  <label className="auth-input-label">Rôle / Poste souhaité sur {formData.game}</label>
                   <div className="input-with-icon-wrap">
                     <User size={18} className="input-left-icon" />
-                    <input
-                      type="text"
+                    <select
                       name="rolePreference"
-                      placeholder="Ex: Dueliste, Initiateur, IGL, Sniper, Support..."
                       value={formData.rolePreference}
                       onChange={handleChange}
                       className="auth-text-input"
-                    />
+                      style={{ background: '#090d16', color: '#fff', cursor: 'pointer' }}
+                    >
+                      {(GAME_ROLES_CONFIG[formData.game] || ['Titulaire', 'Remplaçant', 'Capitaine', 'Flex']).map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

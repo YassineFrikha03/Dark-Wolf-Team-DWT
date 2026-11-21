@@ -30,7 +30,9 @@ import {
   Shield,
   Flame,
   CheckCheck,
-  ExternalLink
+  ExternalLink,
+  Download,
+  Gamepad2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WolfLogo } from '../components/WolfLogo';
@@ -86,6 +88,37 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [showNotifPopup, setShowNotifPopup] = useState(false);
   const notifRef = useRef(null);
+
+  // Filtres et RSVP pour Matchs & Scrims Joueur
+  const [playerMatchFilter, setPlayerMatchFilter] = useState('my-game');
+  const [scrimAttendance, setScrimAttendance] = useState({});
+
+  const handleRsvpMatch = async (matchId, status) => {
+    try {
+      const res = await API.post(`/matches/${matchId}/rsvp`, {
+        status,
+        gamertag: user?.gamertag
+      });
+      showToast(res.data?.message || 'Statut de présence mis à jour', 'success');
+      setMatches((prev) =>
+        prev.map((m) =>
+          m._id === matchId
+            ? { ...m, confirmedPlayers: res.data.confirmedPlayers || [] }
+            : m
+        )
+      );
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Erreur lors de la mise à jour de présence', 'error');
+    }
+  };
+
+  const handleToggleScrimAttendance = (scrimId, status) => {
+    setScrimAttendance((prev) => ({
+      ...prev,
+      [scrimId]: status
+    }));
+    showToast(status === 'confirmed' ? 'Présence au scrim confirmée' : 'Absence au scrim signalée', 'info');
+  };
 
   // Toast feedback helper
   const showToast = (text, type = 'success', duration = 4000) => {
@@ -457,13 +490,24 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
   const nextRank = wolfProfile?.rank?.nextRank || 'Scout';
   const xpForNext = wolfProfile?.rank?.xpForNext || 150;
 
+  const myRosterPlayer = rosterPlayers.find(
+    (p) => (p.gamertag || '').toLowerCase() === (user?.gamertag || '').toLowerCase()
+  );
+  const myGame = myRosterPlayer?.game || user?.favoriteGame || 'Valorant';
+  const myTeammates = rosterPlayers.filter(
+    (p) => (p.game || '').toLowerCase() === myGame.toLowerCase()
+  );
+
   const sidebarLinks = [
     { label: 'Mon Profil', icon: <User size={18} /> },
+    { label: 'Mon Équipe', icon: <Users size={18} /> },
+    { label: 'Planning & Scrims', icon: <Clock size={18} /> },
+    { label: 'Mes Matchs', icon: <Calendar size={18} /> },
+    { label: 'Kit Joueur & Charte', icon: <Shield size={18} /> },
+    { label: 'Messagerie Staff', icon: <MessageSquare size={18} /> },
     { label: 'Pronostics', icon: <Target size={18} /> },
     { label: 'Classement', icon: <Trophy size={18} /> },
     { label: 'Quêtes', icon: <Award size={18} /> },
-    { label: 'Messagerie Staff', icon: <MessageSquare size={18} /> },
-    { label: 'Mes Matchs', icon: <Calendar size={18} /> },
     { label: 'Ma Boutique', icon: <ShoppingBag size={18} /> },
     { label: 'Actualités', icon: <FileText size={18} /> },
   ];
@@ -1405,52 +1449,562 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
           )}
 
           {/* =========================================================================
-              VUE 5 : MES MATCHS & TOURNOIS
+              VUE 5 : MES MATCHS & TOURNOIS (TRIÉS PAR JEU SANS FAUTE DE PARTICIPATION)
               ========================================================================= */}
-          {activeNav === 'Mes Matchs' && (
-            <div className="dash-card">
-              <div className="dash-card-header">
-                <span className="dash-card-title">Calendrier des Matchs Officiels ({matches.length})</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>DWT Esports Tournaments</span>
+          {activeNav === 'Mes Matchs' && (() => {
+            const allMatchGames = Array.from(
+              new Set(matches.map((m) => m.game).filter(Boolean))
+            );
+
+            const filteredMatches = matches.filter((m) => {
+              if (playerMatchFilter === 'my-game') {
+                return (m.game || '').toLowerCase() === myGame.toLowerCase();
+              }
+              if (playerMatchFilter !== 'all') {
+                return (m.game || '').toLowerCase() === playerMatchFilter.toLowerCase();
+              }
+              return true;
+            });
+
+            return (
+              <div className="dash-card">
+                <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span className="dash-card-title">Tournois & Matchs Officiels ({matches.length})</span>
+                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                      Votre division officielle : <strong style={{ color: 'var(--red-primary)' }}>{myGame}</strong>. La participation est strictement réservée aux membres du roster correspondant.
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', border: '1px solid #22c55e', padding: '4px 10px', borderRadius: '4px', fontWeight: '800' }}>
+                      ROSTER ACTIF : {myGame.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Filtres par Jeu pour éviter toute erreur de participation */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '16px 0 20px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPlayerMatchFilter('my-game')}
+                    style={{
+                      background: playerMatchFilter === 'my-game' ? 'var(--red-primary)' : '#0d1322',
+                      color: '#fff',
+                      border: playerMatchFilter === 'my-game' ? '1px solid var(--red-glow)' : '1px solid #1e293b',
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Mon Roster ({myGame}) [{matches.filter((m) => (m.game || '').toLowerCase() === myGame.toLowerCase()).length}]
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlayerMatchFilter('all')}
+                    style={{
+                      background: playerMatchFilter === 'all' ? 'var(--red-primary)' : '#0d1322',
+                      color: '#fff',
+                      border: playerMatchFilter === 'all' ? '1px solid var(--red-glow)' : '1px solid #1e293b',
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Tous les Tournois ({matches.length})
+                  </button>
+                  {allMatchGames
+                    .filter((g) => g.toLowerCase() !== myGame.toLowerCase())
+                    .map((gameName) => (
+                      <button
+                        key={gameName}
+                        type="button"
+                        onClick={() => setPlayerMatchFilter(gameName)}
+                        style={{
+                          background: playerMatchFilter.toLowerCase() === gameName.toLowerCase() ? 'var(--red-primary)' : '#0d1322',
+                          color: '#fff',
+                          border: playerMatchFilter.toLowerCase() === gameName.toLowerCase() ? '1px solid var(--red-glow)' : '1px solid #1e293b',
+                          padding: '6px 14px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {gameName} ({matches.filter((m) => (m.game || '').toLowerCase() === gameName.toLowerCase()).length})
+                      </button>
+                    ))}
+                </div>
+
+                <div className="dash-list-col">
+                  {filteredMatches.length === 0 ? (
+                    <div className="dash-empty-state">
+                      Aucun tournoi ni match trouvé pour cette sélection ({playerMatchFilter === 'my-game' ? myGame : playerMatchFilter}).
+                    </div>
+                  ) : (
+                    filteredMatches.map((m) => {
+                      const isMyGame = (m.game || '').toLowerCase() === myGame.toLowerCase();
+                      const isConfirmed = (m.confirmedPlayers || []).includes(user?.gamertag);
+                      const isLive = m.status === 'live';
+                      const isFinished = m.status === 'finished';
+
+                      return (
+                        <div
+                          className="dash-list-item-row"
+                          key={m._id}
+                          style={{
+                            borderLeft: isMyGame ? '4px solid #22c55e' : '4px solid #334155',
+                            background: isMyGame ? 'rgba(34, 197, 94, 0.03)' : undefined
+                          }}
+                        >
+                          <div className="dash-item-left" style={{ flex: 1 }}>
+                            <div className="dash-wolf-badge-tiny" style={{ background: isMyGame ? 'rgba(34,197,94,0.15)' : undefined }}>
+                              <WolfLogo size={18} />
+                            </div>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span className="dash-item-title">
+                                  {m.game} : Dark Wolf vs {m.opponent}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    fontWeight: '800',
+                                    padding: '2px 8px',
+                                    borderRadius: '4px',
+                                    background: isMyGame ? 'rgba(34, 197, 94, 0.15)' : 'rgba(148, 163, 184, 0.15)',
+                                    color: isMyGame ? '#4ade80' : '#94a3b8',
+                                    border: isMyGame ? '1px solid #22c55e' : '1px solid #475569'
+                                  }}
+                                >
+                                  {isMyGame ? 'ÉLIGIBLE [ROSTER DWT]' : `SPECTATEUR (${m.game.toUpperCase()})`}
+                                </span>
+                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Format : {m.format || 'BO3'}</span>
+                              </div>
+
+                              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                                Tournoi : <strong style={{ color: '#cbd5e1' }}>{m.tournamentName || 'DWT Championship'}</strong> • Date : {new Date(m.matchDate).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                {isFinished && ` • Score Final : ${m.scoreDWT} - ${m.scoreOpponent}`}
+                              </div>
+
+                              {isMyGame && (
+                                <div style={{ fontSize: '11px', color: '#4ade80', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <CheckCircle2 size={13} />
+                                  <span>
+                                    Statut participation : <strong>{isConfirmed ? 'Présence confirmée par vous' : 'En attente de votre confirmation'}</strong> ({m.confirmedPlayers?.length || 0} titulaire(s) confirmé(s))
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            {/* Contrôle de participation stricte par jeu */}
+                            {isMyGame && !isFinished ? (
+                              <button
+                                type="button"
+                                onClick={() => handleRsvpMatch(m._id, isConfirmed ? 'declined' : 'confirmed')}
+                                style={{
+                                  background: isConfirmed ? '#16a34a' : 'rgba(56, 189, 248, 0.15)',
+                                  border: isConfirmed ? '1px solid #22c55e' : '1px solid #38bdf8',
+                                  color: '#ffffff',
+                                  padding: '6px 14px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  fontWeight: '800',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                <Check size={14} />
+                                <span>{isConfirmed ? 'Présence Confirmée ✓' : 'Confirmer ma Présence'}</span>
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '11px', color: '#64748b', padding: '6px 10px', background: '#0a0d16', borderRadius: '4px', border: '1px solid #1e293b' }}>
+                                Spectateur uniquement
+                              </span>
+                            )}
+
+                            <button
+                              className="btn-rejoindre"
+                              style={{ padding: '6px 14px', fontSize: '12px' }}
+                              onClick={() => handleJoinMatch(m)}
+                            >
+                              {isLive ? 'Regarder LIVE' : 'Détails Match'}
+                            </button>
+
+                            {m.status === 'upcoming' && (
+                              <button
+                                className="btn-mark-read"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
+                                onClick={() => setActiveNav('Pronostics')}
+                              >
+                                Pronostiquer
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
-              <div className="dash-list-col">
-                {matches.length === 0 ? (
-                  <div className="dash-empty-state">Aucun match disponible.</div>
+            );
+          })()}
+
+          {/* =========================================================================
+              VUE NOUVELLE : MON ÉQUIPE & ROSTER OFFICIEL
+              ========================================================================= */}
+          {activeNav === 'Mon Équipe' && (
+            <div className="dash-card">
+              <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2 className="dash-card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Users size={22} color="var(--red-primary)" /> Roster Officiel : {myGame} ({myTeammates.length} joueurs)
+                  </h2>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                    Retrouvez vos coéquipiers, capitaines et remplaçants pour votre discipline esportive.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn-dash-approve"
+                  style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid #38bdf8', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '12px' }}
+                  onClick={() => setActiveNav('Messagerie Staff')}
+                >
+                  <MessageSquare size={14} /> Contacter le Staff / Capitaine
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', margin: '20px 0' }}>
+                {myTeammates.length === 0 ? (
+                  <div className="dash-empty-state" style={{ gridColumn: '1 / -1' }}>
+                    Aucun coéquipier répertorié pour le moment dans la division {myGame}. L'administration est en train de finaliser la composition.
+                  </div>
                 ) : (
-                  matches.map((m) => (
-                    <div className="dash-list-item-row" key={m._id}>
-                      <div className="dash-item-left">
-                        <div className="dash-wolf-badge-tiny">
-                          <WolfLogo size={18} />
+                  myTeammates.map((player) => {
+                    const isMe = (player.gamertag || '').toLowerCase() === (user?.gamertag || '').toLowerCase();
+
+                    return (
+                      <div
+                        key={player._id}
+                        style={{
+                          background: isMe ? 'linear-gradient(135deg, rgba(230,0,0,0.1), #0a0d14)' : '#0a0d14',
+                          border: isMe ? '1px solid rgba(230,0,0,0.4)' : '1px solid #1a2336',
+                          borderRadius: '10px',
+                          padding: '18px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                          position: 'relative'
+                        }}
+                      >
+                        {isMe && (
+                          <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--red-primary)', color: '#fff', fontSize: '10px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                            Vous
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <img
+                            src={player.avatar || 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80'}
+                            alt={player.gamertag}
+                            style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }}
+                          />
+                          <div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#ffffff' }}>
+                              {player.gamertag}
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--red-primary)', fontWeight: '700' }}>
+                              {player.role || 'Joueur Compétitif'}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                              Rang : <strong style={{ color: '#cbd5e1' }}>{player.rank || 'Compétiteur'}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: '#05070c', padding: '10px', borderRadius: '6px', border: '1px solid #131926', fontSize: '11px' }}>
+                          <div>
+                            <span style={{ color: '#64748b' }}>Statut : </span>
+                            <span style={{ color: player.isStarter ? '#4ade80' : '#fbbf24', fontWeight: '700' }}>
+                              {player.isStarter ? 'Titulaire' : 'Remplaçant'}
+                            </span>
+                          </div>
+                          <div>
+                            <span style={{ color: '#64748b' }}>Nationalité : </span>
+                            <span style={{ color: '#fff', fontWeight: '700' }}>{player.nationality || 'FR'}</span>
+                          </div>
+                          <div>
+                            <span style={{ color: '#64748b' }}>Winrate : </span>
+                            <span style={{ color: '#38bdf8', fontWeight: '700' }}>{player.stats?.winRate || '65%'}</span>
+                          </div>
+                          <div>
+                            <span style={{ color: '#64748b' }}>KDA : </span>
+                            <span style={{ color: '#c084fc', fontWeight: '700' }}>{player.stats?.kda || '1.45'}</span>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                          {player.socialLinks?.discord && (
+                            <div style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Shield size={12} color="#38bdf8" /> {player.socialLinks.discord}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              VUE NOUVELLE : PLANNING DES ENTRAÎNEMENTS & SCRIMS
+              ========================================================================= */}
+          {activeNav === 'Planning & Scrims' && (
+            <div className="dash-card">
+              <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2 className="dash-card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Clock size={22} color="var(--red-primary)" /> Planning des Scrims & Entraînements
+                  </h2>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                    Planning officiel des entraînements de la semaine pour votre division {myGame}. Confirmez votre présence obligatoire 24h avant chaque session.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <a
+                    href="https://discord.gg/darkwolfteam"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-dash-approve"
+                    style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid #38bdf8', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '12px', textDecoration: 'none' }}
+                  >
+                    <ExternalLink size={14} /> Salon Vocal Discord Tryouts
+                  </a>
+                </div>
+              </div>
+
+              <div className="dash-list-col" style={{ marginTop: '20px' }}>
+                {[
+                  {
+                    id: 'scrim-1',
+                    title: `Scrim Officiel 5v5 vs Team Vitality Academy (${myGame})`,
+                    date: 'Mardi 20h30 - 23h00',
+                    location: 'Discord Salon Vocal Scrims #01 (Arène DWT)',
+                    type: 'Match d Entraînement Compétitif (BO3)',
+                    objective: 'Travail des exécutions de sites et communication sous pression.'
+                  },
+                  {
+                    id: 'scrim-2',
+                    title: `Session Théorie, Analyse VOD & Stratégies (${myGame})`,
+                    date: 'Jeudi 19h30 - 21h30',
+                    location: 'Discord Salon Conférence & Écran Partagé',
+                    type: 'VOD Review & Débrief Staff',
+                    objective: 'Correction des erreurs de positionnement et calage des timers d utilitaires.'
+                  },
+                  {
+                    id: 'scrim-3',
+                    title: `Warmup Équipe & Scrim Pratique vs Karmine Corp Youth (${myGame})`,
+                    date: 'Dimanche 18h00 - 21h00',
+                    location: 'Discord Salon Vocal Scrims #02',
+                    type: 'Scrim Préparatoire de Tournoi (BO5)',
+                    objective: 'Répétition générale avant les qualifications officielles du week-end.'
+                  }
+                ].map((scrim) => {
+                  const status = scrimAttendance[scrim.id] || 'pending';
+
+                  return (
+                    <div
+                      key={scrim.id}
+                      className="dash-list-item-row"
+                      style={{
+                        borderLeft: status === 'confirmed' ? '4px solid #22c55e' : status === 'declined' ? '4px solid #ef4444' : '4px solid #f59e0b',
+                        background: status === 'confirmed' ? 'rgba(34,197,94,0.03)' : undefined
+                      }}
+                    >
+                      <div className="dash-item-left" style={{ flex: 1 }}>
+                        <div className="dash-wolf-badge-tiny" style={{ background: 'rgba(56,189,248,0.15)' }}>
+                          <Clock size={18} color="#38bdf8" />
                         </div>
                         <div>
-                          <div className="dash-item-title">{m.game} vs {m.opponent} ({m.format || 'BO3'})</div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>
-                            Statut : <span style={{ color: m.status === 'live' ? '#ff3333' : '#fff', fontWeight: '700' }}>{m.status.toUpperCase()}</span> | {new Date(m.matchDate).toLocaleDateString('fr-FR')} {m.status === 'finished' && `• Score: ${m.scoreDWT} - ${m.scoreOpponent}`}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span className="dash-item-title">{scrim.title}</span>
+                            <span style={{ fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid #38bdf8' }}>
+                              {scrim.type}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '4px' }}>
+                            Horaire : <strong style={{ color: '#fff' }}>{scrim.date}</strong> • Lieu : <span style={{ color: '#38bdf8' }}>{scrim.location}</span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                            Objectif : {scrim.objective}
                           </div>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <button
-                          className="btn-rejoindre"
-                          style={{ padding: '6px 16px', fontSize: '13px' }}
-                          onClick={() => handleJoinMatch(m)}
+                          type="button"
+                          onClick={() => handleToggleScrimAttendance(scrim.id, 'confirmed')}
+                          style={{
+                            background: status === 'confirmed' ? '#16a34a' : 'rgba(34, 197, 94, 0.15)',
+                            border: '1px solid #22c55e',
+                            color: '#ffffff',
+                            padding: '6px 14px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
                         >
-                          {m.status === 'live' ? 'Regarder ' : 'Rejoindre'}
+                          <Check size={14} />
+                          <span>{status === 'confirmed' ? 'Présent ✓' : 'Confirmer Présence'}</span>
                         </button>
-                        {m.status === 'upcoming' && (
-                          <button
-                            className="btn-mark-read"
-                            style={{ padding: '6px 12px', fontSize: '12px' }}
-                            onClick={() => setActiveNav('Pronostics')}
-                          >
-                             Pronostiquer
-                          </button>
-                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleScrimAttendance(scrim.id, 'declined')}
+                          style={{
+                            background: status === 'declined' ? 'rgba(239, 68, 68, 0.3)' : 'transparent',
+                            border: '1px solid #ef4444',
+                            color: '#f87171',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Signaler Absence
+                        </button>
                       </div>
                     </div>
-                  ))
-                )}
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              VUE NOUVELLE : KIT JOUEUR & CHARTE DE L'ÉQUIPE
+              ========================================================================= */}
+          {activeNav === 'Kit Joueur & Charte' && (
+            <div className="dash-card">
+              <div className="dash-card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2 className="dash-card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Shield size={22} color="var(--red-primary)" /> Kit Joueur Officiel & Charte Esport
+                  </h2>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                    Téléchargez vos ressources graphiques officielles pour vos streams, réseaux sociaux et tournois.
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid des packs de ressources à télécharger */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', margin: '20px 0' }}>
+                {[
+                  {
+                    title: 'Pack Logos Officiels HD',
+                    desc: 'Logos Dark Wolf Team en haute résolution, fonds transparents PNG et formats vectoriels SVG.',
+                    tag: 'Graphismes & Identité',
+                    actionLabel: 'Télécharger le Pack Logos'
+                  },
+                  {
+                    title: 'Overlays Streaming DWT',
+                    desc: 'Cadres webcam animés, barres HUD, bannières d attente et écrans de pause aux couleurs de la Meute.',
+                    tag: 'Twitch / Kick / YouTube',
+                    actionLabel: 'Télécharger les Overlays'
+                  },
+                  {
+                    title: 'Bannières Réseaux Sociaux',
+                    desc: 'Habillages officiels pour Twitter / X, bannières Discord personnalisables avec votre gamertag.',
+                    tag: 'Réseaux & Branding',
+                    actionLabel: 'Télécharger les Bannières'
+                  },
+                  {
+                    title: 'Charte & Règlement Compétitif',
+                    desc: 'Règlement intérieur de l équipe : ponctualité, engagement tournois, code de conduite et fair-play.',
+                    tag: 'Document Officiel',
+                    actionLabel: 'Consulter la Charte (PDF)'
+                  }
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      background: '#0a0d14',
+                      border: '1px solid #1a2336',
+                      borderRadius: '10px',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}
+                  >
+                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--red-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {item.tag}
+                    </span>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#fff' }}>
+                      {item.title}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                      {item.desc}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => showToast(`Téléchargement initié : ${item.title}`, 'info')}
+                      style={{
+                        marginTop: 'auto',
+                        background: 'rgba(230, 0, 0, 0.15)',
+                        border: '1px solid var(--red-primary)',
+                        color: '#ffffff',
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <Download size={14} />
+                      <span>{item.actionLabel}</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Les 5 Règles d'Or de la Meute */}
+              <div style={{ background: '#05070c', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px', marginTop: '10px' }}>
+                <h4 style={{ margin: '0 0 14px 0', fontSize: '14px', fontWeight: '800', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Les 5 Règles d'Or du Joueur Dark Wolf Team :
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', fontSize: '12px', color: '#cbd5e1' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '6px', borderLeft: '3px solid var(--red-primary)' }}>
+                    <strong style={{ color: '#fff' }}>1. Ponctualité Stricte :</strong> Connexion sur le Discord vocal au moins 10 minutes avant chaque scrim ou match officiel.
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '6px', borderLeft: '3px solid var(--red-primary)' }}>
+                    <strong style={{ color: '#fff' }}>2. Zéro Toxicité :</strong> Communication constructive et sang-froid en toutes circonstances, même en situation difficile.
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '6px', borderLeft: '3px solid var(--red-primary)' }}>
+                    <strong style={{ color: '#fff' }}>3. Engagement d'Entraînement :</strong> Maintien actif du rang individuel et présence obligatoire aux sessions tactiques.
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '6px', borderLeft: '3px solid var(--red-primary)' }}>
+                    <strong style={{ color: '#fff' }}>4. Image de la Structure :</strong> Port des couleurs de l'équipe lors des compétitions et streams officiels.
+                  </div>
+                </div>
               </div>
             </div>
           )}

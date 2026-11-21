@@ -4,6 +4,8 @@ const {
   applicationSubmittedTemplate,
   adminNewApplicationTemplate,
   testScheduledTemplate,
+  adminTestAppointmentTemplate,
+  testerConvocationTemplate,
   applicationAcceptedTemplate,
   applicationRejectedTemplate,
   applicationStatusUpdateTemplate,
@@ -134,13 +136,64 @@ const sendTestScheduledEmail = async (application) => {
     application.testDate,
     application.testTime,
     application.testLocation,
-    application.testNotes
+    application.testNotes,
+    application.testRoom,
+    application.discordUrl,
+    application.assignedTester
   );
   return await sendEmail({
     to: application.email,
     subject: `Convocation officielle : Test de recrutement Dark Wolf Team (${application.game})`,
     html,
-    text: `Bonjour ${application.gamertag}, vous etes convoque pour votre test de recrutement Dark Wolf Team sur ${application.game}. Consultez vos emails pour le detail de la date, heure et salon Discord.`
+    text: `Bonjour ${application.gamertag}, vous etes convoque pour votre test de recrutement Dark Wolf Team sur ${application.game} le ${application.testDate ? new Date(application.testDate).toLocaleDateString('fr-FR') : ''} a ${application.testTime} dans la salle ${application.testRoom || 'Discord'}. Evaluateur : ${application.assignedTester || 'Staff'}.`
+  });
+};
+
+// 4b. Confirmation du rendez-vous pour l'administrateur
+const sendAdminTestAppointmentEmail = async (application) => {
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+  if (!adminEmail) return;
+
+  const html = adminTestAppointmentTemplate(
+    application.gamertag,
+    application.game,
+    application.testDate,
+    application.testTime,
+    application.testRoom,
+    application.discordUrl,
+    application.assignedTester,
+    application.email,
+    application.discordTag
+  );
+  return await sendEmail({
+    to: adminEmail,
+    subject: `[Agenda DWT] Test planifie : ${application.gamertag} (${application.game}) - ${application.testRoom || 'Salle de Test'}`,
+    html,
+    text: `Test de recrutement planifie : ${application.gamertag} (${application.game}) le ${application.testDate ? new Date(application.testDate).toLocaleDateString('fr-FR') : ''} a ${application.testTime}. Salle : ${application.testRoom}. Testeur assigne : ${application.assignedTester}.`
+  });
+};
+
+// 4c. Convocation du testeur / membre de l'equipe assigne
+const sendTesterConvocationEmail = async (application, testerEmail, testerName) => {
+  if (!testerEmail) return;
+
+  const html = testerConvocationTemplate(
+    testerName || application.assignedTester || 'Membre de l equipe',
+    application.gamertag,
+    application.game,
+    application.rank,
+    application.discordTag,
+    application.testDate,
+    application.testTime,
+    application.testRoom,
+    application.discordUrl,
+    application.testNotes
+  );
+  return await sendEmail({
+    to: testerEmail,
+    subject: `[Mission Testeur DWT] Session de recrutement ${application.game} : ${application.gamertag}`,
+    html,
+    text: `Bonjour ${testerName || 'Testeur'}, vous etes assigne pour faire passer le test de recrutement de ${application.gamertag} (${application.game}, rang ${application.rank}) le ${application.testDate ? new Date(application.testDate).toLocaleDateString('fr-FR') : ''} a ${application.testTime} dans la salle ${application.testRoom}.`
   });
 };
 
@@ -289,6 +342,8 @@ module.exports = {
   sendApplicationSubmittedEmail,
   sendAdminApplicationAlert,
   sendTestScheduledEmail,
+  sendAdminTestAppointmentEmail,
+  sendTesterConvocationEmail,
   sendApplicationAcceptedEmail,
   sendApplicationRejectedEmail,
   sendApplicationStatusEmail,

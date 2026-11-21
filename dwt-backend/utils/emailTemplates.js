@@ -263,13 +263,17 @@ const adminNewApplicationTemplate = (app) => {
 };
 
 // 4. Email Convocation au Test de Recrutement
-const testScheduledTemplate = (gamertag, game, testDate, testTime, testLocation, notes) => {
+const testScheduledTemplate = (gamertag, game, testDate, testTime, testLocation, notes, testRoom, discordUrl, assignedTester) => {
   const formattedDate = testDate ? new Date(testDate).toLocaleDateString('fr-FR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   }) : 'Date confirmee';
+
+  const roomLabel = testRoom || 'Salle de Test #01 - Alpha (Public)';
+  const discordLink = discordUrl || 'https://discord.gg/darkwolfteam';
+  const testerLabel = assignedTester || 'Staff Dark Wolf Team';
 
   const content = `
     <h2>Convocation Officielle au Test de Recrutement</h2>
@@ -278,7 +282,12 @@ const testScheduledTemplate = (gamertag, game, testDate, testTime, testLocation,
     <div class="info-box-blue">
       <p style="margin: 4px 0;"><strong>Date du test :</strong> ${formattedDate}</p>
       <p style="margin: 4px 0;"><strong>Heure :</strong> ${testTime || 'A determiner'}</p>
+      <p style="margin: 4px 0;"><strong>Salle Discord assignee :</strong> ${roomLabel}</p>
+      <p style="margin: 4px 0;"><strong>Evaluateur / Testeur :</strong> ${testerLabel}</p>
       <p style="margin: 4px 0;"><strong>Lieu / Plateforme :</strong> ${testLocation || 'Serveur Discord Vocal Dark Wolf Team'}</p>
+    </div>
+    <div class="btn-container">
+      <a href="${discordLink}" class="btn">Rejoindre le Discord DWT</a>
     </div>
     ${notes ? `
     <div style="background: #090e18; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 0 6px 6px 0; margin: 18px 0;">
@@ -287,13 +296,90 @@ const testScheduledTemplate = (gamertag, game, testDate, testTime, testLocation,
     </div>` : ''}
     <p><strong>Rappels importants pour le test :</strong></p>
     <ul style="margin: 0 0 16px 0; padding-left: 20px; color: #cbd5e1;">
-      <li>Etre connecte sur le salon Discord au moins 10 minutes avant l'heure fixee.</li>
+      <li>Etre connecte dans la salle vocale assignee au moins 10 minutes avant l'heure fixee.</li>
       <li>Disposer d'un micro operationnel et d'une connexion internet stable.</li>
       <li>Adopter une communication claire et un esprit d'equipe irreprochable.</li>
     </ul>
     <p>A l'issue de cette session de test, l'administration prendra sa decision definitive.</p>
   `;
   return baseEmailWrapper(`Convocation Test Recrutement DWT - ${game}`, content);
+};
+
+// 4b. Notification Agenda / Rendez-vous pour l'Administrateur
+const adminTestAppointmentTemplate = (gamertag, game, testDate, testTime, testRoom, discordUrl, assignedTester, candidateEmail, candidateDiscord) => {
+  const formattedDate = testDate ? new Date(testDate).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : 'Date planifiee';
+
+  const roomLabel = testRoom || 'Salle de Test #01 - Alpha (Public)';
+  const testerLabel = assignedTester || 'Staff Dark Wolf Team';
+
+  const content = `
+    <h2>Rendez-vous Fixe : Test de Recrutement ${game}</h2>
+    <p>Bonjour Administrateur,</p>
+    <p>Un rendez-vous pour un test pratique de recrutement a ete planifie dans le planning de l'equipe.</p>
+    <div class="info-box-blue">
+      <p style="margin: 4px 0;"><strong>Candidat :</strong> ${gamertag} (${candidateEmail})</p>
+      <p style="margin: 4px 0;"><strong>Discord du candidat :</strong> ${candidateDiscord || 'Non renseigne'}</p>
+      <p style="margin: 4px 0;"><strong>Jeu / Roster :</strong> ${game}</p>
+      <p style="margin: 4px 0;"><strong>Date du test :</strong> ${formattedDate}</p>
+      <p style="margin: 4px 0;"><strong>Heure du test :</strong> ${testTime}</p>
+      <p style="margin: 4px 0;"><strong>Salle Discord reservee :</strong> ${roomLabel}</p>
+      <p style="margin: 4px 0;"><strong>Evaluateur assigne :</strong> ${testerLabel}</p>
+    </div>
+    <div class="btn-container">
+      <a href="${discordUrl || 'https://discord.gg/darkwolfteam'}" class="btn">Acceder au Serveur Discord DWT</a>
+    </div>
+    <p style="color: #94a3b8; font-size: 13px;">
+      Cette reservation a ete enregistree. Les creneaux de la salle sont verrouilles pour eviter les doublons.
+    </p>
+  `;
+  return baseEmailWrapper(`Agenda Test Recrutement : ${gamertag} (${game})`, content);
+};
+
+// 4c. Convocation du Membre / Testeur de l'equipe
+const testerConvocationTemplate = (testerName, gamertag, game, rank, discordTag, testDate, testTime, testRoom, discordUrl, notes) => {
+  const formattedDate = testDate ? new Date(testDate).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : 'Date planifiee';
+
+  const roomLabel = testRoom || 'Salle de Test #01 - Alpha (Public)';
+
+  const content = `
+    <h2>Mission Testeur : Session de Recrutement ${game}</h2>
+    <p>Bonjour <strong>${testerName}</strong>,</p>
+    <p>Vous avez ete assigne par la direction esport pour evaluer et faire passer le test pratique d'un candidat pour le roster <strong>${game}</strong>.</p>
+    <div class="info-box-blue">
+      <p style="margin: 4px 0;"><strong>Candidat a tester :</strong> ${gamertag}</p>
+      <p style="margin: 4px 0;"><strong>Rang en jeu :</strong> ${rank}</p>
+      <p style="margin: 4px 0;"><strong>Tag Discord candidat :</strong> ${discordTag}</p>
+      <p style="margin: 4px 0;"><strong>Date de la session :</strong> ${formattedDate}</p>
+      <p style="margin: 4px 0;"><strong>Heure :</strong> ${testTime}</p>
+      <p style="margin: 4px 0;"><strong>Salle Discord :</strong> ${roomLabel}</p>
+    </div>
+    <div class="btn-container">
+      <a href="${discordUrl || 'https://discord.gg/darkwolfteam'}" class="btn">Rejoindre la Salle de Test Discord</a>
+    </div>
+    ${notes ? `
+    <div style="background: #090e18; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 0 6px 6px 0; margin: 18px 0;">
+      <strong style="color: #ffffff;">Instructions de l'administration :</strong>
+      <p style="margin: 6px 0 0 0; color: #cbd5e1;">${notes}</p>
+    </div>` : ''}
+    <p><strong>Criteres d'evaluation attendus :</strong></p>
+    <ul style="margin: 0 0 16px 0; padding-left: 20px; color: #cbd5e1;">
+      <li>Niveau mecanique et comprehension du jeu.</li>
+      <li>Communication vocale (calls, sang-froid, positionnement).</li>
+      <li>Cohesion d'equipe et respect des consignes.</li>
+    </ul>
+    <p>Merci de transmettre votre retour d'evaluation a l'administration des la fin de la session.</p>
+  `;
+  return baseEmailWrapper(`Convocation Testeur DWT : ${gamertag} (${game})`, content);
 };
 
 // 5. Email Acceptation Candidature avec Identifiants generes
@@ -524,6 +610,8 @@ module.exports = {
   applicationSubmittedTemplate,
   adminNewApplicationTemplate,
   testScheduledTemplate,
+  adminTestAppointmentTemplate,
+  testerConvocationTemplate,
   applicationAcceptedTemplate,
   applicationRejectedTemplate,
   applicationStatusUpdateTemplate,
