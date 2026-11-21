@@ -40,7 +40,6 @@ const Footer = ({
   onOpenPlayer,
   onOpenAchievements,
   onOpenPartners,
-  onOpenBrandGuidelines,
   onOpenLegal,
   onSelectShopCategory,
   onOpenShop,
@@ -177,17 +176,6 @@ const Footer = ({
                 }}
               >
                 Partners (Sponsors)
-              </a>
-            </li>
-            <li>
-              <a
-                href="#brand"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (onOpenBrandGuidelines) onOpenBrandGuidelines();
-                }}
-              >
-                Brand Guidelines
               </a>
             </li>
             <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a></li>

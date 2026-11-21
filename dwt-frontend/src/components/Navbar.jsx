@@ -14,7 +14,6 @@ const Navbar = ({
   onOpenAdmin,
   onOpenAchievements,
   onOpenPartners,
-  onOpenBrandGuidelines,
   onSelectShopCategory,
   onOpenShop,
   onOpenCustomStudio,
@@ -272,15 +271,6 @@ const Navbar = ({
               }}
             >
               Partners (Sponsors)
-            </a>
-            <a
-              href="#brand"
-              onClick={(e) => {
-                e.preventDefault();
-                if (onOpenBrandGuidelines) onOpenBrandGuidelines();
-              }}
-            >
-              Brand Guidelines (Logos & Chartes)
             </a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a>
           </div>

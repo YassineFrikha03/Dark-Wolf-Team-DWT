@@ -27,7 +27,6 @@ import WolfChatbot from './components/WolfChatbot';
 import FanPortalModal from './components/FanPortalModal';
 import AchievementsModal from './components/AchievementsModal';
 import PartnersModal from './components/PartnersModal';
-import BrandGuidelinesModal from './components/BrandGuidelinesModal';
 import LegalModal from './components/LegalModal';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import PlayerDashboardPage from './pages/PlayerDashboardPage';
@@ -79,7 +78,6 @@ function AppContent() {
   // Additional destination modals
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isPartnersOpen, setIsPartnersOpen] = useState(false);
-  const [isBrandGuidelinesOpen, setIsBrandGuidelinesOpen] = useState(false);
   const [legalModal, setLegalModal] = useState({ isOpen: false, tab: 'privacy' });
   const [shopCategoryFilter, setShopCategoryFilter] = useState('All');
   const [isCustomStudioOpen, setIsCustomStudioOpen] = useState(() => {
@@ -291,7 +289,6 @@ function AppContent() {
         setFanPortal({ isOpen: false, mode: 'FAN' });
         setIsAchievementsOpen(false);
         setIsPartnersOpen(false);
-        setIsBrandGuidelinesOpen(false);
         setLegalModal({ isOpen: false, tab: 'privacy' });
         setIsCustomStudioOpen(false);
         document.body.style.overflow = '';
@@ -689,7 +686,6 @@ function AppContent() {
             onOpenAdmin={goToAdmin}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
-            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
             onOpenCustomStudio={handleOpenCustomStudio}
@@ -712,7 +708,6 @@ function AppContent() {
             onOpenPlayer={goToPlayer}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
-            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
             onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
@@ -757,7 +752,6 @@ function AppContent() {
             onOpenAdmin={goToAdmin}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
-            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
             onOpenCustomStudio={handleOpenCustomStudio}
@@ -773,7 +767,6 @@ function AppContent() {
             onOpenPlayer={goToPlayer}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
-            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
             onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
@@ -794,7 +787,6 @@ function AppContent() {
             onOpenAdmin={goToAdmin}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
-            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
             onOpenCustomStudio={handleOpenCustomStudio}
@@ -810,7 +802,6 @@ function AppContent() {
             onOpenPlayer={goToPlayer}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenPartners={() => setIsPartnersOpen(true)}
-            onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
             onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
             onSelectShopCategory={handleSelectShopCategory}
             onOpenShop={goToShop}
@@ -832,7 +823,6 @@ function AppContent() {
         onOpenAdmin={goToAdmin}
         onOpenAchievements={() => setIsAchievementsOpen(true)}
         onOpenPartners={() => setIsPartnersOpen(true)}
-        onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
         onSelectShopCategory={handleSelectShopCategory}
         onOpenShop={goToShop}
         onOpenCustomStudio={handleOpenCustomStudio}
@@ -890,7 +880,6 @@ function AppContent() {
         onOpenPlayer={goToPlayer}
         onOpenAchievements={() => setIsAchievementsOpen(true)}
         onOpenPartners={() => setIsPartnersOpen(true)}
-        onOpenBrandGuidelines={() => setIsBrandGuidelinesOpen(true)}
         onOpenLegal={(tab) => setLegalModal({ isOpen: true, tab: tab || 'privacy' })}
         onSelectShopCategory={handleSelectShopCategory}
         onOpenShop={goToShop}
@@ -957,12 +946,6 @@ function AppContent() {
           setIsPartnersOpen(false);
           document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
         }}
-      />
-
-      {/* Brand Guidelines Modal */}
-      <BrandGuidelinesModal
-        isOpen={isBrandGuidelinesOpen}
-        onClose={() => setIsBrandGuidelinesOpen(false)}
       />
 
       {/* Legal & Privacy & Terms Modal */}
