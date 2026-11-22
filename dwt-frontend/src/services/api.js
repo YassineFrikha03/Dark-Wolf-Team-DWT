@@ -13,9 +13,12 @@ API.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type'];
   }
-  const token = localStorage.getItem('dwt_token') || sessionStorage.getItem('dwt_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // Attacher le token JWT stocké si aucun header Authorization n'est déjà fourni
+  if (!config.headers.Authorization) {
+    const token = localStorage.getItem('dwt_token') || sessionStorage.getItem('dwt_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });

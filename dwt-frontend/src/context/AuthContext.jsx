@@ -16,6 +16,17 @@ const touchLastActive = () => {
 
 const getInitialToken = () => {
   try {
+    // Si retour OAuth avec ?token= dans l'URL
+    if (typeof window !== 'undefined' && window.location.search) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('token');
+      if (urlToken) {
+        localStorage.setItem('dwt_token', urlToken);
+        sessionStorage.setItem('dwt_token', urlToken);
+        touchLastActive();
+        return urlToken;
+      }
+    }
     const lastActive = localStorage.getItem('dwt_last_active');
     const now = Date.now();
     if (lastActive && (now - Number(lastActive) > SESSION_MAX_OFFLINE_MS)) {

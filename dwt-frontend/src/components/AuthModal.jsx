@@ -138,7 +138,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
   };
 
   const handleSocialLogin = (provider) => {
-    const backendUrl = import.meta.env.VITE_SERVER_URL || '';
+    const backendUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
     window.location.href = `${backendUrl}/api/auth/${provider}`;
   };
 

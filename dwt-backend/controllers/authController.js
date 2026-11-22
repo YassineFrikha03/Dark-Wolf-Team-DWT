@@ -457,7 +457,8 @@ const googleAuthCallback = async (req, res) => {
     const tokenData = await tokenResponse.json();
     if (!tokenData.access_token) {
       console.error('Google OAuth token error:', tokenData);
-      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Échec de validation du jeton Google.')}`);
+      const reason = tokenData.error_description || tokenData.error || 'Échec de validation du jeton Google.';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(reason)}`);
     }
 
     const userinfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -476,16 +477,23 @@ const googleAuthCallback = async (req, res) => {
       ]
     });
 
+    const adminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase();
+    const isMatchingAdmin = profile.email.toLowerCase() === adminEmail || profile.email.toLowerCase() === 'yassinefrikha0@gmail.com';
+
     if (user) {
       user.googleId = profile.id;
+      user.authProvider = 'google';
       if (profile.picture && (!user.avatar || user.avatar.includes('unsplash'))) {
         user.avatar = profile.picture;
+      }
+      if (isMatchingAdmin) {
+        user.role = 'admin';
       }
       user.lastLogin = new Date();
       await user.save({ validateBeforeSave: false });
     } else {
       const gamertag = await generateUniqueGamertag(profile.name || profile.email.split('@')[0]);
-      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const randomPassword = 'DWT-' + crypto.randomBytes(6).toString('hex').toUpperCase() + '!';
       user = await User.create({
         gamertag,
         email: profile.email.toLowerCase(),
@@ -493,7 +501,7 @@ const googleAuthCallback = async (req, res) => {
         googleId: profile.id,
         authProvider: 'google',
         avatar: profile.picture || undefined,
-        role: 'user',
+        role: isMatchingAdmin ? 'admin' : 'user',
         lastLogin: new Date()
       });
     }

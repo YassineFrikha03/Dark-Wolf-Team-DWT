@@ -33,6 +33,9 @@ const LoginPage = ({ onOpenRecruitment }) => {
 
     if (tokenParam) {
       setLoading(true);
+      localStorage.setItem('dwt_token', tokenParam);
+      sessionStorage.setItem('dwt_token', tokenParam);
+
       API.get('/auth/me', {
         headers: { Authorization: `Bearer ${tokenParam}` }
       })
@@ -47,7 +50,7 @@ const LoginPage = ({ onOpenRecruitment }) => {
               } else {
                 window.location.href = '/espace-joueur';
               }
-            }, 1000);
+            }, 800);
           }
         })
         .catch((err) => {
@@ -80,7 +83,7 @@ const LoginPage = ({ onOpenRecruitment }) => {
   };
 
   const handleSocialLogin = (provider) => {
-    const backendUrl = import.meta.env.VITE_SERVER_URL || '';
+    const backendUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
     window.location.href = `${backendUrl}/api/auth/${provider}`;
   };
 
