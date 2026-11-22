@@ -11,13 +11,28 @@ const { sendEmail } = require('../config/mailer');
 const sendMessage = async (req, res, next) => {
   try {
     const senderId = req.user._id;
-    let { receiverId, content } = req.body;
+    let { receiverId, content, mediaUrl, mediaType, mediaDuration } = req.body;
 
-    if (!content || !content.trim()) {
+    const hasContent = content && content.trim();
+    const hasMedia = !!mediaUrl;
+
+    if (!hasContent && !hasMedia) {
       return res.status(400).json({
         success: false,
-        message: 'Le message ne peut pas être vide'
+        message: 'Le message ne peut pas être vide (texte, vocal ou média requis)'
       });
+    }
+
+    // Déduire mediaType si absent
+    if (!mediaType) {
+      if (hasMedia) {
+        if (/\.(webm|ogg|wav|mp3|m4a|aac|opus|flac)$/i.test(mediaUrl)) mediaType = 'audio';
+        else if (/\.(mp4|mov|mkv|avi|m4v|webm)$/i.test(mediaUrl)) mediaType = 'video';
+        else if (/\.(png|jpe?g|webp|gif|svg|avif)$/i.test(mediaUrl)) mediaType = 'image';
+        else mediaType = 'file';
+      } else {
+        mediaType = 'text';
+      }
     }
 
     // Si le joueur n'a pas spécifié de destinataire, cibler automatiquement un admin
@@ -44,7 +59,8 @@ const sendMessage = async (req, res, next) => {
             gamertag: app.gamertag,
             email: app.email.toLowerCase(),
             password: tempPassword,
-            role: 'user'
+            role: 'user',
+            favoriteGame: app.game || 'Valorant'
           });
         }
         receiverId = receiver._id;
@@ -61,12 +77,30 @@ const sendMessage = async (req, res, next) => {
     const message = await Message.create({
       sender: senderId,
       receiver: receiverId,
-      content: content.trim()
+      content: (content || '').trim(),
+      mediaUrl: mediaUrl || '',
+      mediaType: mediaType || 'text',
+      mediaDuration: Number(mediaDuration) || 0
     });
 
     const populatedMessage = await Message.findById(message._id)
       .populate('sender', 'gamertag role avatar favoriteGame')
       .populate('receiver', 'gamertag role avatar favoriteGame');
+
+    // Aperçu pour la notification
+    let previewText = (content || '').trim();
+    if (!previewText) {
+      if (mediaType === 'audio') {
+        const dur = Number(mediaDuration);
+        previewText = `Message vocal${dur ? ' (' + Math.round(dur) + 's)' : ''}`;
+      } else if (mediaType === 'image') {
+        previewText = 'Photo partagée';
+      } else if (mediaType === 'video') {
+        previewText = 'Vidéo partagée';
+      } else {
+        previewText = 'Pièce jointe reçue';
+      }
+    }
 
     // Créer une notification pour le destinataire
     const isSenderAdmin = req.user.role === 'admin' || req.user.role === 'moderator';
@@ -74,8 +108,8 @@ const sendMessage = async (req, res, next) => {
       recipient: receiverId,
       recipientRole: isSenderAdmin ? 'user' : 'admin',
       type: 'message',
-      title: `💬 Message de ${req.user.gamertag || 'Joueur DWT'}`,
-      message: content.trim().length > 60 ? content.trim().slice(0, 57) + '...' : content.trim(),
+      title: `Message de ${req.user.gamertag || 'Joueur DWT'}`,
+      message: previewText.length > 60 ? previewText.slice(0, 57) + '...' : previewText,
       metadata: {
         senderId: req.user._id,
         senderGamertag: req.user.gamertag,
@@ -87,13 +121,13 @@ const sendMessage = async (req, res, next) => {
     if (isSenderAdmin && receiver && receiver.email) {
       sendEmail({
         to: receiver.email,
-        subject: `💬 Nouveau message du Staff Dark Wolf Team (${req.user.gamertag || 'Admin'})`,
+        subject: `Nouveau message du Staff Dark Wolf Team (${req.user.gamertag || 'Admin'})`,
         html: `<div style="font-family: Arial, sans-serif; background: #0b0d14; color: #fff; padding: 24px; border-radius: 8px;">
-          <h2 style="color: #e60000; margin-top: 0;">🐺 Dark Wolf Team - Staff Message</h2>
+          <h2 style="color: #e60000; margin-top: 0;">Dark Wolf Team - Staff Message</h2>
           <p>Bonjour <strong>${receiver.gamertag}</strong>,</p>
           <p>Le staff Dark Wolf Team vous a envoyé un message :</p>
-          <blockquote style="background: #161b28; border-left: 4px solid #e60000; padding: 12px 16px; margin: 16px 0; color: #cbd5e1; font-style: italic;">
-            ${content.trim()}
+          <blockquote style="background: #161b28; border-left: 4px solid #e60000; padding: 12px 16px; margin: 16px 0; color: #cbd5e1;">
+            ${previewText}
           </blockquote>
           <p style="color: #94a3b8; font-size: 13px;">Vous pouvez continuer la discussion sur la plateforme Dark Wolf Team.</p>
         </div>`
@@ -164,6 +198,8 @@ const getConversations = async (req, res, next) => {
     const isAdmin = req.user.role === 'admin' || req.user.role === 'moderator';
 
     let candidateUsers = [];
+    let currentPlayerGame = req.user.favoriteGame || '';
+
     if (isAdmin) {
       // Pour l'admin : synchroniser tous les joueurs recrutés de la collection Player
       try {
@@ -203,7 +239,7 @@ const getConversations = async (req, res, next) => {
             await Message.create({
               sender: currentUserId,
               receiver: uAcc._id,
-              content: `🐺 Bienvenue dans la meute Dark Wolf Team, ${p.gamertag} ! Ton espace de messagerie privé avec le staff est prêt pour échanger sur tes entraînements, tournois et scrims.`
+              content: `Bienvenue dans la meute Dark Wolf Team, ${p.gamertag} ! Ton espace de messagerie privé avec le staff est prêt pour échanger sur tes entraînements, tournois et scrims.`
             }).catch(() => {});
           }
         }
@@ -215,14 +251,76 @@ const getConversations = async (req, res, next) => {
       candidateUsers = await User.find({ _id: { $ne: currentUserId } })
         .select('gamertag email role avatar bio lastLogin favoriteGame');
     } else {
-      // Pour le joueur : cibler les administrateurs et modérateurs
-      candidateUsers = await User.find({ 
-        role: { $in: ['admin', 'moderator'] } 
+      // Déterminer le jeu principal du joueur actuel (profil User ou doc Player)
+      if (!currentPlayerGame) {
+        const pDoc = await Player.findOne({
+          gamertag: { $regex: new RegExp(`^${(req.user.gamertag || '').trim()}$`, 'i') }
+        });
+        if (pDoc && pDoc.game) {
+          currentPlayerGame = pDoc.game;
+        }
+      }
+
+      // 1. Staff Dark Wolf Team (admin et modérateur)
+      const staffUsers = await User.find({ 
+        role: { $in: ['admin', 'moderator'] },
+        _id: { $ne: currentUserId }
       }).select('gamertag email role avatar bio lastLogin favoriteGame');
+
+      // 2. Coéquipiers du même jeu
+      let teammates = [];
+      if (currentPlayerGame) {
+        // Synchroniser également les joueurs du même jeu depuis Player
+        try {
+          const sameGamePlayers = await Player.find({
+            isActive: true,
+            game: { $regex: new RegExp(`^${currentPlayerGame.trim()}$`, 'i') }
+          });
+
+          for (const p of sameGamePlayers) {
+            if (!p.gamertag || p.gamertag.toLowerCase() === (req.user.gamertag || '').toLowerCase()) continue;
+            let uAcc = await User.findOne({
+              gamertag: { $regex: new RegExp(`^${p.gamertag.trim()}$`, 'i') }
+            });
+
+            if (!uAcc) {
+              const fakeEmail = `${p.gamertag.toLowerCase().replace(/[^a-z0-9]/g, '')}@darkwolfteam.com`;
+              uAcc = await User.create({
+                gamertag: p.gamertag.trim(),
+                email: fakeEmail,
+                password: 'DWT2026!player',
+                role: 'player',
+                avatar: p.avatar,
+                favoriteGame: p.game,
+                bio: p.bio || `Joueur officiel Dark Wolf Team sur ${p.game}.`
+              });
+            } else if (!uAcc.favoriteGame) {
+              uAcc.favoriteGame = p.game;
+              await uAcc.save();
+            }
+          }
+        } catch (syncErr) {
+          console.error('Erreur synchronisation coéquipiers dans la messagerie :', syncErr.message);
+        }
+
+        teammates = await User.find({
+          _id: { $ne: currentUserId },
+          role: { $ne: 'admin' },
+          favoriteGame: { $regex: new RegExp(`^${currentPlayerGame.trim()}$`, 'i') }
+        }).select('gamertag email role avatar bio lastLogin favoriteGame');
+      }
+
+      // Fusionner Staff + Coéquipiers sans doublons
+      const userMap = new Map();
+      staffUsers.forEach(u => userMap.set(u._id.toString(), u));
+      teammates.forEach(u => userMap.set(u._id.toString(), u));
+      candidateUsers = Array.from(userMap.values());
 
       if (candidateUsers.length === 0) {
         const fallbackAdmin = await User.findOne({ role: 'admin' }).select('gamertag email role avatar bio lastLogin favoriteGame');
-        if (fallbackAdmin) candidateUsers.push(fallbackAdmin);
+        if (fallbackAdmin && fallbackAdmin._id.toString() !== currentUserId.toString()) {
+          candidateUsers.push(fallbackAdmin);
+        }
       }
     }
 
@@ -241,11 +339,19 @@ const getConversations = async (req, res, next) => {
           isRead: false
         });
 
+        const isStaff = u.role === 'admin' || u.role === 'moderator';
+        const isPlayer = u.role === 'player';
+        const isTeammate = !isStaff && (
+          (u.favoriteGame && currentPlayerGame && u.favoriteGame.toLowerCase() === currentPlayerGame.toLowerCase()) || false
+        );
+
         return {
           user: u,
           lastMessage: lastMsg,
           unreadCount,
-          isPlayer: u.role === 'player'
+          isPlayer,
+          isStaff,
+          isTeammate
         };
       })
     );
@@ -253,8 +359,7 @@ const getConversations = async (req, res, next) => {
     // Trier les conversations intelligemment :
     // 1. Celles avec messages non lus d'abord
     // 2. Celles avec messages récents ensuite
-    // 3. Les joueurs officiels recrutés ensuite
-    // 4. Les autres membres
+    // 3. Le staff officiel et les coéquipiers ensuite
     conversations.sort((a, b) => {
       if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
       if (b.unreadCount > 0 && a.unreadCount === 0) return 1;
@@ -262,6 +367,12 @@ const getConversations = async (req, res, next) => {
       const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
       const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
       if (timeA !== timeB) return timeB - timeA;
+
+      if (a.isStaff && !b.isStaff) return -1;
+      if (!a.isStaff && b.isStaff) return 1;
+
+      if (a.isTeammate && !b.isTeammate) return -1;
+      if (!a.isTeammate && b.isTeammate) return 1;
 
       if (a.isPlayer && !b.isPlayer) return -1;
       if (!a.isPlayer && b.isPlayer) return 1;

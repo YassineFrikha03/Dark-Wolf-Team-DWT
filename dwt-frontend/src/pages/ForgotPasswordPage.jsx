@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { WolfLogo } from '../components/WolfLogo';
-import { Mail, ArrowRight, RotateCcw, Lock, Check } from 'lucide-react';
+import { Mail, ArrowRight, RotateCcw, Lock, Check, Eye, EyeOff } from 'lucide-react';
 import API from '../services/api';
 
 const ForgotPasswordPage = () => {
@@ -17,6 +17,8 @@ const ForgotPasswordPage = () => {
   const [code, setCode] = useState(codeParam);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState(
     codeParam ? 'Lien de sécurité validé ! Code de vérification appliqué automatiquement.' : ''
@@ -191,14 +193,37 @@ const ForgotPasswordPage = () => {
               <div className="input-with-icon-wrap">
                 <Lock size={18} className="input-left-icon" />
                 <input
-                  type="password"
+                  type={showNewPassword ? 'text' : 'password'}
                   placeholder="Au moins 6 caractères"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="auth-text-input"
+                  style={{ paddingRight: '44px' }}
                   required
                   minLength={6}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    background: 'none',
+                    border: 'none',
+                    color: showNewPassword ? 'var(--red-primary)' : '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2,
+                    transition: 'color 0.2s'
+                  }}
+                  title={showNewPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  aria-label={showNewPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                >
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
@@ -207,14 +232,37 @@ const ForgotPasswordPage = () => {
               <div className="input-with-icon-wrap">
                 <Lock size={18} className="input-left-icon" />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Répétez le mot de passe"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="auth-text-input"
+                  style={{ paddingRight: '44px' }}
                   required
                   minLength={6}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    background: 'none',
+                    border: 'none',
+                    color: showConfirmPassword ? 'var(--red-primary)' : '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2,
+                    transition: 'color 0.2s'
+                  }}
+                  title={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  aria-label={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
 import { DiscordIcon, GoogleIcon } from './SocialIcons';
@@ -9,12 +9,14 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
   const { login } = useAuth();
 
   const [loginData, setLoginData] = useState({ identifier: '', password: '' });
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [regData, setRegData] = useState({ gamertag: '', email: '', password: '' });
 
   const [recoveryStep, setRecoveryStep] = useState(1); // 1: Email, 2: Code
   const [recoveryIdentifier, setRecoveryIdentifier] = useState('');
   const [recoveryCode, setRecoveryCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -232,14 +234,37 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
             </div>
             <div className="mfld" style={{ marginBottom: '8px' }}>
               <label className="mlbl">Password</label>
-              <input
-                type="password"
-                className="minput"
-                placeholder="••••••••"
-                required
-                value={loginData.password}
-                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showLoginPassword ? 'text' : 'password'}
+                  className="minput"
+                  placeholder="••••••••"
+                  required
+                  style={{ paddingRight: '40px' }}
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    color: showLoginPassword ? 'var(--red-primary)' : '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title={showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  aria-label={showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                >
+                  {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             {/* Lien Mot de passe oublié */}
@@ -487,15 +512,38 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
 
                   <div className="mfld">
                     <label className="mlbl">Nouveau mot de passe</label>
-                    <input
-                      type="password"
-                      className="minput"
-                      placeholder="Au moins 6 caractères"
-                      required
-                      minLength={6}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type={showResetPassword ? 'text' : 'password'}
+                        className="minput"
+                        placeholder="Au moins 6 caractères"
+                        required
+                        minLength={6}
+                        style={{ paddingRight: '40px' }}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowResetPassword(!showResetPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          background: 'none',
+                          border: 'none',
+                          color: showResetPassword ? 'var(--red-primary)' : '#94a3b8',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title={showResetPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                        aria-label={showResetPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      >
+                        {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
 
                   <button type="submit" className="bmsubmit" disabled={loading || recoveryCode.length < 6}>

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { WolfLogo } from '../components/WolfLogo';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
-import { Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { DiscordIcon, GoogleIcon } from '../components/SocialIcons';
 
 const LoginPage = ({ onOpenRecruitment }) => {
@@ -12,6 +12,7 @@ const LoginPage = ({ onOpenRecruitment }) => {
   const { login, setSession } = useAuth();
   const [identifier, setIdentifier] = useState(location.state?.identifier || '');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState(location.state?.successMsg || '');
@@ -140,13 +141,36 @@ const LoginPage = ({ onOpenRecruitment }) => {
             <div className="input-with-icon-wrap">
               <Lock size={18} className="input-left-icon" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="auth-text-input"
+                style={{ paddingRight: '44px' }}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  background: 'none',
+                  border: 'none',
+                  color: showPassword ? 'var(--red-primary)' : '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 2,
+                  transition: 'color 0.2s'
+                }}
+                title={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

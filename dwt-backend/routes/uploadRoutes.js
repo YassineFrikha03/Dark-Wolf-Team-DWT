@@ -47,16 +47,24 @@ router.post('/', (req, res) => {
     }
 
     const isVideo = file.mimetype.startsWith('video/') || /\.(mp4|webm|mov|mkv|avi|ogg|m4v)$/i.test(file.filename);
+    const isAudio = file.mimetype.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|opus|flac)$/i.test(file.filename);
     const isModel = /\.(glb|gltf)$/i.test(file.filename);
 
     res.status(200).json({
       success: true,
-      message: isVideo ? 'Vidéo téléversée avec succès.' : (isModel ? 'Modèle 3D GLB téléversé avec succès.' : 'Image téléversée avec succès.'),
+      message: isAudio
+        ? 'Message vocal / fichier audio téléversé avec succès.'
+        : isVideo
+        ? 'Vidéo téléversée avec succès.'
+        : isModel
+        ? 'Modèle 3D GLB téléversé avec succès.'
+        : 'Image téléversée avec succès.',
       fileUrl: filePath,
       filePath: filePath,
       modelUrl: isModel ? `/models/${file.filename}` : null,
       url: fullUrl,
       isVideo,
+      isAudio,
       isModel,
       file: {
         filename: file.filename,
@@ -66,6 +74,7 @@ router.post('/', (req, res) => {
         path: filePath,
         url: fullUrl,
         isVideo,
+        isAudio,
         isModel
       }
     });

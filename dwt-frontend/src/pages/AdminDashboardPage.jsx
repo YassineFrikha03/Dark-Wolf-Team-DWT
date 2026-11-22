@@ -54,7 +54,10 @@ import {
   Copy,
   Globe,
   Target,
-  Palette
+  Palette,
+  Mic,
+  MicOff,
+  Paperclip
 } from 'lucide-react';
 import { WolfLogo } from '../components/WolfLogo';
 import { CyberConfirmModal } from '../components/CyberConfirmModal';
@@ -338,6 +341,17 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
   const [chatSearchQuery, setChatSearchQuery] = useState('');
   const [chatFilterRole, setChatFilterRole] = useState('all'); // 'all', 'player', 'user'
   const chatScrollRef = useRef(null);
+
+  // Média & Message Vocal (Admin)
+  const [isAdminRecording, setIsAdminRecording] = useState(false);
+  const [adminRecordingDuration, setAdminRecordingDuration] = useState(0);
+  const [adminSelectedFile, setAdminSelectedFile] = useState(null);
+  const [adminFilePreview, setAdminFilePreview] = useState(null);
+  const [adminFileType, setAdminFileType] = useState(null); // 'image' | 'video'
+  const adminFileInputRef = useRef(null);
+  const adminMediaRecorderRef = useRef(null);
+  const adminAudioChunksRef = useRef([]);
+  const adminRecordingTimerRef = useRef(null);
 
   // Modals Produits
   const [showProductModal, setShowProductModal] = useState(false);
@@ -640,19 +654,176 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
     }
   }, [chatMessages]);
 
-  // Envoyer un message
+  // Démarrer l'enregistrement vocal admin
+  const handleStartAdminVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      adminAudioChunksRef.current = [];
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : 'audio/ogg';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      adminMediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          adminAudioChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.start(200);
+      setIsAdminRecording(true);
+      setAdminRecordingDuration(0);
+
+      adminRecordingTimerRef.current = setInterval(() => {
+        setAdminRecordingDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Erreur micro admin :', err);
+      showToast('Impossible d\'accéder au microphone. Vérifiez les autorisations de votre navigateur.', 'error');
+    }
+  };
+
+  // Annuler l'enregistrement vocal admin
+  const handleCancelAdminVoiceRecording = () => {
+    if (adminMediaRecorderRef.current && adminMediaRecorderRef.current.state !== 'inactive') {
+      adminMediaRecorderRef.current.stop();
+      adminMediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+    }
+    clearInterval(adminRecordingTimerRef.current);
+    setIsAdminRecording(false);
+    setAdminRecordingDuration(0);
+    adminAudioChunksRef.current = [];
+  };
+
+  // Terminer et envoyer le message vocal admin
+  const handleFinishAndSendAdminVoice = () => {
+    if (!adminMediaRecorderRef.current || adminMediaRecorderRef.current.state === 'inactive') return;
+    clearInterval(adminRecordingTimerRef.current);
+    const duration = adminRecordingDuration;
+
+    adminMediaRecorderRef.current.onstop = async () => {
+      try {
+        const audioBlob = new Blob(adminAudioChunksRef.current, { type: 'audio/webm' });
+        adminAudioChunksRef.current = [];
+        adminMediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+        setIsAdminRecording(false);
+        setAdminRecordingDuration(0);
+
+        if (duration < 1) {
+          showToast('Message vocal trop court', 'warning');
+          return;
+        }
+
+        if (!selectedUser?._id) {
+          showToast('Veuillez sélectionner un destinataire', 'warning');
+          return;
+        }
+
+        setSendingMsg(true);
+        const formData = new FormData();
+        formData.append('file', audioBlob, `vocal-admin-${Date.now()}.webm`);
+
+        const uploadRes = await API.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (uploadRes.data?.success) {
+          const fileUrl = uploadRes.data.fileUrl || uploadRes.data.url;
+          const msgRes = await API.post('/messages', {
+            receiverId: selectedUser._id,
+            content: '',
+            mediaUrl: fileUrl,
+            mediaType: 'audio',
+            mediaDuration: duration
+          });
+
+          if (msgRes.data?.success) {
+            setChatMessages((prev) => [...prev, msgRes.data.message]);
+            API.get('/messages/conversations').then((res) => {
+              if (res.data?.success) setConversations(res.data.conversations || []);
+            });
+          }
+        }
+      } catch (err) {
+        showToast(err.response?.data?.message || 'Erreur lors de l\'envoi du vocal', 'error');
+      } finally {
+        setSendingMsg(false);
+      }
+    };
+
+    adminMediaRecorderRef.current.stop();
+  };
+
+  // Sélection de photo ou vidéo admin
+  const handleAdminFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isVid = file.type.startsWith('video/') || /\.(mp4|webm|mov|mkv)$/i.test(file.name);
+    const isImg = file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(file.name);
+
+    if (!isVid && !isImg) {
+      showToast('Seules les images et les vidéos sont acceptées', 'warning');
+      return;
+    }
+
+    if (file.size > 250 * 1024 * 1024) {
+      showToast('Le fichier ne doit pas dépasser 250 Mo', 'warning');
+      return;
+    }
+
+    setAdminSelectedFile(file);
+    setAdminFileType(isVid ? 'video' : 'image');
+    setAdminFilePreview(URL.createObjectURL(file));
+  };
+
+  const handleClearAdminSelectedFile = () => {
+    if (adminFilePreview) URL.revokeObjectURL(adminFilePreview);
+    setAdminSelectedFile(null);
+    setAdminFilePreview(null);
+    setAdminFileType(null);
+    if (adminFileInputRef.current) adminFileInputRef.current.value = '';
+  };
+
+  // Envoyer un message (texte et/ou photo/vidéo)
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!chatInput.trim() || !selectedUser?._id || sendingMsg) return;
+    if ((!chatInput.trim() && !adminSelectedFile) || !selectedUser?._id || sendingMsg) return;
     setSendingMsg(true);
     try {
+      let mediaUrl = '';
+      let mediaType = 'text';
+
+      if (adminSelectedFile) {
+        const formData = new FormData();
+        formData.append('file', adminSelectedFile);
+        const uploadRes = await API.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (uploadRes.data?.success) {
+          mediaUrl = uploadRes.data.fileUrl || uploadRes.data.url;
+          mediaType = adminFileType || 'image';
+        }
+      }
+
       const res = await API.post('/messages', {
         receiverId: selectedUser._id,
-        content: chatInput.trim()
+        content: chatInput.trim(),
+        mediaUrl,
+        mediaType
       });
+
       if (res.data?.success) {
         setChatMessages(prev => [...prev, res.data.message]);
         setChatInput('');
+        handleClearAdminSelectedFile();
+        API.get('/messages/conversations').then((cRes) => {
+          if (cRes.data?.success) setConversations(cRes.data.conversations || []);
+        });
       }
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur lors de l\'envoi du message', 'error');
@@ -4063,7 +4234,60 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                                 <div className="chat-bubble-name">
                                   {isMine ? 'Admin Staff (Moi)' : (msg.sender?.gamertag || selectedUser?.gamertag || 'Joueur')}
                                 </div>
-                                <div className="chat-bubble-content">{msg.content}</div>
+
+                                {/* Affichage Média / Vocal */}
+                                {msg.mediaUrl && (
+                                  <div style={{ marginTop: '6px', marginBottom: msg.content ? '6px' : '0' }}>
+                                    {msg.mediaType === 'audio' ? (
+                                      <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '4px',
+                                        background: isMine ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                                        padding: '8px 12px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                                      }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: isMine ? '#ffd4d4' : '#94a3b8' }}>
+                                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <Mic size={13} /> Message vocal
+                                          </span>
+                                          {msg.mediaDuration ? <span>{Math.round(msg.mediaDuration)}s</span> : null}
+                                        </div>
+                                        <audio
+                                          controls
+                                          src={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                          style={{ width: '100%', minWidth: '200px', height: '32px' }}
+                                        />
+                                      </div>
+                                    ) : msg.mediaType === 'video' ? (
+                                      <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                        <video
+                                          controls
+                                          src={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                          style={{ maxWidth: '100%', maxHeight: '280px', display: 'block', borderRadius: '8px' }}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                        <a
+                                          href={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <img
+                                            src={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                            alt="Pièce jointe"
+                                            style={{ maxWidth: '100%', maxHeight: '260px', objectFit: 'cover', display: 'block', borderRadius: '8px', cursor: 'pointer' }}
+                                          />
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {msg.content && <div className="chat-bubble-content">{msg.content}</div>}
+
                                 <div className="chat-bubble-time">
                                   {new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                 </div>
@@ -4073,18 +4297,112 @@ const AdminDashboardPage = ({ onBackToSite, onLogout }) => {
                         )}
                       </div>
 
+                      {/* Prévisualisation média avant envoi admin */}
+                      {adminSelectedFile && (
+                        <div className="chat-media-preview-bar">
+                          <div className="chat-media-preview-content">
+                            {adminFileType === 'image' && adminFilePreview ? (
+                              <img src={adminFilePreview} alt="Aperçu" className="chat-media-thumb" />
+                            ) : (
+                              <div style={{ width: '42px', height: '42px', borderRadius: '6px', background: 'rgba(230,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff4d4d', border: '1px solid var(--red-primary)' }}>
+                                <Film size={20} />
+                              </div>
+                            )}
+                            <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                              <div style={{ fontWeight: '700' }}>{adminSelectedFile.name}</div>
+                              <div style={{ fontSize: '10px', color: '#64748b' }}>
+                                {(adminSelectedFile.size / (1024 * 1024)).toFixed(2)} Mo • Prêt à envoyer
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleClearAdminSelectedFile}
+                            className="chat-media-remove-btn"
+                            title="Retirer le fichier"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+                      )}
+
                       {selectedUser && (
                         <form className="chat-input-bar" onSubmit={handleSendMessage}>
                           <input
-                            type="text"
-                            className="chat-input-field"
-                            placeholder={`Écrire un message officiel à ${selectedUser.gamertag}...`}
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
+                            type="file"
+                            ref={adminFileInputRef}
+                            onChange={handleAdminFileSelect}
+                            accept="image/*,video/*"
+                            style={{ display: 'none' }}
                           />
-                          <button type="submit" className="chat-send-btn" disabled={sendingMsg || !chatInput.trim()}>
-                            <Send size={18} />
-                          </button>
+
+                          {isAdminRecording ? (
+                            <div className="chat-recording-bar">
+                              <div className="chat-recording-indicator">
+                                <span className="chat-recording-pulse" />
+                                <span>Enregistrement vocal admin en cours... ({adminRecordingDuration}s)</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button
+                                  type="button"
+                                  onClick={handleCancelAdminVoiceRecording}
+                                  className="chat-action-btn"
+                                  title="Annuler le vocal"
+                                  style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleFinishAndSendAdminVoice}
+                                  className="chat-send-btn"
+                                  title="Envoyer le message vocal"
+                                >
+                                  <Send size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => adminFileInputRef.current?.click()}
+                                className={`chat-action-btn ${adminSelectedFile ? 'active' : ''}`}
+                                title="Joindre une photo ou vidéo"
+                                disabled={sendingMsg}
+                              >
+                                <Paperclip size={18} />
+                              </button>
+
+                              <input
+                                type="text"
+                                className="chat-input-field"
+                                placeholder={`Écrire un message officiel à ${selectedUser.gamertag}...`}
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                disabled={sendingMsg}
+                              />
+
+                              <button
+                                type="button"
+                                onClick={handleStartAdminVoiceRecording}
+                                className="chat-action-btn"
+                                title="Enregistrer un message vocal"
+                                disabled={sendingMsg}
+                              >
+                                <Mic size={18} />
+                              </button>
+
+                              <button
+                                type="submit"
+                                className="chat-send-btn"
+                                disabled={sendingMsg || (!chatInput.trim() && !adminSelectedFile)}
+                                title="Envoyer"
+                              >
+                                <Send size={18} />
+                              </button>
+                            </>
+                          )}
                         </form>
                       )}
                     </div>

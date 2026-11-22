@@ -32,7 +32,18 @@ import {
   CheckCheck,
   ExternalLink,
   Download,
-  Gamepad2
+  Gamepad2,
+  Mic,
+  MicOff,
+  Paperclip,
+  Image as ImageIcon,
+  Video,
+  Trash2,
+  StopCircle,
+  Play,
+  Pause,
+  X,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WolfLogo } from '../components/WolfLogo';
@@ -76,12 +87,25 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
     avatar: user?.avatar || ''
   });
 
-  // Messagerie Staff / Admin
+  // Messagerie Joueur & Coéquipiers
+  const [chatConversations, setChatConversations] = useState([]);
+  const [activeContact, setActiveContact] = useState(null);
+  const [chatContactSearch, setChatContactSearch] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
-  const [adminTarget, setAdminTarget] = useState(null);
   const [sendingMsg, setSendingMsg] = useState(false);
   const playerChatScrollRef = useRef(null);
+
+  // Média & Message Vocal (Joueur)
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [fileType, setFileType] = useState(null); // 'image' | 'video'
+  const fileInputRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
 
   // Notifications Joueur
   const [notifications, setNotifications] = useState([]);
@@ -178,8 +202,15 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
       setPredictionInputs(initPred);
 
       const convs = convsRes.data?.conversations || [];
+      setChatConversations(convs);
       if (convs.length > 0) {
-        setAdminTarget(convs[0].user);
+        setActiveContact((prev) => {
+          if (prev) {
+            const found = convs.find(c => c.user._id === prev._id);
+            return found ? found.user : prev;
+          }
+          return convs[0].user;
+        });
       }
     } catch (err) {
       console.error('Erreur lors du chargement des données joueur:', err);
@@ -209,23 +240,40 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
     if (initialTab) setActiveNav(initialTab);
   }, [initialTab]);
 
-  // Polling de chat messages avec admin
+  // Polling de chat messages avec contact sélectionné
   useEffect(() => {
-    if (!adminTarget?._id) return;
+    if (!activeContact?._id) return;
     const fetchChat = async () => {
       try {
-        const res = await API.get(`/messages/conversation/${adminTarget._id}`);
+        const res = await API.get(`/messages/conversation/${activeContact._id}`);
         if (res.data?.success) {
           setChatMessages(res.data.messages || []);
         }
       } catch (err) {
-        console.error(err);
+        console.error('Erreur chat messages:', err);
       }
     };
     fetchChat();
     const interval = setInterval(fetchChat, 4000);
     return () => clearInterval(interval);
-  }, [adminTarget]);
+  }, [activeContact?._id]);
+
+  // Polling doux de la liste des conversations (toutes les 10s)
+  useEffect(() => {
+    if (!user?._id) return;
+    const fetchConvs = async () => {
+      try {
+        const res = await API.get('/messages/conversations');
+        if (res.data?.success) {
+          setChatConversations(res.data.conversations || []);
+        }
+      } catch (err) {
+        // Ignorer
+      }
+    };
+    const interval = setInterval(fetchConvs, 10000);
+    return () => clearInterval(interval);
+  }, [user?._id]);
 
   useEffect(() => {
     if (playerChatScrollRef.current) {
@@ -233,21 +281,199 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
     }
   }, [chatMessages]);
 
+  // Sélectionner un contact et marquer ses messages comme lus
+  const handleSelectContact = async (contactUser) => {
+    setActiveContact(contactUser);
+    try {
+      await API.put(`/messages/read/${contactUser._id}`);
+      setChatConversations((prev) =>
+        prev.map((c) =>
+          c.user._id === contactUser._id ? { ...c, unreadCount: 0 } : c
+        )
+      );
+    } catch (err) {
+      // Ignorer
+    }
+  };
+
+  // Démarrer l'enregistrement vocal
+  const handleStartVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : 'audio/ogg';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.start(200);
+      setIsRecording(true);
+      setRecordingDuration(0);
+
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Erreur micro :', err);
+      showToast('Impossible d\'accéder au microphone. Veuillez autoriser l\'accès dans votre navigateur.', 'error');
+    }
+  };
+
+  // Annuler l'enregistrement vocal
+  const handleCancelVoiceRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+    }
+    clearInterval(recordingTimerRef.current);
+    setIsRecording(false);
+    setRecordingDuration(0);
+    audioChunksRef.current = [];
+  };
+
+  // Terminer et envoyer le message vocal
+  const handleFinishAndSendVoice = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') return;
+    clearInterval(recordingTimerRef.current);
+    const duration = recordingDuration;
+
+    mediaRecorderRef.current.onstop = async () => {
+      try {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        audioChunksRef.current = [];
+        mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+        setIsRecording(false);
+        setRecordingDuration(0);
+
+        if (duration < 1) {
+          showToast('Message vocal trop court', 'warning');
+          return;
+        }
+
+        if (!activeContact?._id) {
+          showToast('Veuillez sélectionner un destinataire', 'warning');
+          return;
+        }
+
+        setSendingMsg(true);
+        const formData = new FormData();
+        formData.append('file', audioBlob, `vocal-${Date.now()}.webm`);
+
+        const uploadRes = await API.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (uploadRes.data?.success) {
+          const fileUrl = uploadRes.data.fileUrl || uploadRes.data.url;
+          const msgRes = await API.post('/messages', {
+            receiverId: activeContact._id,
+            content: '',
+            mediaUrl: fileUrl,
+            mediaType: 'audio',
+            mediaDuration: duration
+          });
+
+          if (msgRes.data?.success) {
+            setChatMessages((prev) => [...prev, msgRes.data.message]);
+            API.get('/messages/conversations').then((res) => {
+              if (res.data?.success) setChatConversations(res.data.conversations || []);
+            });
+          }
+        }
+      } catch (err) {
+        showToast(err.response?.data?.message || 'Erreur lors de l\'envoi du vocal', 'error');
+      } finally {
+        setSendingMsg(false);
+      }
+    };
+
+    mediaRecorderRef.current.stop();
+  };
+
+  // Sélection de photo ou vidéo
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isVid = file.type.startsWith('video/') || /\.(mp4|webm|mov|mkv)$/i.test(file.name);
+    const isImg = file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(file.name);
+
+    if (!isVid && !isImg) {
+      showToast('Seules les images et les vidéos sont acceptées', 'warning');
+      return;
+    }
+
+    if (file.size > 250 * 1024 * 1024) {
+      showToast('Le fichier ne doit pas dépasser 250 Mo', 'warning');
+      return;
+    }
+
+    setSelectedFile(file);
+    setFileType(isVid ? 'video' : 'image');
+    setFilePreview(URL.createObjectURL(file));
+  };
+
+  const handleClearSelectedFile = () => {
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setFilePreview(null);
+    setFileType(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Envoyer un message (texte et/ou photo/vidéo)
   const handleSendPlayerMessage = async (e) => {
     e.preventDefault();
-    if (!chatInput.trim() || sendingMsg) return;
+    if ((!chatInput.trim() && !selectedFile) || sendingMsg) return;
+    if (!activeContact?._id) {
+      showToast('Veuillez sélectionner un destinataire', 'warning');
+      return;
+    }
+
     setSendingMsg(true);
     try {
+      let mediaUrl = '';
+      let mediaType = 'text';
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const uploadRes = await API.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (uploadRes.data?.success) {
+          mediaUrl = uploadRes.data.fileUrl || uploadRes.data.url;
+          mediaType = fileType || 'image';
+        }
+      }
+
       const res = await API.post('/messages', {
-        receiverId: adminTarget?._id,
-        content: chatInput.trim()
+        receiverId: activeContact._id,
+        content: chatInput.trim(),
+        mediaUrl,
+        mediaType
       });
+
       if (res.data?.success) {
         setChatMessages((prev) => [...prev, res.data.message]);
         setChatInput('');
+        handleClearSelectedFile();
+        API.get('/messages/conversations').then((cRes) => {
+          if (cRes.data?.success) setChatConversations(cRes.data.conversations || []);
+        });
       }
     } catch (err) {
-      showToast(err.response?.data?.message || 'Erreur lors de l\'envoi du message au staff', 'error');
+      showToast(err.response?.data?.message || 'Erreur lors de l\'envoi du message', 'error');
     } finally {
       setSendingMsg(false);
     }
@@ -498,13 +724,15 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
     (p) => (p.game || '').toLowerCase() === myGame.toLowerCase()
   );
 
+  const totalUnreadMessages = chatConversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+
   const sidebarLinks = [
     { label: 'Mon Profil', icon: <User size={18} /> },
     { label: 'Mon Équipe', icon: <Users size={18} /> },
     { label: 'Planning & Scrims', icon: <Clock size={18} /> },
     { label: 'Mes Matchs', icon: <Calendar size={18} /> },
     { label: 'Kit Joueur & Charte', icon: <Shield size={18} /> },
-    { label: 'Messagerie Staff', icon: <MessageSquare size={18} /> },
+    { label: 'Messagerie & Équipe', icon: <MessageSquare size={18} /> },
     { label: 'Pronostics', icon: <Target size={18} /> },
     { label: 'Classement', icon: <Trophy size={18} /> },
     { label: 'Quêtes', icon: <Award size={18} /> },
@@ -629,6 +857,11 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
               {item.label === 'Quêtes' && missionsData && missionsData.completedCount < missionsData.totalMissions && (
                 <span style={{ marginLeft: 'auto', background: '#e60000', color: '#fff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: '800' }}>
                   {missionsData.totalMissions - missionsData.completedCount}
+                </span>
+              )}
+              {item.label === 'Messagerie & Équipe' && totalUnreadMessages > 0 && (
+                <span style={{ marginLeft: 'auto', background: '#e60000', color: '#fff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: '800' }}>
+                  {totalUnreadMessages}
                 </span>
               )}
             </button>
@@ -2096,190 +2329,448 @@ const PlayerDashboardPage = ({ onBackToSite, onGoToAdmin, onLogout, initialTab =
           )}
 
           {/* =========================================================================
-              VUE 8 : MESSAGERIE STAFF (DIRECT CHAT AVEC L'ADMIN)
+              VUE 8 : MESSAGERIE OFFICIELLE (STAFF & COÉQUIPIERS DE MÊME JEU)
               ========================================================================= */}
-          {activeNav === 'Messagerie Staff' && (
-            <div className="chat-container">
-              {/* Colonne de Gauche : Support & Staff DWT */}
-              <div className="chat-user-list">
-                <div className="chat-user-header">
-                  <div className="chat-user-title">
-                    <span> Direction Staff DWT</span>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      fontSize: '11px',
-                      color: '#10b981',
-                      fontWeight: '700',
-                      textTransform: 'none'
-                    }}>
-                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
-                      En ligne
-                    </span>
+          {(activeNav === 'Messagerie Staff' || activeNav === 'Messagerie & Équipe') && (() => {
+            const staffList = chatConversations.filter(
+              (c) => c.isStaff || c.user?.role === 'admin' || c.user?.role === 'moderator'
+            );
+            const teammatesList = chatConversations.filter(
+              (c) => !c.isStaff && c.user?.role !== 'admin' && c.user?.role !== 'moderator'
+            );
+
+            const filterQuery = chatContactSearch.trim().toLowerCase();
+            const filteredStaff = staffList.filter((c) =>
+              (c.user?.gamertag || '').toLowerCase().includes(filterQuery)
+            );
+            const filteredTeammates = teammatesList.filter((c) =>
+              (c.user?.gamertag || '').toLowerCase().includes(filterQuery) ||
+              (c.user?.favoriteGame || '').toLowerCase().includes(filterQuery)
+            );
+
+            return (
+              <div className="chat-container">
+                {/* Colonne de Gauche : Liste des Contacts (Staff & Coéquipiers) */}
+                <div className="chat-user-list">
+                  <div className="chat-user-header">
+                    <div className="chat-user-title">
+                      <span>Messagerie & Contacts</span>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        fontSize: '11px',
+                        color: '#10b981',
+                        fontWeight: '700',
+                        textTransform: 'none'
+                      }}>
+                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+                        Actif
+                      </span>
+                    </div>
+                    <div style={{ position: 'relative', marginTop: '4px' }}>
+                      <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#64748b' }} />
+                      <input
+                        type="text"
+                        className="chat-search-input"
+                        placeholder="Rechercher contact ou coéquipier..."
+                        value={chatContactSearch}
+                        onChange={(e) => setChatContactSearch(e.target.value)}
+                        style={{ paddingLeft: '32px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="chat-players-scroll wp-scrollbar">
+                    {/* SECTION 1 : STAFF & DIRECTION */}
+                    <div style={{ padding: '10px 14px 4px', fontSize: '11px', fontWeight: '800', color: '#64748b', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                      Direction & Staff DWT
+                    </div>
+
+                    {filteredStaff.length === 0 ? (
+                      <div style={{ padding: '10px 16px', fontSize: '12px', color: '#64748b' }}>
+                        Aucun membre du staff trouvé
+                      </div>
+                    ) : (
+                      filteredStaff.map((conv) => {
+                        const isSelected = activeContact?._id === conv.user?._id;
+                        return (
+                          <div
+                            key={conv.user?._id}
+                            className={`chat-user-item ${isSelected ? 'active' : ''}`}
+                            onClick={() => handleSelectContact(conv.user)}
+                          >
+                            <div className="dash-wolf-badge-tiny" style={{ background: '#0a0d16', border: '1px solid #e60000', width: '36px', height: '36px', flexShrink: 0 }}>
+                              <WolfLogo size={20} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                <span style={{ fontWeight: '800', color: '#fff', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {conv.user?.gamertag || 'Direction DWT'}
+                                </span>
+                                {conv.unreadCount > 0 && (
+                                  <span style={{ background: 'var(--red-primary)', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '10px', fontWeight: '800' }}>
+                                    {conv.unreadCount}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                <span style={{ background: 'rgba(230, 0, 0, 0.2)', color: '#ff4d4d', border: '1px solid rgba(230, 0, 0, 0.4)', borderRadius: '4px', fontSize: '9px', padding: '1px 5px', fontWeight: '800' }}>
+                                  STAFF OFFICIEL
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {conv.lastMessage?.mediaType === 'audio'
+                                  ? 'Message vocal'
+                                  : conv.lastMessage?.mediaType === 'image'
+                                  ? 'Photo'
+                                  : conv.lastMessage?.mediaType === 'video'
+                                  ? 'Vidéo'
+                                  : conv.lastMessage?.content || 'Canal officiel d\'échange'}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+
+                    {/* SECTION 2 : COÉQUIPIERS DE MÊME JEU */}
+                    <div style={{ padding: '16px 14px 4px', fontSize: '11px', fontWeight: '800', color: '#64748b', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                      Coéquipiers • {(myGame || 'Mon Jeu').toUpperCase()}
+                    </div>
+
+                    {filteredTeammates.length === 0 ? (
+                      <div style={{ padding: '10px 16px', fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                        Aucun autre joueur enregistré sur {myGame || 'ce jeu'} pour le moment.
+                      </div>
+                    ) : (
+                      filteredTeammates.map((conv) => {
+                        const isSelected = activeContact?._id === conv.user?._id;
+                        return (
+                          <div
+                            key={conv.user?._id}
+                            className={`chat-user-item ${isSelected ? 'active' : ''}`}
+                            onClick={() => handleSelectContact(conv.user)}
+                          >
+                            <img
+                              src={conv.user?.avatar || 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=150&q=80'}
+                              alt=""
+                              style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #232c40', flexShrink: 0 }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                <span style={{ fontWeight: '800', color: '#fff', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {conv.user?.gamertag}
+                                </span>
+                                {conv.unreadCount > 0 && (
+                                  <span style={{ background: 'var(--red-primary)', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '10px', fontWeight: '800' }}>
+                                    {conv.unreadCount}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '4px', fontSize: '9px', padding: '1px 5px', fontWeight: '800' }}>
+                                  COÉQUIPIER {conv.user?.favoriteGame ? `• ${conv.user.favoriteGame}` : ''}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {conv.lastMessage?.mediaType === 'audio'
+                                  ? 'Message vocal'
+                                  : conv.lastMessage?.mediaType === 'image'
+                                  ? 'Photo'
+                                  : conv.lastMessage?.mediaType === 'video'
+                                  ? 'Vidéo'
+                                  : conv.lastMessage?.content || 'Cliquez pour discuter'}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 
-                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', flex: 1 }}>
-                  {/* Contact Staff Actif */}
-                  <div style={{
-                    background: 'rgba(204, 34, 34, 0.1)',
-                    border: '1px solid rgba(204, 34, 34, 0.35)',
-                    borderRadius: '10px',
-                    padding: '14px'
-                  }}>
+                {/* Colonne de Droite : Fenêtre de Discussion */}
+                <div className="chat-window">
+                  <div className="chat-window-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div className="dash-wolf-badge-tiny" style={{ background: '#0a0d16', border: '1px solid #e60000', width: '38px', height: '38px' }}>
-                        <WolfLogo size={22} />
-                      </div>
+                      {activeContact?.role === 'admin' || activeContact?.role === 'moderator' ? (
+                        <div className="dash-wolf-badge-tiny">
+                          <WolfLogo size={20} />
+                        </div>
+                      ) : (
+                        <img
+                          src={activeContact?.avatar || 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=150&q=80'}
+                          alt=""
+                          style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--red-primary)' }}
+                        />
+                      )}
                       <div>
-                        <div style={{ fontWeight: '800', color: '#fff', fontSize: '14px' }}>
-                          Administration DWT
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '800', color: '#fff', fontSize: '15px' }}>
+                            {activeContact?.gamertag ? `Discussion avec ${activeContact.gamertag}` : 'Messagerie Officielle DWT'}
+                          </span>
+                          {activeContact?.role === 'admin' || activeContact?.role === 'moderator' ? (
+                            <span style={{ background: 'rgba(230, 0, 0, 0.2)', color: '#ff4d4d', border: '1px solid rgba(230, 0, 0, 0.4)', borderRadius: '4px', fontSize: '10px', padding: '1px 6px', fontWeight: '800' }}>
+                              STAFF DIRECTION
+                            </span>
+                          ) : (
+                            <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '4px', fontSize: '10px', padding: '1px 6px', fontWeight: '800' }}>
+                              COÉQUIPIER {activeContact?.favoriteGame || myGame}
+                            </span>
+                          )}
                         </div>
                         <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                          Coaching, scrims & contrats
+                          Canal sécurisé de messagerie instantanée, vocaux et fichiers
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Directives & Raccourcis */}
-                  <div style={{
-                    background: '#0a0d16',
-                    border: '1px solid #181f30',
-                    borderRadius: '10px',
-                    padding: '14px',
-                    fontSize: '12px',
-                    color: '#94a3b8'
-                  }}>
-                    <div style={{ fontWeight: '700', color: '#fff', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                       Sujets de Discussion
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <li>Horaires & plannings des entraînements</li>
-                      <li>Organisation des scrims officiels</li>
-                      <li>Équipements, jerseys & dotations</li>
-                      <li>Demandes administratives & absences</li>
-                    </ul>
-                  </div>
-
-                  <div style={{
-                    marginTop: 'auto',
-                    padding: '12px',
-                    background: '#070910',
-                    border: '1px solid #141926',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    color: '#64748b',
-                    textAlign: 'center'
-                  }}>
-                     Canal officiel sécurisé Dark Wolf Team
-                  </div>
-                </div>
-              </div>
-
-              {/* Colonne de Droite : Fenêtre de Discussion */}
-              <div className="chat-window">
-                <div className="chat-window-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div className="dash-wolf-badge-tiny">
-                      <WolfLogo size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: '800', color: '#fff', fontSize: '15px' }}>
-                        Messagerie Directe avec l'Administration DWT
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        Réponses en temps réel par les managers et le head coach
-                      </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '12px',
+                      color: '#10b981',
+                      fontWeight: '700',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                      padding: '4px 10px',
+                      borderRadius: '12px'
+                    }}>
+                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+                      Canal Actif
                     </div>
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '12px',
-                    color: '#10b981',
-                    fontWeight: '700',
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    padding: '4px 10px',
-                    borderRadius: '12px'
-                  }}>
-                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
-                    Staff Actif
-                  </div>
-                </div>
 
-                <div className="chat-messages-scroll wp-scrollbar" ref={playerChatScrollRef}>
-                  {chatMessages.length === 0 ? (
-                    <div className="dash-empty-state" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
-                      <WolfLogo size={42} />
-                      <div style={{ marginTop: '14px', fontWeight: '800', color: '#fff', fontSize: '16px' }}>
-                        Bienvenue dans ton canal de discussion officiel ! 
+                  <div className="chat-messages-scroll wp-scrollbar" ref={playerChatScrollRef}>
+                    {chatMessages.length === 0 ? (
+                      <div className="dash-empty-state" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
+                        <WolfLogo size={42} />
+                        <div style={{ marginTop: '14px', fontWeight: '800', color: '#fff', fontSize: '16px' }}>
+                          Bienvenue dans votre discussion avec {activeContact?.gamertag || 'le Staff'} !
+                        </div>
+                        <div style={{ marginTop: '6px', fontSize: '13px', color: '#94a3b8', maxWidth: '440px' }}>
+                          Échangez des messages écrits, envoyez des notes vocales ou partagez des photos et vidéos.
+                        </div>
                       </div>
-                      <div style={{ marginTop: '6px', fontSize: '13px', color: '#94a3b8', maxWidth: '440px' }}>
-                        Cet espace privé te relie directement au staff et aux coachs Dark Wolf Team. Pose toutes tes questions ci-dessous.
-                      </div>
-                    </div>
-                  ) : (
-                    chatMessages.map((msg) => {
-                      const isMine = msg.sender?._id === user?._id || msg.sender === user?._id;
-                      return (
-                        <div key={msg._id} className={`chat-bubble ${isMine ? 'mine' : 'theirs'}`}>
-                          <div className="chat-bubble-name">
-                            {isMine ? (user?.gamertag || 'Moi') : 'Staff DWT (Admin)'}
+                    ) : (
+                      chatMessages.map((msg) => {
+                        const isMine = (msg.sender?._id || msg.sender) === (user?._id || user);
+                        const senderName = isMine
+                          ? (user?.gamertag || 'Moi')
+                          : (msg.sender?.gamertag || activeContact?.gamertag || 'Correspondant');
+
+                        return (
+                          <div key={msg._id} className={`chat-bubble ${isMine ? 'mine' : 'theirs'}`}>
+                            <div className="chat-bubble-name">
+                              {senderName}
+                            </div>
+
+                            {/* Fichier média / vocal */}
+                            {msg.mediaUrl && (
+                              <div style={{ marginTop: '6px', marginBottom: msg.content ? '6px' : '0' }}>
+                                {msg.mediaType === 'audio' ? (
+                                  <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '4px',
+                                    background: isMine ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                                    padding: '8px 12px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                                  }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: isMine ? '#ffd4d4' : '#94a3b8' }}>
+                                      <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <Mic size={13} /> Message vocal
+                                      </span>
+                                      {msg.mediaDuration ? <span>{Math.round(msg.mediaDuration)}s</span> : null}
+                                    </div>
+                                    <audio
+                                      controls
+                                      src={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                      style={{ width: '100%', minWidth: '200px', height: '32px' }}
+                                    />
+                                  </div>
+                                ) : msg.mediaType === 'video' ? (
+                                  <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                    <video
+                                      controls
+                                      src={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                      style={{ maxWidth: '100%', maxHeight: '280px', display: 'block', borderRadius: '8px' }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                    <a
+                                      href={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <img
+                                        src={msg.mediaUrl.startsWith('http') ? msg.mediaUrl : (import.meta.env.VITE_SERVER_URL || '') + msg.mediaUrl}
+                                        alt="Pièce jointe"
+                                        style={{ maxWidth: '100%', maxHeight: '260px', objectFit: 'cover', display: 'block', borderRadius: '8px', cursor: 'pointer' }}
+                                      />
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {msg.content && <div className="chat-bubble-content">{msg.content}</div>}
+
+                            <div className="chat-bubble-time">
+                              {new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
                           </div>
-                          <div className="chat-bubble-content">{msg.content}</div>
-                          <div className="chat-bubble-time">
-                            {new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Prévisualisation d'une pièce jointe sélectionnée */}
+                  {selectedFile && (
+                    <div className="chat-media-preview-bar">
+                      <div className="chat-media-preview-content">
+                        {fileType === 'image' && filePreview ? (
+                          <img src={filePreview} alt="Aperçu" className="chat-media-thumb" />
+                        ) : (
+                          <div style={{ width: '42px', height: '42px', borderRadius: '6px', background: 'rgba(230,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff4d4d', border: '1px solid var(--red-primary)' }}>
+                            <Video size={20} />
+                          </div>
+                        )}
+                        <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                          <div style={{ fontWeight: '700' }}>{selectedFile.name}</div>
+                          <div style={{ fontSize: '10px', color: '#64748b' }}>
+                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} Mo • Prêt à envoyer
                           </div>
                         </div>
-                      );
-                    })
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleClearSelectedFile}
+                        className="chat-media-remove-btn"
+                        title="Retirer le fichier"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
                   )}
-                </div>
 
-                {/* Suggestions de questions rapides */}
-                <div className="chat-quick-prompts">
-                  <button
-                    type="button"
-                    className="chat-prompt-pill"
-                    onClick={() => setChatInput('Bonjour, quand a lieu la prochaine session de scrims ? ')}
-                  >
-                    ⏰ Horaires des scrims
-                  </button>
-                  <button
-                    type="button"
-                    className="chat-prompt-pill"
-                    onClick={() => setChatInput('Bonjour, pouvez-vous me donner des nouvelles de ma commande de maillot ? ')}
-                  >
-                     Info maillot / boutique
-                  </button>
-                  <button
-                    type="button"
-                    className="chat-prompt-pill"
-                    onClick={() => setChatInput('Je confirme ma disponibilité pour le prochain tournoi ! ')}
-                  >
-                     Confirmation tournoi
-                  </button>
-                </div>
+                  {/* Suggestions de questions rapides (si staff sélectionné) */}
+                  {(activeContact?.role === 'admin' || activeContact?.role === 'moderator') && (
+                    <div className="chat-quick-prompts">
+                      <button
+                        type="button"
+                        className="chat-prompt-pill"
+                        onClick={() => setChatInput('Bonjour, quand a lieu la prochaine session de scrims ?')}
+                      >
+                        Horaires des scrims
+                      </button>
+                      <button
+                        type="button"
+                        className="chat-prompt-pill"
+                        onClick={() => setChatInput('Bonjour, pouvez-vous me donner des nouvelles de ma commande de maillot ?')}
+                      >
+                        Info maillot / boutique
+                      </button>
+                      <button
+                        type="button"
+                        className="chat-prompt-pill"
+                        onClick={() => setChatInput('Je confirme ma disponibilité pour le prochain tournoi !')}
+                      >
+                        Confirmation tournoi
+                      </button>
+                    </div>
+                  )}
 
-                <form className="chat-input-bar" onSubmit={handleSendPlayerMessage}>
-                  <input
-                    type="text"
-                    className="chat-input-field"
-                    placeholder="Écrire un message à la direction Dark Wolf Team..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                  />
-                  <button type="submit" className="chat-send-btn" disabled={sendingMsg || !chatInput.trim()}>
-                    <Send size={18} />
-                  </button>
-                </form>
+                  {/* Barre d'action et de saisie */}
+                  <form className="chat-input-bar" onSubmit={handleSendPlayerMessage}>
+                    {/* Input caché pour photo/vidéo */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      accept="image/*,video/*"
+                      style={{ display: 'none' }}
+                    />
+
+                    {isRecording ? (
+                      <div className="chat-recording-bar">
+                        <div className="chat-recording-indicator">
+                          <span className="chat-recording-pulse" />
+                          <span>Enregistrement vocal en cours... ({recordingDuration}s)</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={handleCancelVoiceRecording}
+                            className="chat-action-btn"
+                            title="Annuler le vocal"
+                            style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleFinishAndSendVoice}
+                            className="chat-send-btn"
+                            title="Envoyer le message vocal"
+                          >
+                            <Send size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className={`chat-action-btn ${selectedFile ? 'active' : ''}`}
+                          title="Joindre une photo ou vidéo"
+                          disabled={sendingMsg}
+                        >
+                          <Paperclip size={18} />
+                        </button>
+
+                        <input
+                          type="text"
+                          className="chat-input-field"
+                          placeholder={
+                            activeContact
+                              ? `Écrire à ${activeContact.gamertag}...`
+                              : 'Écrire un message...'
+                          }
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          disabled={sendingMsg}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={handleStartVoiceRecording}
+                          className="chat-action-btn"
+                          title="Enregistrer un message vocal"
+                          disabled={sendingMsg}
+                        >
+                          <Mic size={18} />
+                        </button>
+
+                        <button
+                          type="submit"
+                          className="chat-send-btn"
+                          disabled={sendingMsg || (!chatInput.trim() && !selectedFile)}
+                          title="Envoyer"
+                        >
+                          <Send size={18} />
+                        </button>
+                      </>
+                    )}
+                  </form>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </main>
       </div>
 
