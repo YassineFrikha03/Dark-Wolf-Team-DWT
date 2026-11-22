@@ -131,23 +131,69 @@ const login = async (req, res, next) => {
 
     // Recherche par email OU par gamertag (insensible a la casse)
     const escapedGamertag = rawLoginId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [
         { email: rawLoginId.toLowerCase() },
         { gamertag: { $regex: new RegExp(`^${escapedGamertag}$`, 'i') } }
       ]
     }).select('+password');
 
+    const cleanPassword = typeof password === 'string' ? password.trim() : password;
+
+    // Si le compte utilisateur n'a pas été trouvé directement, vérifier si c'est un candidat accepté avec mot de passe généré
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Identifiants incorrects'
+      const acceptedApp = await Application.findOne({
+        email: rawLoginId.toLowerCase(),
+        status: 'accepted'
       });
+
+      if (acceptedApp && acceptedApp.generatedPassword === cleanPassword) {
+        // Auto-création sécurisée du compte joueur manquant
+        let finalGamertag = acceptedApp.gamertag.trim();
+        let suffix = 1;
+        while (await User.findOne({ gamertag: { $regex: new RegExp(`^${finalGamertag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })) {
+          suffix++;
+          finalGamertag = `${acceptedApp.gamertag.trim()}_${suffix}`;
+        }
+
+        user = await User.create({
+          gamertag: finalGamertag,
+          email: acceptedApp.email.toLowerCase().trim(),
+          password: cleanPassword,
+          role: 'player',
+          discordTag: acceptedApp.discordTag || '',
+          favoriteGame: acceptedApp.game || 'Valorant',
+          bio: `Joueur officiel Dark Wolf Team sur ${acceptedApp.game}.`
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Identifiants incorrects'
+        });
+      }
     }
 
     // Verification du mot de passe
-    const cleanPassword = typeof password === 'string' ? password.trim() : password;
-    const isMatch = await user.matchPassword(cleanPassword);
+    let isMatch = await user.matchPassword(cleanPassword);
+    if (!isMatch && typeof password === 'string' && password !== cleanPassword) {
+      isMatch = await user.matchPassword(password);
+    }
+
+    // Réconciliation mot de passe : si le mot de passe correspond au mot de passe généré officiel de sa candidature acceptée
+    if (!isMatch && user.email) {
+      const acceptedApp = await Application.findOne({
+        email: user.email.toLowerCase(),
+        status: 'accepted',
+        generatedPassword: cleanPassword
+      });
+      if (acceptedApp) {
+        user.password = cleanPassword;
+        user.role = 'player';
+        await user.save();
+        isMatch = true;
+      }
+    }
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,

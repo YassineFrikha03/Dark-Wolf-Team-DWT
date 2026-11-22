@@ -325,14 +325,56 @@ const updateApplicationStatus = async (req, res, next) => {
       generatedPassword = 'DWT-' + crypto.randomBytes(4).toString('hex').toUpperCase();
       application.generatedPassword = generatedPassword;
 
-      // 1. Creation ou mise a jour du Player officiel pour le roster
+      // 1. Creation ou mise a jour du compte User (Role: player)
+      // La recherche DOIT se faire strictement par email pour ne jamais écraser le compte d'un autre joueur
+      userAccount = await User.findOne({ email: cleanEmail });
+
+      if (userAccount) {
+        userAccount.role = 'player';
+        userAccount.password = generatedPassword; // Le hook pre('save') hash automatiquement le mot de passe
+        if (application.discordTag) userAccount.discordTag = application.discordTag;
+        if (application.game) userAccount.favoriteGame = application.game;
+        await userAccount.save();
+      } else {
+        // S'assurer que le gamertag est unique dans la collection users
+        let finalGamertag = cleanGamertag;
+        let suffix = 1;
+        const escapedInitial = cleanGamertag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        while (await User.findOne({ gamertag: { $regex: new RegExp(`^${finalGamertag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })) {
+          suffix++;
+          finalGamertag = `${cleanGamertag}_${suffix}`;
+        }
+
+        userAccount = await User.create({
+          gamertag: finalGamertag,
+          email: cleanEmail,
+          password: generatedPassword,
+          role: 'player',
+          discordTag: application.discordTag || '',
+          favoriteGame: application.game || 'Valorant',
+          bio: `Joueur officiel Dark Wolf Team sur ${application.game}.`
+        });
+      }
+
+      // 2. Creation ou mise a jour du Player officiel pour le roster
+      const userGamertag = userAccount.gamertag;
       let existingPlayer = await Player.findOne({
-        gamertag: { $regex: new RegExp(`^${cleanGamertag}$`, 'i') }
+        $or: [
+          { gamertag: { $regex: new RegExp(`^${userGamertag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
+          { 'socialLinks.discord': application.discordTag }
+        ]
       });
 
       if (!existingPlayer) {
+        let playerGamertag = userGamertag;
+        let pSuffix = 1;
+        while (await Player.findOne({ gamertag: { $regex: new RegExp(`^${playerGamertag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })) {
+          pSuffix++;
+          playerGamertag = `${userGamertag}_${pSuffix}`;
+        }
+
         existingPlayer = await Player.create({
-          gamertag: cleanGamertag,
+          gamertag: playerGamertag,
           realName: '',
           nationality: 'FR',
           game: application.game || 'Valorant',
@@ -350,32 +392,6 @@ const updateApplicationStatus = async (req, res, next) => {
         });
       }
       createdPlayer = existingPlayer;
-
-      // 2. Creation ou mise a jour du compte User (Role: player)
-      userAccount = await User.findOne({
-        $or: [
-          { email: cleanEmail },
-          { gamertag: { $regex: new RegExp(`^${cleanGamertag}$`, 'i') } }
-        ]
-      });
-
-      if (userAccount) {
-        userAccount.role = 'player';
-        userAccount.password = generatedPassword; // Le hook pre('save') hash automatiquement le mot de passe
-        if (application.discordTag) userAccount.discordTag = application.discordTag;
-        if (application.game) userAccount.favoriteGame = application.game;
-        await userAccount.save();
-      } else {
-        userAccount = await User.create({
-          gamertag: cleanGamertag,
-          email: cleanEmail,
-          password: generatedPassword,
-          role: 'player',
-          discordTag: application.discordTag || '',
-          favoriteGame: application.game || 'Valorant',
-          bio: `Joueur officiel Dark Wolf Team sur ${application.game}.`
-        });
-      }
 
       // 3. Ouvrir l'espace de messagerie entre l'Admin et le Joueur
       let adminSenderId = req.user?._id;
