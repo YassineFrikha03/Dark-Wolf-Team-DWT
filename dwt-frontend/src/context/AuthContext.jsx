@@ -128,8 +128,8 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.data.message || 'Échec de connexion');
   };
 
-  const register = async (gamertag, email, password) => {
-    const res = await API.post('/auth/register', { gamertag, email, password });
+  const register = async (gamertag, email) => {
+    const res = await API.post('/auth/register', { gamertag, email });
     if (res.data.success) {
       localStorage.setItem('dwt_token', res.data.token);
       sessionStorage.setItem('dwt_token', res.data.token);

@@ -25,30 +25,22 @@ const register = async (req, res, next) => {
   try {
     const { gamertag, email, password } = req.body;
 
-    if (!gamertag || !email || !password) {
+    if (!gamertag || !email) {
       return res.status(400).json({
         success: false,
-        message: 'Veuillez renseigner un pseudo, un email et un mot de passe'
+        message: 'Veuillez renseigner un nom / pseudo et une adresse email'
       });
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const cleanGamertag = gamertag.trim();
 
     // Verification si l'email existe deja
     const emailExists = await User.findOne({ email: cleanEmail });
     if (emailExists) {
       return res.status(400).json({
         success: false,
-        message: 'Cette adresse email est deja associee a un compte existant'
-      });
-    }
-
-    // Verification si le gamertag existe deja
-    const gamertagExists = await User.findOne({ gamertag });
-    if (gamertagExists) {
-      return res.status(400).json({
-        success: false,
-        message: 'Ce gamertag (pseudo) est deja utilise par un autre joueur'
+        message: 'Cette adresse email possède déjà un compte joueur actif. Veuillez vous connecter directement.'
       });
     }
 
@@ -61,7 +53,7 @@ const register = async (req, res, next) => {
     if (!acceptedApp) {
       // Envoi automatique de l'email officiel contenant le formulaire de recrutement
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5190';
-      const recruitmentUrl = `${frontendUrl}/recrutement?email=${encodeURIComponent(cleanEmail)}`;
+      const recruitmentUrl = `${frontendUrl}/recrutement?email=${encodeURIComponent(cleanEmail)}&gamertag=${encodeURIComponent(cleanGamertag)}`;
 
       sendRecruitmentInviteEmail(cleanEmail, recruitmentUrl).catch((err) =>
         console.error('Erreur envoi email invitation recrutement :', err.message)
@@ -70,16 +62,28 @@ const register = async (req, res, next) => {
       return res.status(403).json({
         success: false,
         needsRecruitment: true,
-        message: "L'inscription directe est fermee. Elle est reservee aux candidats ayant reussi le test d'acceptation du staff Dark Wolf Team. Un email officiel contenant le formulaire de candidature vient de vous etre envoye.",
-        recruitmentUrl
+        message: "L'inscription directe est fermée aux personnes n'ayant pas passé le test de sélection. Un email officiel contenant le formulaire de recrutement vient de vous être envoyé pour déposer votre dossier.",
+        recruitmentUrl,
+        email: cleanEmail
       });
+    }
+
+    // Le candidat est accepté : générer ou utiliser le mot de passe du dossier
+    const generatedPassword = password || acceptedApp.generatedPassword || ('DWT-' + crypto.randomBytes(4).toString('hex').toUpperCase());
+
+    // S'assurer que le gamertag est unique pour ne pas bloquer
+    let finalGamertag = cleanGamertag;
+    let suffix = 1;
+    while (await User.findOne({ gamertag: { $regex: new RegExp(`^${finalGamertag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })) {
+      suffix++;
+      finalGamertag = `${cleanGamertag}_${suffix}`;
     }
 
     // Creer le compte
     const user = await User.create({
-      gamertag,
+      gamertag: finalGamertag,
       email: cleanEmail,
-      password,
+      password: generatedPassword,
       role: 'player',
       discordTag: acceptedApp.discordTag || '',
       favoriteGame: acceptedApp.game || 'Valorant'
@@ -97,7 +101,7 @@ const register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Compte créé avec succès ! Bienvenue chez Dark Wolf Team',
+      message: 'Compte validé et créé avec succès ! Bienvenue chez Dark Wolf Team',
       token,
       user: {
         id: user._id,

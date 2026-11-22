@@ -153,12 +153,12 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
           <X size={18} />
         </button>
         <div className="mtitle" id="mtitle">
-          {tab === 'login' && 'Welcome Back'}
-          {tab === 'register' && 'Create Account'}
+          {tab === 'login' && 'Connexion Membre'}
+          {tab === 'register' && 'Rejoindre la Meute'}
           {tab === 'recovery' && 'Mot de Passe Oublié'}
         </div>
         <div className="msub">
-          {tab === 'recovery' ? 'Récupération sécurisée par email' : 'Access your Dark Wolf account'}
+          {tab === 'register' ? 'Accédez au test de sélection officiel' : tab === 'recovery' ? 'Récupération sécurisée par email' : 'Accédez à votre compte Dark Wolf Team'}
         </div>
 
         {tab !== 'recovery' && (
@@ -170,7 +170,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
                 setErrorMsg('');
               }}
             >
-              Sign In
+              Connexion
             </button>
             <button
               className={`mtab ${tab === 'register' ? 'act' : ''}`}
@@ -179,7 +179,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
                 setErrorMsg('');
               }}
             >
-              Register
+              Rejoindre
             </button>
           </div>
         )}
@@ -381,101 +381,47 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'login', onSuccess, onOpenRec
             ) : null}
 
             <form id="rform" onSubmit={handleRegisterSubmit}>
-            <div className="mfld">
-              <label className="mlbl">Username</label>
-              <input
-                type="text"
-                className="minput"
-                placeholder="WolfPlayer_01"
-                required
-                value={regData.gamertag}
-                onChange={(e) => setRegData({ ...regData, gamertag: e.target.value })}
-              />
-            </div>
-            <div className="mfld">
-              <label className="mlbl">Email</label>
-              <input
-                type="email"
-                className="minput"
-                placeholder="wolf@darklab.gg"
-                required
-                value={regData.email}
-                onChange={(e) => setRegData({ ...regData, email: e.target.value })}
-              />
-            </div>
-            <div className="mfld">
-              <label className="mlbl">Password</label>
-              <input
-                type="password"
-                className="minput"
-                placeholder="Create a strong password"
-                required
-                value={regData.password}
-                onChange={(e) => setRegData({ ...regData, password: e.target.value })}
-              />
-            </div>
-            <button type="submit" className="bmsubmit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Account'}
-            </button>
+              <div style={{
+                background: 'rgba(56, 189, 248, 0.06)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                borderRadius: '6px',
+                padding: '12px',
+                marginBottom: '16px',
+                fontSize: '12px',
+                color: '#cbd5e1',
+                lineHeight: 1.5
+              }}>
+                Les inscriptions libres sont fermées. Renseignez votre nom et votre adresse email : si votre candidature a déjà été validée suite au test, votre compte sera activé. Sinon, vous recevrez directement le formulaire officiel par email pour passer le test de sélection.
+              </div>
 
-            {/* Social Logins */}
-            <div style={{ margin: '16px 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              <span style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></span>
-              <span>OU</span>
-              <span style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></span>
-            </div>
+              <div className="mfld">
+                <label className="mlbl">Nom / Pseudo *</label>
+                <input
+                  type="text"
+                  className="minput"
+                  placeholder="Ex: Alex ou ShadowWolf"
+                  required
+                  value={regData.gamertag}
+                  onChange={(e) => setRegData({ ...regData, gamertag: e.target.value })}
+                />
+              </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('discord')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '6px',
-                  background: '#5865F2',
-                  border: 'none',
-                  color: '#fff',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
-                <DiscordIcon size={18} /> Continuer avec Discord
+              <div className="mfld">
+                <label className="mlbl">Adresse e-mail *</label>
+                <input
+                  type="email"
+                  className="minput"
+                  placeholder="votre.email@exemple.com"
+                  required
+                  value={regData.email}
+                  onChange={(e) => setRegData({ ...regData, email: e.target.value })}
+                />
+              </div>
+
+              <button type="submit" className="bmsubmit" disabled={loading} style={{ marginTop: '8px' }}>
+                {loading ? 'Vérification en cours...' : 'Vérifier & Postuler au Test'}
               </button>
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('google')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  color: '#1e293b',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
-                <GoogleIcon size={18} /> Continuer avec Google
-              </button>
-            </div>
-          </form>
+            </form>
           </div>
         )}
 
