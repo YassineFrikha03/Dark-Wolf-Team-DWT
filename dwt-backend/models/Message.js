@@ -15,7 +15,13 @@ const messageSchema = new mongoose.Schema(
     content: {
       type: String,
       trim: true,
-      default: ''
+      default: '',
+      validate: {
+        validator: function (v) {
+          return (v && v.trim().length > 0) || (this.mediaUrl && this.mediaUrl.trim().length > 0);
+        },
+        message: 'Le message doit contenir du texte ou un média'
+      }
     },
     mediaUrl: {
       type: String,
@@ -40,13 +46,5 @@ const messageSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// S'assurer qu'au moins un contenu textuel ou un média est fourni
-messageSchema.pre('validate', function (next) {
-  if ((!this.content || !this.content.trim()) && !this.mediaUrl) {
-    this.invalidate('content', 'Le message doit contenir du texte ou un média');
-  }
-  next();
-});
 
 module.exports = mongoose.model('Message', messageSchema);
